@@ -1,0 +1,8 @@
+package it.beaesthetic.insights.repository
+
+import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoRepository
+import it.beaesthetic.insights.model.TreatmentUsageCount
+import jakarta.enterprise.context.ApplicationScoped
+
+@ApplicationScoped
+class TreatmentUsageCountRepository : ReactivePanacheMongoRepository<TreatmentUsageCount>
