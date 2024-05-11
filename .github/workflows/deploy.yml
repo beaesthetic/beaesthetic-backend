@@ -1,0 +1,10 @@
+name: Deploy microservice
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+    paths:
+      - insights/**

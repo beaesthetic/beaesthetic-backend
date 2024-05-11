@@ -1,0 +1,54 @@
+namespace: "beaesthetic"
+fullnameOverride: ""
+
+labels:
+  app: "beaesthetic-insights-api"
+
+replicaCount: 1
+
+image:
+  repository: petretiandrea/insights-service
+  pullPolicy: IfNotPresent
+
+service:
+  create: true
+  type: ClusterIP
+  ports:
+    - 8080
+
+envConfig:
+  INSIGHTS_CRON: "0 0 0/6 ? * * *"
+#  OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
+#  DEFAULT_REMINDER_TIME: "1440"
+#  IMMEDIATELY_SEND_DELAY_MILLIS: "120000"
+#  NO_SEND_THRESHOLD_MILLIS: "1800000"
+#  NOTIFICATION_SERVICE_URL: "http://notification-service:3000"
+#  KAFKA_BROKER_URI: "kafka-cluster-kafka-bootstrap.strimzi.svc.cluster.local:9092"
+#  RABBITMQ_URI: "amqp://rabbitmq.common.svc.cluster.local:5672"
+#  REDIS_HOST: "redis-headless.common.svc.cluster.local"
+#  NOTIFICATION_CONFIRM_QUEUE: "NotificationConfirmQueue"
+#  CUSTOMER_QUEUE: "CustomerQueue"
+
+secretKeyRef:
+  - name: MONGO_CONNECTION_STRING
+    secretRefName: insights-secrets
+    key: MONGO_CONNECTION_STRING
+  - name: MONGO_CONNECTION_STRING_APPOINTMENT
+    secretRefName: insights-secrets
+    key: MONGO_CONNECTION_STRING_APPOINTMENT
+
+readinessProbe:
+  httpGet:
+    path: /q/health/ready
+    port: 8080
+  initialDelaySeconds: 10
+  failureThreshold: 10
+  periodSeconds: 30
+
+livenessProbe:
+  httpGet:
+    path: /q/health/live
+    port: 8080
+  initialDelaySeconds: 10
+  failureThreshold: 10
+  periodSeconds: 30
