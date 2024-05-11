@@ -39,7 +39,7 @@ jobs:
         uses: cycjimmy/semantic-release-action@v4
         with:
           semantic_version: 23.0.2
-          tag_format: customer-${version}
+          tag_format: insights-${version}
           branches: |
             [ 'main', {name: 'dev', channel: 'dev', prerelease: true} ]
           extra_plugins: |
@@ -68,7 +68,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v3
         with:
-          file: ./apps/customer/Dockerfile
+          file: ./insights/src/main/docker/Dockerfile
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
@@ -79,7 +79,7 @@ jobs:
         uses: cycjimmy/semantic-release-action@v4
         with:
           semantic_version: 23.0.2
-          tag_format: customer-${version}
+          tag_format: insights-${version}
           branches: |
             [ 'main',  { name: 'dev', channel: 'dev', prerelease: true }]
           extra_plugins: |
