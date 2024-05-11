@@ -8,3 +8,25 @@ on:
       - main
     paths:
       - insights/**
+
+jobs:
+  deploy:
+    runs-on:
+      - self-hosted
+      - arm64
+      - prod
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Helm upgrade
+        run: |
+          helm upgrade "beaesthetic-insights" \
+            --set namespace="beaesthetic" \
+            "./insights/helm/" --install --namespace "beaesthetic" --wait --timeout 5m00s --debug
