@@ -54,7 +54,7 @@ jobs:
       - name: Update Gradle Properties
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
-          sed -i -e "s/projectVersion=.*/projectVersion=${{ steps.semantic.outputs.new_release_version }}/g" insights/gradle.properties
+          sed -i -e "s/version=.*/version=${{ steps.semantic.outputs.new_release_version }}/g" insights/gradle.properties
 
       - name: Docker meta
         id: meta

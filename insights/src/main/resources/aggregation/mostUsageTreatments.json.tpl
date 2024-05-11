@@ -1,6 +1,10 @@
 [
   {
     "$match": {
+      "updatedAt": {
+        "$gt": ISODate('{startDate}'),
+        "$lte": ISODate('{endDate}')
+      },
       "isCanceled": false,
       "migrated": null,
       "data.type": "appointment",

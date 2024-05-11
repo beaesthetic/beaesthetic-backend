@@ -1,0 +1,116 @@
+openapi: 3.0.0
+info:
+  title: Beaesthetic Insights
+  description: ""
+  contact:
+    email: petretiandrea@gmail.com
+  license:
+    name: "Apache 2.0"
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+paths:
+
+  /treatments/usages:
+    get:
+      tags:
+        - treatments
+      summary: Get treatments usage by day
+      parameters:
+        - in: query
+          name: startTime
+          required: true
+          schema:
+            type: string
+            format: date-time
+
+        - in: query
+          name: endTime
+          required: true
+          schema:
+            type: string
+            format: date-time
+
+      responses:
+        '200':
+          description: "A list of treatments grouped by day"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TreatmentsByDay"
+
+  /attendees/treatments/usages:
+    get:
+      tags:
+        - treatments
+      summary: Get treatments usage by day and customer
+      parameters:
+        - in: query
+          name: startTime
+          required: true
+          schema:
+            type: string
+            format: date-time
+
+        - in: query
+          name: endTime
+          required: true
+          schema:
+            type: string
+            format: date-time
+
+        - in: query
+          name: attendeeId
+          schema:
+            $ref: "#/components/schemas/AttendeeId"
+      responses:
+        '200':
+          description: "A list of treatments grouped by day"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TreatmentsByDayCustomer"
+
+
+components:
+  schemas:
+    AttendeeId:
+      type: string
+      format: uuid
+
+    TreatmentsByDay:
+      type: object
+      properties:
+        serviceName:
+          type: string
+        count:
+          type: integer
+        time:
+          type: string
+          format: date-time
+      required:
+        - serviceName
+        - count
+        - time
+    TreatmentsByDayCustomer:
+      type: object
+      properties:
+        serviceName:
+          type: string
+        count:
+          type: integer
+        attendeeId:
+          $ref: "#/components/schemas/AttendeeId"
+        time:
+          type: string
+          format: date-time
+      required:
+        - serviceName
+        - count
+        - time
+        - attendeeId
