@@ -5,8 +5,9 @@ on:
   push:
     branches:
       - main
-    paths:
-      - insights/**
+      - dev
+#    paths:
+#      - insights/**
 
 env:
   TARGET_PLATFORMS: linux/arm64
