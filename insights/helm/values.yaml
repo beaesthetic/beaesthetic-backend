@@ -16,9 +16,14 @@ service:
   ports:
     - 8080
 
+ingress:
+  host: "agenda.beaesthetic.it"
+  path: "/(insights-service)/(.*)"
+  servicePort: 8080
+
 envConfig:
   INSIGHTS_CRON: "0 0 0/6 ? * * *"
-#  OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
+  OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
 #  DEFAULT_REMINDER_TIME: "1440"
 #  IMMEDIATELY_SEND_DELAY_MILLIS: "120000"
 #  NO_SEND_THRESHOLD_MILLIS: "1800000"
