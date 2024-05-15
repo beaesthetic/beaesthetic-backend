@@ -47,6 +47,10 @@ dependencies {
     // health check
     implementation("io.quarkus:quarkus-smallrye-health")
 
+    // observability
+    implementation("io.quarkus:quarkus-opentelemetry")
+    implementation("io.quarkus:quarkus-micrometer")
+
     testImplementation("io.quarkus:quarkus-junit5")
 }
 

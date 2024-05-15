@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - dev
     paths:
       - insights/**
 
@@ -61,6 +62,7 @@ jobs:
         run: |
           sed -i -e "s/version=.*/version=${{ steps.semantic.outputs.new_release_version }}/g" insights/gradle.properties
           sed -i -e "s/appVersion:.*/appVersion: \"${{ steps.semantic.outputs.new_release_version }}\"/g" insights/helm/Chart.yaml
+          cat insights/gradle.properties
 
       - name: Docker meta
         id: meta
