@@ -6,9 +6,8 @@ on:
     branches:
       - main
       - dev
-
-#    paths:
-#      - insights/**
+    paths:
+      - insights/**
 
 env:
   TARGET_PLATFORMS: linux/arm64
@@ -74,15 +73,15 @@ jobs:
             type=ref,event=branch
             type=semver,pattern={{version}},value=${{ steps.semantic.outputs.new_release_version }}
 
-#      - name: Build and push
-#        uses: docker/build-push-action@v3
-#        with:
-#          file: ./insights/src/main/docker/Dockerfile
-#          context: .
-#          push: true
-#          tags: ${{ steps.meta.outputs.tags }}
-#          labels: ${{ steps.meta.outputs.labels }}
-#          platforms: ${{ env.TARGET_PLATFORMS }}
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          file: ./insights/src/main/docker/Dockerfile
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: ${{ env.TARGET_PLATFORMS }}
 
       - name: Semantic Release
         uses: cycjimmy/semantic-release-action@v4
@@ -103,24 +102,24 @@ jobs:
         id: tag_deploy
         run: echo "tag=${{ steps.semantic.outputs.new_release_git_tag }}" >> $GITHUB_OUTPUT;
 
-#  deploy:
-#    needs: [ build ]
-#    name: "Deploy to K8s"
-#    runs-on: [ self-hosted, prod, arm64 ] # new k8s cluster with arm
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v3
-#        with:
-#          ref: ${{ needs.build.outputs.tag_deploy }}
-#
-#      - name: Install Helm
-#        uses: azure/setup-helm@v3
-#        with:
-#          version: 'latest'
-#          token: ${{ secrets.GITHUB_TOKEN }}
-#
-#      - name: Helm upgrade
-#        run: |
-#          helm upgrade "beaesthetic-insights" \
-#            --set namespace="beaesthetic" \
-#            "./insights/helm/" --install --namespace "beaesthetic" --wait --timeout 5m00s --debug
+  deploy:
+    needs: [ build ]
+    name: "Deploy to K8s"
+    runs-on: [ self-hosted, prod, arm64 ] # new k8s cluster with arm
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ needs.build.outputs.tag_deploy }}
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: 'latest'
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Helm upgrade
+        run: |
+          helm upgrade "beaesthetic-insights" \
+            --set namespace="beaesthetic" \
+            "./insights/helm/" --install --namespace "beaesthetic" --wait --timeout 5m00s --debug
