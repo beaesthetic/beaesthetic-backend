@@ -17,6 +17,7 @@ service:
     - 8080
 
 ingress:
+  enabled: false
   host: "agenda.beaesthetic.it"
   path: "/(insights-service)/(.*)"
   servicePort: 8080
