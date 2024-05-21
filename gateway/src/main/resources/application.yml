@@ -1,0 +1,46 @@
+logging:
+  level:
+    root: INFO
+    org.springframework.cloud.gateway: INFO
+#    org:
+#      springframework:
+#        http:
+#          server:
+#            reactive: TRACE
+#        web:
+#          reactive: TRACE
+management.endpoint.gateway.enabled: true # default value
+management.endpoints.web.exposure.include: gateway
+
+firebase:
+  credentialsFile: ${FIREBASE_CREDENTIALS_FILE:admin-sdk.json}
+  userRoleCollection: ${USER_ROLE_COLLECTION_NAME:users-role}
+
+server:
+  http2:
+    enabled: false
+
+spring:
+  cloud:
+    gateway:
+      enabled: true
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods: "*"
+            allowedHeaders: "*"
+      metrics:
+        enabled: true
+      httpclient:
+        wiretap: true
+      httpserver:
+        wiretap: true
+
+routes:
+  services:
+    appointment-url: ${APPOINTMENT_SERVICE_URL:http://appointment-service:3000}
+    customer-url: ${CUSTOMER_SERVICE_URL:http://customer-service:3000}
+    insights-url: ${INSIGHTS_SERVICE_URL:http://beaesthetic-insights:8080}
+    enable-strip: true
