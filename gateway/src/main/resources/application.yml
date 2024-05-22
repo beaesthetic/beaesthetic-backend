@@ -49,3 +49,21 @@ routes:
     customer-url: ${CUSTOMER_SERVICE_URL:http://customer-service:3000}
     insights-url: ${INSIGHTS_SERVICE_URL:http://beaesthetic-insights:8080}
     enable-strip: true
+
+
+otel:
+  service:
+    name: "beaesthetic-gateway"
+  instrumentation:
+    spring-webflux:
+      enabled: true
+    logback-appender:
+      experimental:
+        capture-mdc-attribute: "*"
+
+  exporter:
+    otlp:
+      protocol: "grpc"
+  metrics.exporter: otlp
+  traces.exporter: otlp
+  logs.exporter: none
