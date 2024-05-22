@@ -10,7 +10,12 @@ logging:
 #        web:
 #          reactive: TRACE
 management.endpoint.gateway.enabled: true # default value
-management.endpoints.web.exposure.include: gateway
+management:
+  endpoints.web.exposure.include: gateway, health
+  endpoint:
+    health:
+      probes:
+        enabled: true
 
 firebase:
   credentialsFile: ${FIREBASE_CREDENTIALS_FILE:admin-sdk.json}

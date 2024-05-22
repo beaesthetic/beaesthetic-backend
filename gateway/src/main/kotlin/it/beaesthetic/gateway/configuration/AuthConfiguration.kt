@@ -53,6 +53,7 @@ class AuthConfiguration {
             .addFilterAt(authenticationWebFilter, SecurityWebFiltersOrder.AUTHENTICATION)
             .authorizeExchange {
                 it.pathMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                    .pathMatchers(HttpMethod.GET, "/actuator/**").permitAll()
                     .anyExchange().authenticated()
             }
             .build()
