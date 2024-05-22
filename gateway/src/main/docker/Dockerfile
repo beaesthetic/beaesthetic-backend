@@ -11,6 +11,6 @@ FROM ubuntu:lunar-20230128
 
 EXPOSE 8080
 
-COPY --from=builder /gateway/build/native/nativeCompile/gateway .
+COPY --from=builder /app/gateway/build/native/nativeCompile/beaesthetic-gateway .
 
-ENTRYPOINT ["./gateway"]
+ENTRYPOINT ["./beaesthetic-gateway"]
