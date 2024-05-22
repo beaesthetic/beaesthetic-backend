@@ -12,7 +12,7 @@ plugins {
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
-group = "com.example"
+group = "it.beaesthetic.gateway"
 version = "${project.version}"
 
 java {
@@ -21,15 +21,20 @@ java {
 
 repositories {
     mavenCentral()
+    maven { url = uri("https://repo.spring.io/milestone") }
+    maven { url = uri("https://repo.spring.io/snapshot") }
 }
 
 springBoot {
     mainClass.set("it.beaesthetic.gateway.GatewayApplicationKt")
 }
 
-extra["springCloudVersion"] = "2023.0.1"
+extra["springCloudVersion"] = "2023.0.2-SNAPSHOT"
 
 dependencies {
+    // functional - fp
+    implementation("io.arrow-kt:arrow-core:1.1.2")
+
     // spring boot
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
@@ -40,6 +45,9 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-guava:1.6.4")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 
     // gson
