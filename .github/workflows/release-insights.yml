@@ -97,29 +97,3 @@ jobs:
             @semantic-release/github@9.2.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Get image tag for deploy
-        id: tag_deploy
-        run: echo "tag=${{ steps.semantic.outputs.new_release_git_tag }}" >> $GITHUB_OUTPUT;
-
-  deploy:
-    needs: [ build ]
-    name: "Deploy to K8s"
-    runs-on: [ self-hosted, prod, arm64 ] # new k8s cluster with arm
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          ref: ${{ needs.build.outputs.tag_deploy }}
-
-      - name: Install Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: 'latest'
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Helm upgrade
-        run: |
-          helm upgrade "beaesthetic-insights" \
-            --set namespace="beaesthetic" \
-            "./insights/helm/" --install --namespace "beaesthetic" --wait --timeout 5m00s --debug
