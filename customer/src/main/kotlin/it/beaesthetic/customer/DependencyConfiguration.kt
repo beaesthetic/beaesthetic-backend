@@ -9,9 +9,7 @@ import jakarta.enterprise.inject.Produces
 class DependencyConfiguration {
 
     @Produces
-    fun customerService(
-        customerRepository: CustomerRepository
-    ): CustomerService {
+    fun customerService(customerRepository: CustomerRepository): CustomerService {
         return CustomerService(customerRepository)
     }
 }

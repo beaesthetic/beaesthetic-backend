@@ -24,17 +24,24 @@ class QuarkusMongoIndexInitializer(
     @Startup
     fun initializeIndexes() = runBlocking {
         log.info("Ensuring mongodb indexes")
-        panacheCustomerRepository.mongoCollection()
-            .createIndexes(listOf(
-                IndexModel(Indexes.descending("id"), IndexOptions().unique(true)),
-                IndexModel(Indexes.text("searchGrams"))
-            )).awaitSuspending()
+        panacheCustomerRepository
+            .mongoCollection()
+            .createIndexes(
+                listOf(
+                    IndexModel(Indexes.descending("id"), IndexOptions().unique(true)),
+                    IndexModel(Indexes.text("searchGrams"))
+                )
+            )
+            .awaitSuspending()
 
-        panacheFidelityCardRepository.mongoCollection()
-            .createIndexes(listOf(
-                IndexModel(Indexes.descending("id"), IndexOptions().unique(true)),
-                IndexModel(Indexes.descending("vouchers.id"))
-            )).awaitSuspending()
+        panacheFidelityCardRepository
+            .mongoCollection()
+            .createIndexes(
+                listOf(
+                    IndexModel(Indexes.descending("id"), IndexOptions().unique(true)),
+                    IndexModel(Indexes.descending("vouchers.id"))
+                )
+            )
+            .awaitSuspending()
     }
-
 }

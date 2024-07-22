@@ -3,14 +3,16 @@ package it.beaesthetic.customer.infra
 import io.quarkus.mongodb.panache.common.MongoEntity
 import io.quarkus.mongodb.panache.kotlin.PanacheMongoEntityBase
 import io.quarkus.runtime.annotations.RegisterForReflection
+import java.time.Instant
 import org.bson.codecs.pojo.annotations.BsonCreator
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.codecs.pojo.annotations.BsonProperty
-import java.time.Instant
 
 @RegisterForReflection
 @MongoEntity(collection = "customers")
-data class CustomerEntity @BsonCreator constructor(
+data class CustomerEntity
+@BsonCreator
+constructor(
     @BsonId val id: String,
     @BsonProperty("name") val name: String,
     @BsonProperty("surname") val surname: String,

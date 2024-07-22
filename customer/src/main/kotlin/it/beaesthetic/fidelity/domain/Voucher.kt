@@ -3,8 +3,7 @@ package it.beaesthetic.fidelity.domain
 import java.time.Instant
 import java.util.UUID
 
-@JvmInline
-value class VoucherId(val value: String)
+@JvmInline value class VoucherId(val value: String)
 
 data class Voucher(
     val id: VoucherId,
@@ -14,11 +13,12 @@ data class Voucher(
 ) {
 
     companion object {
-        fun ofTreatment(treatment: FidelityTreatment) = Voucher(
-            id = VoucherId(UUID.randomUUID().toString()),
-            createdAt = Instant.now(),
-            isUsed = false,
-            treatment = treatment
-        )
+        fun ofTreatment(treatment: FidelityTreatment) =
+            Voucher(
+                id = VoucherId(UUID.randomUUID().toString()),
+                createdAt = Instant.now(),
+                isUsed = false,
+                treatment = treatment
+            )
     }
 }

@@ -18,11 +18,7 @@ data class Customer(
     private val version: Int = 0
 ) {
 
-    fun changeContacts(contacts: Contacts) = copy(
-        contacts = contacts
-    )
+    fun changeContacts(contacts: Contacts) = copy(contacts = contacts)
 
-    fun updateNote(note: String) = copy(
-        note = note
-    )
+    fun updateNote(note: String) = copy(note = note)
 }
