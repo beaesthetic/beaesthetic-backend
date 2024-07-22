@@ -117,3 +117,55 @@ tasks.register<GenerateTask>("customer-api") {
         )
     )
 }
+
+tasks.register<GenerateTask>("fidelity-card-api") {
+    description = "Generate REST API interface for customer"
+    group = "openapi-generation"
+    generatorName.set("kotlin-server")
+    inputSpec.set("$rootDir/api-spec/fidelity-card-api.yaml")
+    outputDir.set("$buildDir/generated")
+    apiPackage.set("it.beaesthetic.fidelity.generated.api")
+    modelPackage.set("it.beaesthetic.fidelity.generated.api.model")
+    generateApiTests.set(false)
+    generateApiDocumentation.set(false)
+    generateApiTests.set(false)
+    generateModelTests.set(false)
+    validateSpec.set(true)
+
+    library.set("jaxrs-spec")
+    modelNameSuffix.set("Dto")
+    templateDir.set("${projectDir.path}/src/main/resources/kotlin-server")
+
+    configOptions.set(
+        mapOf(
+            "sourceFolder" to "src/main/java",
+            "skipDefaultInterface" to "true",
+            "openApiNullable" to "true",
+            "hideGenerationTimestamp" to "true",
+            "oas3" to "true",
+            "generateSupportingFiles" to "true",
+            "enumPropertyNaming" to "UPPERCASE",
+            "legacyDiscriminatorBehavior" to "true",
+            "interfaceOnly" to "true",
+            "useSwaggerAnnotations" to "false",
+            "supportAsync" to "true",
+            "useMutiny" to "false",
+            "useCoroutines" to "true",
+            "useBeanValidation" to "true",
+            "dateLibrary" to "java8",
+            "useJakartaEe" to "true",
+            "useTags" to "true"
+        )
+    )
+
+    importMappings.putAll(
+        mapOf(
+            "VoucherDto" to "it.beaesthetic.fidelity.rest.serialization.VoucherItemMixin",
+        )
+    )
+    typeMappings.putAll(
+        mapOf(
+            "VoucherDto" to "VoucherItemMixin",
+        )
+    )
+}
