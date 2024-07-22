@@ -9,9 +9,7 @@ import jakarta.enterprise.inject.Produces
 class DependencyConfiguration {
 
     @Produces
-    fun fidelityCardService(
-        fidelityCardRepository: FidelityCardRepository
-    ): FidelityCardService {
+    fun fidelityCardService(fidelityCardRepository: FidelityCardRepository): FidelityCardService {
         return FidelityCardService(fidelityCardRepository)
     }
 }

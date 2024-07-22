@@ -4,14 +4,16 @@ import io.quarkus.mongodb.panache.common.MongoEntity
 import io.quarkus.mongodb.panache.kotlin.PanacheMongoEntityBase
 import io.quarkus.runtime.annotations.RegisterForReflection
 import it.beaesthetic.fidelity.domain.FidelityTreatment
+import java.time.Instant
 import org.bson.codecs.pojo.annotations.BsonCreator
 import org.bson.codecs.pojo.annotations.BsonId
 import org.bson.codecs.pojo.annotations.BsonProperty
-import java.time.Instant
 
 @RegisterForReflection
 @MongoEntity(collection = "fidelitycards")
-data class FidelityCardEntity @BsonCreator constructor(
+data class FidelityCardEntity
+@BsonCreator
+constructor(
     @BsonId val id: String,
     @BsonProperty("customerId") val customerId: String,
     @BsonProperty("solariumPurchases") val solariumPurchases: Int,
@@ -20,9 +22,10 @@ data class FidelityCardEntity @BsonCreator constructor(
     @BsonProperty("updatedAt") val updatedAt: Instant
 ) : PanacheMongoEntityBase()
 
-
 @RegisterForReflection
-data class VoucherItem @BsonCreator constructor(
+data class VoucherItem
+@BsonCreator
+constructor(
     @BsonId val id: String,
     @get:BsonProperty("amount") @param:BsonProperty("amount") val amount: Int? = null,
     @BsonProperty("treatment") val treatment: FidelityTreatment,
