@@ -50,23 +50,20 @@ class CustomerController(
     override fun getAllCustomers(
         @CacheKey limit: Int?,
         @CacheKey filter: String?
-    ): Uni<List<CustomerResponseDto>> =
-        uniWithScope {
-            when {
-                filter?.trim().isNullOrBlank() ->
-                    customerRepository.findAll().map { it.toResource() }
-                else -> searchCustomer(limit, filter).awaitSuspending()
-            }
+    ): Uni<List<CustomerResponseDto>> = uniWithScope {
+        when {
+            filter?.trim().isNullOrBlank() -> customerRepository.findAll().map { it.toResource() }
+            else -> searchCustomer(limit, filter).awaitSuspending()
         }
+    }
 
     @CacheResult(cacheName = "customers-search")
     override fun searchCustomer(
         @CacheKey limit: Int?,
         @CacheKey filter: String?
-    ): Uni<List<CustomerResponseDto>> =
-        uniWithScope {
-            customerRepository.findByKeyword(filter ?: "", limit ?: 10).map { it.toResource() }
-        }
+    ): Uni<List<CustomerResponseDto>> = uniWithScope {
+        customerRepository.findByKeyword(filter ?: "", limit ?: 10).map { it.toResource() }
+    }
 
     override fun getCustomerByPage(
         direction: String,

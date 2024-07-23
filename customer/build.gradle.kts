@@ -6,6 +6,7 @@ plugins {
   id("io.quarkus")
   id("org.openapi.generator") version "7.5.0"
   id("com.diffplug.spotless") version "6.18.0"
+  kotlin("kapt") version "1.7.0"
 }
 
 repositories {
@@ -58,6 +59,10 @@ dependencies {
   implementation("io.quarkus:quarkus-micrometer")
 
   implementation(kotlin("reflect"))
+
+  // mapstruct
+  implementation("org.mapstruct:mapstruct:1.5.5.Final")
+  kapt("org.mapstruct:mapstruct-processor:1.5.5.Final")
 
   testImplementation("io.quarkus:quarkus-junit5")
 }
@@ -173,6 +178,58 @@ tasks.register<GenerateTask>("fidelity-card-api") {
   typeMappings.putAll(
     mapOf(
       "VoucherDto" to "VoucherItemMixin",
+    )
+  )
+}
+
+tasks.register<GenerateTask>("wallet-api") {
+  description = "Generate REST API interface for customer"
+  group = "openapi-generation"
+  generatorName.set("kotlin-server")
+  inputSpec.set("$rootDir/api-spec/wallet-api.yaml")
+  outputDir.set("$buildDir/generated")
+  apiPackage.set("it.beaesthetic.wallet.generated.api")
+  modelPackage.set("it.beaesthetic.wallet.generated.api.model")
+  generateApiTests.set(false)
+  generateApiDocumentation.set(false)
+  generateApiTests.set(false)
+  generateModelTests.set(false)
+  validateSpec.set(true)
+
+  library.set("jaxrs-spec")
+  modelNameSuffix.set("Dto")
+  templateDir.set("${projectDir.path}/src/main/resources/kotlin-server")
+
+  configOptions.set(
+    mapOf(
+      "sourceFolder" to "src/main/java",
+      "skipDefaultInterface" to "true",
+      "openApiNullable" to "true",
+      "hideGenerationTimestamp" to "true",
+      "oas3" to "true",
+      "generateSupportingFiles" to "true",
+      "enumPropertyNaming" to "UPPERCASE",
+      "legacyDiscriminatorBehavior" to "true",
+      "interfaceOnly" to "true",
+      "useSwaggerAnnotations" to "false",
+      "supportAsync" to "true",
+      "useMutiny" to "false",
+      "useCoroutines" to "true",
+      "useBeanValidation" to "true",
+      "dateLibrary" to "java8",
+      "useJakartaEe" to "true",
+      "useTags" to "true"
+    )
+  )
+
+  importMappings.putAll(
+    mapOf(
+      "WalletOperationDto" to "it.beaesthetic.wallet.rest.serialization.WalletEventDtoMixin",
+    )
+  )
+  typeMappings.putAll(
+    mapOf(
+      "WalletOperationDto" to "WalletEventDtoMixin",
     )
   )
 }

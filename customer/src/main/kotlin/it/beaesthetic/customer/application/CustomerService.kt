@@ -7,7 +7,8 @@ import it.beaesthetic.customer.generated.api.model.CustomerUpdateDto
 class CustomerService(private val customerRepository: CustomerRepository) {
 
     suspend fun createCustomer(createRequest: CustomerCreateDto): Customer {
-        val contacts = Contacts(createRequest.email?.let { Email(it) }, createRequest.phone?.let { Phone(it) })
+        val contacts =
+            Contacts(createRequest.email?.let { Email(it) }, createRequest.phone?.let { Phone(it) })
         val customer =
             Customer(
                 id = CustomerId.generate(),
