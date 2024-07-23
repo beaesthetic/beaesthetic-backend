@@ -3,10 +3,7 @@ FROM quay.io/quarkus/ubi-quarkus-mandrel-builder-image@sha256:eaeefa7e92980ca6ff
 USER root
 RUN microdnf install findutils
 #COPY --chown=quarkus:quarkus --chmod=0755 gradle.lockfile /code/
-COPY --chown=quarkus:quarkus --chmod=0755 gradlew /code/gradlew
-COPY --chown=quarkus:quarkus --chmod=0755 gradle /code/gradle
-COPY --chown=quarkus:quarkus --chmod=0755 customer/ /code/customer/
-COPY --chown=quarkus:quarkus --chmod=0755 settings.gradle.kts /code/
+COPY --chown=quarkus:quarkus --chmod=0755 ./ /code/
 #COPY --chown=quarkus:quarkus --chmod=0755 gradle.properties /code/
 USER quarkus
 WORKDIR /code
