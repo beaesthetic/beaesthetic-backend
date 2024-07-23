@@ -1,13 +1,13 @@
-package it.beaesthetic.customer
+package it.beaesthetic.wallet
 
 import com.mongodb.client.model.IndexModel
 import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.Indexes
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.common.MongoInitializer
-import it.beaesthetic.customer.application.CustomerService
-import it.beaesthetic.customer.domain.CustomerRepository
-import it.beaesthetic.customer.infra.PanacheCustomerRepository
+import it.beaesthetic.wallet.application.WalletService
+import it.beaesthetic.wallet.domain.WalletRepository
+import it.beaesthetic.wallet.infra.PanacheWalletRepository
 import jakarta.enterprise.context.Dependent
 import jakarta.enterprise.inject.Produces
 
@@ -15,22 +15,24 @@ import jakarta.enterprise.inject.Produces
 class DependencyConfiguration {
 
     @Produces
-    fun customerService(customerRepository: CustomerRepository): CustomerService {
-        return CustomerService(customerRepository)
+    fun walletService(walletRepository: WalletRepository): WalletService {
+        return WalletService(walletRepository)
     }
 
     @Produces
-    fun mongoInitializer(
-        panacheCustomerRepository: PanacheCustomerRepository,
-    ): MongoInitializer =
+    fun mongoInitializer(panacheWalletRepository: PanacheWalletRepository): MongoInitializer =
         object : MongoInitializer {
             override suspend fun initialize() {
-                panacheCustomerRepository
+                panacheWalletRepository
                     .mongoCollection()
                     .createIndexes(
                         listOf(
                             IndexModel(Indexes.descending("id"), IndexOptions().unique(true)),
-                            IndexModel(Indexes.text("searchGrams"))
+                            IndexModel(Indexes.ascending("owner"), IndexOptions().unique(true)),
+                            IndexModel(
+                                Indexes.ascending("activeGiftCards.id"),
+                                IndexOptions().unique(true)
+                            ),
                         )
                     )
                     .awaitSuspending()
