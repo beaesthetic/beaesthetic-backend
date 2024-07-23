@@ -2,4 +2,4 @@
 $vcvarsPath = "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat"
 
 # Call vcvars64.bat and then run the Gradle command
-cmd.exe /c "call `"$vcvarsPath`" && gradlew insights:build -Dquarkus.package.type=native -DskipTests"
+cmd.exe /c "call `"$vcvarsPath`" && gradlew customer:build -Dquarkus.package.type=native -DskipTests"
