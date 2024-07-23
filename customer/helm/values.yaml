@@ -20,6 +20,7 @@ envConfig:
   REDIS_HOST: "redis-headless.common.svc.cluster.local:6379"
   CUSTOMER_CACHE_TTL: "1h"
   CUSTOMER_SEARCH_CACHE_TTL: "5m"
+  MONGO_DATABASE_NAME: "customer-v2"
 
 resources:
   requests:
