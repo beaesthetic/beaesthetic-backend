@@ -69,9 +69,7 @@ dependencies {
 
 group = "it.beaesthetic.customer"
 
-version
-
-"${properties["version"]}"
+version = "${properties["version"]}"
 
 java {
   sourceCompatibility = JavaVersion.VERSION_21
