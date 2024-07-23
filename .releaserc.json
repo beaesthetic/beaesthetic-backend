@@ -21,7 +21,14 @@
     [
       "@semantic-release/git",
       {
-        "assets": ["insights/gradle.properties", "insights/helm/Chart.yaml", "gateway/gradle.properties", "gateway/helm/Chart.yaml"],
+        "assets": [
+          "insights/gradle.properties",
+          "insights/helm/Chart.yaml",
+          "gateway/gradle.properties",
+          "gateway/helm/Chart.yaml",
+          "customer/gradle.properties",
+          "customer/helm/Chart.yaml"
+        ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ],

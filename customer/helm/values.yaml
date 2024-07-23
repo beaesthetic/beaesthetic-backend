@@ -1,0 +1,54 @@
+namespace: "beaesthetic"
+name: "customer-service-v2"
+labels:
+  app: "customer-api-v2"
+
+replicaCount: 1
+
+image:
+  repository: petretiandrea/customer-service-v2
+  pullPolicy: IfNotPresent
+
+service:
+  create: true
+  type: ClusterIP
+  ports:
+    - 3000
+
+envConfig:
+  OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
+  REDIS_HOST: "redis-headless.common.svc.cluster.local:6379"
+  CUSTOMER_CACHE_TTL: "1h"
+  CUSTOMER_SEARCH_CACHE_TTL: "5m"
+
+resources:
+  requests:
+    memory: "80Mi"
+    cpu: "30m"
+  limits:
+    memory: "100Mi"
+    cpu: "100m"
+
+secretKeyRef:
+  - name: MONGO_CONNECTION_STRING
+    secretRefName: customer-service
+    key: MONGO_DB_URI
+  - name: REDIS_PASSWORD
+    secretRefName: customer-service
+    key: REDIS_PASSWORD
+
+readinessProbe:
+  httpGet:
+    path: /q/health/ready
+    port: 3000
+  initialDelaySeconds: 30
+  failureThreshold: 10
+  periodSeconds: 30
+
+livenessProbe:
+  httpGet:
+    path: /q/health/live
+    port: 3000
+  initialDelaySeconds: 30
+  failureThreshold: 10
+  periodSeconds: 30
