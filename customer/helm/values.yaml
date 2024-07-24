@@ -41,7 +41,7 @@ secretKeyRef:
 readinessProbe:
   httpGet:
     path: /q/health/ready
-    port: 3000
+    port: 8080
   initialDelaySeconds: 30
   failureThreshold: 10
   periodSeconds: 30
@@ -49,7 +49,7 @@ readinessProbe:
 livenessProbe:
   httpGet:
     path: /q/health/live
-    port: 3000
+    port: 8080
   initialDelaySeconds: 30
   failureThreshold: 10
   periodSeconds: 30
