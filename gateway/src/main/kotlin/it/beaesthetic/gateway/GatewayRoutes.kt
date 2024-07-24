@@ -31,7 +31,7 @@ class GatewayRoutes {
         routeBaseConfig: RouteBaseConfig,
         enrichWithCustomerData: EnrichWithCustomerDataFilter
     ): RouteLocator {
-        val logger = LoggerFactory.getLogger("gateway")
+        val log = LoggerFactory.getLogger("gateway")
         val enrichConfig = EnrichWithCustomerDataFilter.Config(
             customerIdField = "customerId",
             customerField = "customer",
@@ -74,7 +74,7 @@ class GatewayRoutes {
                     filter { exchange, chain ->
                         if (exchange.request.headers.getFirst("deployment") == "blue") {
                             val request = exchange.request.mutate().contextPath("/blue").build()
-                            logger.info("Redirect to blue deployment [{}]", request.uri.toString())
+                            log.info("Redirect to blue deployment [{}]", request.uri.toString())
                             chain.filter(exchange.mutate().request(request).build())
                         } else {
                             chain.filter(exchange)
