@@ -2,6 +2,7 @@ package it.beaesthetic.gateway
 
 import it.beaesthetic.gateway.appointment.EnrichWithCustomerDataFilter
 import it.beaesthetic.gateway.filters.RemoveIfNoneMatchHeader
+import org.slf4j.LoggerFactory
 import org.springframework.cloud.gateway.filter.GlobalFilter
 import org.springframework.cloud.gateway.filter.factory.rewrite.ModifyResponseBodyGatewayFilterFactory
 import org.springframework.cloud.gateway.route.RouteLocator
@@ -30,6 +31,7 @@ class GatewayRoutes {
         routeBaseConfig: RouteBaseConfig,
         enrichWithCustomerData: EnrichWithCustomerDataFilter
     ): RouteLocator {
+        val logger = LoggerFactory.getLogger("gateway")
         val enrichConfig = EnrichWithCustomerDataFilter.Config(
             customerIdField = "customerId",
             customerField = "customer",
@@ -69,6 +71,15 @@ class GatewayRoutes {
                 filters {
                     if (routeBaseConfig.enableStrip) stripPrefix(1)
                     filter(enrichWithCustomerData.apply(enrichConfig), -1)
+                    filter { exchange, chain ->
+                        if (exchange.request.headers.getFirst("deployment") == "blue") {
+                            val request = exchange.request.mutate().contextPath("/blue").build()
+                            logger.info("Redirect to blue deployment [{}]", request.uri.toString())
+                            chain.filter(exchange.mutate().request(request).build())
+                        } else {
+                            chain.filter(exchange)
+                        }
+                    }
                 }
             }
 
