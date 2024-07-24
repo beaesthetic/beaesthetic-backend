@@ -13,7 +13,7 @@ service:
   create: true
   type: ClusterIP
   ports:
-    - 3000
+    - 8080
 
 envConfig:
   OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
