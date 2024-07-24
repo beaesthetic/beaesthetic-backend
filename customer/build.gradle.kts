@@ -1,3 +1,5 @@
+import com.diffplug.spotless.LineEnding
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
@@ -88,6 +90,27 @@ allOpen {
 }
 
 sourceSets { main { java { srcDirs("$buildDir/generated/src/main/java") } } }
+
+tasks.withType<KotlinCompile> {
+  dependsOn("wallet-api", "customer-api", "fidelity-card-api")
+  kotlinOptions { jvmTarget = "21" }
+}
+
+configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+  lineEndings = LineEnding.UNIX
+  kotlin {
+    toggleOffOn()
+    targetExclude("build/**/*")
+    ktfmt().kotlinlangStyle()
+    trimTrailingWhitespace()
+    endWithNewline()
+  }
+  kotlinGradle {
+    toggleOffOn()
+    targetExclude("build/**/*.kts")
+    ktfmt().googleStyle()
+  }
+}
 
 tasks.register<GenerateTask>("customer-api") {
   description = "Generate REST API interface for customer"
@@ -230,17 +253,4 @@ tasks.register<GenerateTask>("wallet-api") {
       "WalletOperationDto" to "WalletEventDtoMixin",
     )
   )
-}
-
-configure<com.diffplug.gradle.spotless.SpotlessExtension> {
-  kotlin {
-    toggleOffOn()
-    targetExclude("build/**/*")
-    ktfmt().kotlinlangStyle()
-  }
-  kotlinGradle {
-    toggleOffOn()
-    targetExclude("build/**/*.kts")
-    ktfmt().googleStyle()
-  }
 }
