@@ -8,6 +8,8 @@ on:
       - dev
     paths:
       - gateway/**
+      - '!gateway/helm/**'
+      - '!gateway/helm-dev/**'
 
 env:
   TARGET_PLATFORMS: linux/arm64
