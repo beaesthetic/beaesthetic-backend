@@ -1,0 +1,54 @@
+namespace: "beaesthetic"
+fullnameOverride: ""
+
+labels:
+  app: "beaesthetic-gateway-api-dev"
+
+replicaCount: 1
+
+image:
+  repository: petretiandrea/beaesthetic-gateway
+  pullPolicy: IfNotPresent
+
+service:
+  create: true
+  type: ClusterIP
+  ports:
+    - 8080
+
+ingress:
+  enabled: true
+  host: "dev.agenda.beaesthetic.it"
+  path: "/(auth|authentication-service|appointment-service|customer-service|insights-service)(.*)"
+  servicePort: 8080
+
+
+firebase_admin_secret: "firebase-admin-config"
+
+envConfig:
+  FIREBASE_CREDENTIALS_FILE: "/app/admin-sdk.json"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
+  APPOINTMENT_SERVICE_URL: "http://appointment-service-dev:3000"
+  CUSTOMER_SERVICE_URL: "http://customer-service-dev:8080"
+  INSIGHTS_SERVICE_URL: "http://beaesthetic-insights-dev:8080"
+
+secretKeyRef:
+  - name: JWT_SECRET
+    secretRefName: beaesthetic-gateway-service
+    key: JWT_SECRET
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8080
+  initialDelaySeconds: 10
+  failureThreshold: 10
+  periodSeconds: 30
+
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8080
+  initialDelaySeconds: 10
+  failureThreshold: 10
+  periodSeconds: 30
