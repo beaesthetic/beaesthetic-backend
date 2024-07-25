@@ -15,7 +15,7 @@ data class CustomerEntity
 constructor(
     @BsonId val id: String,
     @BsonProperty("name") val name: String,
-    @BsonProperty("surname") val surname: String,
+    @BsonProperty("surname") val surname: String? = null,
     @BsonProperty("email") val email: String? = null,
     @BsonProperty("phone") val phone: String? = null,
     @BsonProperty("note") val note: String,
