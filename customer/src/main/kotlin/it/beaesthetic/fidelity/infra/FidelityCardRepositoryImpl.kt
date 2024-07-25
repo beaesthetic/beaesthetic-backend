@@ -57,7 +57,7 @@ class FidelityCardRepositoryImpl(
                                     id = it.id.value,
                                     treatment = it.treatment,
                                     amount = null,
-                                    type = "free",
+                                    type = "FreeVoucher",
                                     isUsed = it.isUsed,
                                     createdAt = Instant.now()
                                 )
