@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import it.beaesthetic.fidelity.generated.api.model.FreeVoucherDto
-import it.beaesthetic.fidelity.generated.api.model.TreatmentDiscountVoucherDto
 
 @JsonIgnoreProperties(value = ["type"], allowSetters = true)
 @JsonTypeInfo(
@@ -16,7 +15,8 @@ import it.beaesthetic.fidelity.generated.api.model.TreatmentDiscountVoucherDto
 @JsonSubTypes(
     value =
         [
-//            JsonSubTypes.Type(value = TreatmentDiscountVoucherDto::class, name = "foods"),
+            //            JsonSubTypes.Type(value = TreatmentDiscountVoucherDto::class, name =
+            // "foods"),
             JsonSubTypes.Type(value = FreeVoucherDto::class, name = "FreeVoucher"),
         ]
 )
