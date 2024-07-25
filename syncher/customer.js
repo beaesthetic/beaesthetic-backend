@@ -12,7 +12,7 @@ function transformDocument(doc) {
         note: doc.note?.trim(),
         version: doc.version,
         createdAt: doc.createdAt,
-        updatedAt: doc.updatedAt,
+        updatedAt: doc.updatedAt ?? new Date(),
         searchGrams: doc.searchGrams?.trim(),
     };
 }
