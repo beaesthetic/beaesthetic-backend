@@ -54,9 +54,14 @@ class CustomerRepositoryImpl(private val panacheCustomerRepository: PanacheCusto
     }
 
     override suspend fun findByKeyword(keyword: String, maxResults: Int): List<Customer> {
+        val fieldsToProject = listOf(
+            "note", "phone", "surname", "name", "email", "updatedAt"
+        )
         val filter: Bson = Document("\$text", Document("\$search", keyword))
         val project: Bson =
-            Document("score", Document("\$meta", "textScore")).append("searchGrams", 0L)
+            Document("score", Document("\$meta", "textScore")).apply {
+                fieldsToProject.forEach { field -> append(field, 1L) }
+            }
         val sort: Bson = Document("score", Document("\$meta", "textScore"))
 
         return panacheCustomerRepository
@@ -73,7 +78,7 @@ class CustomerRepositoryImpl(private val panacheCustomerRepository: PanacheCusto
             Customer(
                 id = CustomerId(entity.id),
                 name = entity.name,
-                surname = entity.surname,
+                surname = entity.surname ?: "",
                 contacts =
                     Contacts(
                         email = entity.email?.let { Email(it) },
