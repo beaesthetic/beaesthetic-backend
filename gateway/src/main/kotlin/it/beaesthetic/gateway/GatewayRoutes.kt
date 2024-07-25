@@ -35,7 +35,7 @@ class GatewayRoutes {
         val enrichConfig = EnrichWithCustomerDataFilter.Config(
             customerIdField = "customerId",
             customerField = "customer",
-            customerUrl = "${routeBaseConfig.customerUrl}/customer/{customerId}",
+            customerUrl = "${routeBaseConfig.customerUrl}/customers/{customerId}",
             excludeProperties = setOf("note"),
             forwardHeader = false
         )
