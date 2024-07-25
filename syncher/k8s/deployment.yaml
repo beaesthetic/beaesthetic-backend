@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: syncher
+  namespace: beaesthetic
+  labels:
+    app: syncher
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: syncher
+  template:
+    metadata:
+      name: syncher
+      labels:
+        app: syncher
+    spec:
+      containers:
+        - name: customer
+          image: "petretiandrea/sync:1.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: app-port-8080
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: MONGO_CONNECTION_STRING
+              valueFrom:
+                secretKeyRef:
+                  key: MONGO_DB_URI
+                  name: customer-service
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi

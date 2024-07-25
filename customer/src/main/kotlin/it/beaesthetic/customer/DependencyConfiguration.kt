@@ -29,7 +29,6 @@ class DependencyConfiguration {
                     .mongoCollection()
                     .createIndexes(
                         listOf(
-                            IndexModel(Indexes.descending("id"), IndexOptions().unique(true)),
                             IndexModel(Indexes.text("searchGrams"))
                         )
                     )
