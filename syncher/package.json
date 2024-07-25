@@ -1,0 +1,15 @@
+{
+  "name": "syncher",
+  "version": "1.0.0",
+  "description": "",
+  "main": "common.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "mongodb": "^6.8.0",
+    "uuid": "^10.0.0"
+  }
+}

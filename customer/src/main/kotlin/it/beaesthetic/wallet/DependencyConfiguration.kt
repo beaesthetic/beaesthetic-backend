@@ -27,7 +27,6 @@ class DependencyConfiguration {
                     .mongoCollection()
                     .createIndexes(
                         listOf(
-                            IndexModel(Indexes.descending("id"), IndexOptions().unique(true)),
                             IndexModel(Indexes.ascending("owner"), IndexOptions().unique(true)),
                             IndexModel(
                                 Indexes.ascending("activeGiftCards.id"),
