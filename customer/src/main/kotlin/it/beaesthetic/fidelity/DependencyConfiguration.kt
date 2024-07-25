@@ -1,7 +1,6 @@
 package it.beaesthetic.fidelity
 
 import com.mongodb.client.model.IndexModel
-import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.Indexes
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.common.MongoInitializer
@@ -27,11 +26,7 @@ class DependencyConfiguration {
             override suspend fun initialize() {
                 panacheFidelityCardRepository
                     .mongoCollection()
-                    .createIndexes(
-                        listOf(
-                            IndexModel(Indexes.descending("vouchers.id"))
-                        )
-                    )
+                    .createIndexes(listOf(IndexModel(Indexes.descending("vouchers.id"))))
                     .awaitSuspending()
             }
         }

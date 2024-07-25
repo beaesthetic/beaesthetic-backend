@@ -1,7 +1,6 @@
 package it.beaesthetic.customer
 
 import com.mongodb.client.model.IndexModel
-import com.mongodb.client.model.IndexOptions
 import com.mongodb.client.model.Indexes
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.common.MongoInitializer
@@ -27,11 +26,7 @@ class DependencyConfiguration {
             override suspend fun initialize() {
                 panacheCustomerRepository
                     .mongoCollection()
-                    .createIndexes(
-                        listOf(
-                            IndexModel(Indexes.text("searchGrams"))
-                        )
-                    )
+                    .createIndexes(listOf(IndexModel(Indexes.text("searchGrams"))))
                     .awaitSuspending()
             }
         }

@@ -54,9 +54,7 @@ class CustomerRepositoryImpl(private val panacheCustomerRepository: PanacheCusto
     }
 
     override suspend fun findByKeyword(keyword: String, maxResults: Int): List<Customer> {
-        val fieldsToProject = listOf(
-            "note", "phone", "surname", "name", "email", "updatedAt"
-        )
+        val fieldsToProject = listOf("note", "phone", "surname", "name", "email", "updatedAt")
         val filter: Bson = Document("\$text", Document("\$search", keyword))
         val project: Bson =
             Document("score", Document("\$meta", "textScore")).apply {
