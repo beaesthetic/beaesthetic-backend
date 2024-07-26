@@ -79,7 +79,7 @@ class CustomerController(
                 id = this.id.value,
                 name = this.name,
                 surname = this.surname,
-                phone = this.contacts.phone?.value,
+                phone = this.contacts.phone?.fullNumber,
                 email = this.contacts.email?.value,
                 note = this.note
             )
