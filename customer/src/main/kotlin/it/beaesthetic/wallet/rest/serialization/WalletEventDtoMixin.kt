@@ -20,14 +20,14 @@ import it.beaesthetic.wallet.generated.api.model.MoneyCreditedEventDto
         [
             JsonSubTypes.Type(
                 value = GiftCardMoneyExpiredEventDto::class,
-                name = "GiftCardMoneyExpiredEvent"
+                name = "GiftCardMoneyExpired"
             ),
             JsonSubTypes.Type(
                 value = GiftCardMoneyCreditedEventDto::class,
-                name = "GiftCardMoneyCreditedEvent"
+                name = "GiftCardMoneyCredited"
             ),
-            JsonSubTypes.Type(value = MoneyCreditedEventDto::class, name = "MoneyCreditedEvent"),
-            JsonSubTypes.Type(value = MoneyChargedEventDto::class, name = "MoneyChargedEvent"),
+            JsonSubTypes.Type(value = MoneyCreditedEventDto::class, name = "MoneyCredited"),
+            JsonSubTypes.Type(value = MoneyChargedEventDto::class, name = "MoneyCharged"),
         ]
 )
 interface WalletEventDtoMixin
