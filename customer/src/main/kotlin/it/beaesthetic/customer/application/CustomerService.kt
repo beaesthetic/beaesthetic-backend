@@ -8,7 +8,10 @@ class CustomerService(private val customerRepository: CustomerRepository) {
 
     suspend fun createCustomer(createRequest: CustomerCreateDto): Customer {
         val contacts =
-            Contacts(createRequest.email?.let { Email(it) }, createRequest.phone?.let { Phone(it) })
+            Contacts(
+                createRequest.email?.let { Email(it) },
+                createRequest.phone?.let { Phone.of(it) }
+            )
         val customer =
             Customer.create(
                 name = createRequest.name,
@@ -34,7 +37,7 @@ class CustomerService(private val customerRepository: CustomerRepository) {
                     it.changeContacts(
                         Contacts(
                             email = updateDto.email?.let { v -> Email(v) } ?: it.contacts.email,
-                            phone = updateDto.phone?.let { v -> Phone(v) } ?: it.contacts.phone,
+                            phone = updateDto.phone?.let { v -> Phone.of(v) } ?: it.contacts.phone,
                         )
                     )
                 }

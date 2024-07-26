@@ -44,7 +44,7 @@ class CustomerRepositoryImpl(
                     name = customer.name,
                     surname = customer.surname,
                     email = customer.contacts.email?.value,
-                    phone = customer.contacts.phone?.value,
+                    phone = customer.contacts.phone?.fullNumber,
                     note = customer.note,
                     updatedAt = Instant.now(),
                     searchGrams =
@@ -84,7 +84,8 @@ class CustomerRepositoryImpl(
                 contacts =
                     Contacts(
                         email = entity.email?.let { Email(it) },
-                        phone = entity.phone?.let { Phone(it) },
+                        phone =
+                            entity.phone?.let { if (it.trim().isBlank()) null else Phone.of(it) },
                     ),
                 note = entity.note,
                 domainEventRegistry = DomainEventRegistryDelegate()
