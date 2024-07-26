@@ -215,6 +215,8 @@ components:
         at:
           type: string
           format: date-time
+        amount:
+          type: number
 
     MoneyChargedEvent:
       x-implements: it.beaesthetic.wallet.rest.serialization.WalletEventDtoMixin

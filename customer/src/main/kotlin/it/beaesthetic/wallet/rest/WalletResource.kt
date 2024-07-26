@@ -92,6 +92,7 @@ class WalletResource(
                 GiftCardMoneyExpiredEventDto(
                     giftCardId = UUID.fromString(giftCardId),
                     at = at.atOffset(ZoneOffset.UTC),
+                    amount = 0.toBigDecimal()
                 )
             is MoneyCharge ->
                 MoneyChargedEventDto(
