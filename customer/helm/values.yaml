@@ -24,11 +24,11 @@ envConfig:
 
 resources:
   requests:
-    memory: "80Mi"
-    cpu: "30m"
+    memory: "100Mi"
+    cpu: "80m"
   limits:
     memory: "100Mi"
-    cpu: "100m"
+    cpu: "80m"
 
 secretKeyRef:
   - name: MONGO_CONNECTION_STRING
