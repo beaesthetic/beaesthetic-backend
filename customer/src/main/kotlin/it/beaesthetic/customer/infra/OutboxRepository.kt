@@ -2,16 +2,29 @@ package it.beaesthetic.customer.infra
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.quarkus.mongodb.reactive.ReactiveMongoDatabase
+import io.quarkus.runtime.annotations.RegisterForReflection
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.common.DomainEventRegistry
+import it.beaesthetic.customer.domain.*
 import java.util.*
 import org.bson.BsonDocument
 import org.bson.BsonValue
 import org.bson.Document
 
+@RegisterForReflection
 data class OutboxEvent<E>(val id: String, val eventType: String, val eventContent: E)
 
+@RegisterForReflection(
+    targets =
+        [
+            CustomerCreated::class,
+            CustomerChanged::class,
+            Contacts::class,
+            Phone::class,
+            Email::class,
+        ]
+)
 class OutboxRepository<E>(
     private val mongoDatabase: ReactiveMongoDatabase,
     private val objectMapper: ObjectMapper,
