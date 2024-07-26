@@ -29,7 +29,7 @@ class FidelityCardRepositoryImpl(
 
     override suspend fun findByVoucherId(voucherId: String): FidelityCard? {
         return panacheFidelityCardRepository
-            .find(Document("vouchers", Document("\$elemMatch", Document("id", voucherId))))
+            .find(Document("vouchers", Document("\$elemMatch", Document("_id", voucherId))))
             .firstResult()
             .map { entity -> entity?.let { toDomain(entity) } }
             .awaitSuspending()
