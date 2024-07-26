@@ -28,10 +28,6 @@ class DependencyConfiguration {
                     .createIndexes(
                         listOf(
                             IndexModel(Indexes.ascending("owner"), IndexOptions().unique(true)),
-                            IndexModel(
-                                Indexes.ascending("activeGiftCards._id"),
-                                IndexOptions().unique(true)
-                            ),
                         )
                     )
                     .awaitSuspending()
