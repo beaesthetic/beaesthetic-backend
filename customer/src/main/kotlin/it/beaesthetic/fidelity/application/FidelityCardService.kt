@@ -1,5 +1,6 @@
 package it.beaesthetic.fidelity.application
 
+import arrow.core.flatMap
 import it.beaesthetic.fidelity.domain.*
 
 class FidelityCardService(private val fidelityCardRepository: FidelityCardRepository) {
@@ -26,6 +27,7 @@ class FidelityCardService(private val fidelityCardRepository: FidelityCardReposi
     suspend fun useVoucher(voucherId: VoucherId): Result<FidelityCard> {
         val fidelityCard =
             fidelityCardRepository.findByVoucherId(voucherId.value)?.useVoucher(voucherId)
-        return fidelityCard ?: Result.failure(IllegalArgumentException("Fidelity card not found"))
+        return fidelityCard?.flatMap { fidelityCardRepository.save(it) }
+            ?: Result.failure(IllegalArgumentException("Fidelity card not found"))
     }
 }
