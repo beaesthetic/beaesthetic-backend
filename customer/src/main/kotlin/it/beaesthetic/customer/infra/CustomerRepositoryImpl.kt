@@ -3,6 +3,7 @@ package it.beaesthetic.customer.infra
 import io.quarkus.mongodb.FindOptions
 import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoRepository
 import io.smallrye.mutiny.coroutines.awaitSuspending
+import it.beaesthetic.common.DomainEventRegistryDelegate
 import it.beaesthetic.common.SearchGram
 import it.beaesthetic.customer.domain.*
 import it.beaesthetic.customer.infra.CustomerRepositoryImpl.EntityMapper.toDomain
@@ -14,8 +15,10 @@ import org.bson.conversions.Bson
 @ApplicationScoped class PanacheCustomerRepository : ReactivePanacheMongoRepository<CustomerEntity>
 
 @ApplicationScoped
-class CustomerRepositoryImpl(private val panacheCustomerRepository: PanacheCustomerRepository) :
-    CustomerRepository {
+class CustomerRepositoryImpl(
+    private val panacheCustomerRepository: PanacheCustomerRepository,
+    private val outboxRepository: OutboxRepository<CustomerEvent>
+) : CustomerRepository {
 
     override suspend fun findById(id: CustomerId): Customer? {
         return panacheCustomerRepository
@@ -51,6 +54,7 @@ class CustomerRepositoryImpl(private val panacheCustomerRepository: PanacheCusto
             )
             .awaitSuspending()
             .let { customer }
+            .also { outboxRepository.save(customer) }
     }
 
     override suspend fun findByKeyword(keyword: String, maxResults: Int): List<Customer> {
@@ -83,6 +87,7 @@ class CustomerRepositoryImpl(private val panacheCustomerRepository: PanacheCusto
                         phone = entity.phone?.let { Phone(it) },
                     ),
                 note = entity.note,
+                domainEventRegistry = DomainEventRegistryDelegate()
             )
     }
 }

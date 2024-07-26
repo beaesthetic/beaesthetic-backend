@@ -10,8 +10,7 @@ class CustomerService(private val customerRepository: CustomerRepository) {
         val contacts =
             Contacts(createRequest.email?.let { Email(it) }, createRequest.phone?.let { Phone(it) })
         val customer =
-            Customer(
-                id = CustomerId.generate(),
+            Customer.create(
                 name = createRequest.name,
                 surname = createRequest.surname ?: "",
                 contacts = contacts,
@@ -22,18 +21,23 @@ class CustomerService(private val customerRepository: CustomerRepository) {
 
     suspend fun updateCustomer(customerId: CustomerId, updateDto: CustomerUpdateDto): Customer? {
         val customer =
-            customerRepository.findById(customerId)?.let {
-                it.copy(
-                    name = updateDto.name ?: it.name,
-                    surname = updateDto.surname ?: it.surname,
-                    note = updateDto.note ?: it.note,
-                    contacts =
-                        it.contacts.copy(
+            customerRepository
+                .findById(customerId)
+                ?.let {
+                    it.copy(
+                        name = updateDto.name ?: it.name,
+                        surname = updateDto.surname ?: it.surname,
+                        note = updateDto.note ?: it.note,
+                    )
+                }
+                ?.let {
+                    it.changeContacts(
+                        Contacts(
                             email = updateDto.email?.let { v -> Email(v) } ?: it.contacts.email,
                             phone = updateDto.phone?.let { v -> Phone(v) } ?: it.contacts.phone,
                         )
-                )
-            }
+                    )
+                }
 
         return customer?.let { customerRepository.save(customer) }
     }
