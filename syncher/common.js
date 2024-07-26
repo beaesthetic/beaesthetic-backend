@@ -7,7 +7,7 @@ async function initialSync(collectionDb1, collectionDb2, transformFunction) {
     while (await cursor.hasNext()) {
         const doc = await cursor.next();
         const transformedDoc = transformFunction(doc);
-        if (initialSyncCount % 10 === 0) {
+        if (initialSyncCount % 100 === 0) {
             console.log(`Sync ${initialSyncCount}`);
         }
         await collectionDb2.updateOne(

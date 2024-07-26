@@ -18,20 +18,77 @@ function transformDocument(doc) {
 }
 
 // Connection URL
-const mongoConnectionString = MONGO_CONNECTION_STRING
+const mongoConnectionString = MONGO_CONNECTION_STRING;
 
 // Database and collection names
 const dbName1 = 'customers';
 const dbName2 = 'customer-v2'
-const db1CollectionName = 'customers'; // Replace with your actual collection name
-const db2CollectionName = 'customers'; // Replace with your actual collection name
 
 migration(
     mongoConnectionString,
     dbName1,
     dbName2,
-    db1CollectionName,
-    db2CollectionName,
+    "customers",
+    "customers",
     false,
     transformDocument
-).then(r => console.log("Completed"));
+).then(r => console.log("Completed Customer"));
+
+migration(
+    mongoConnectionString,
+    dbName1,
+    dbName2,
+    "fidelitycards",
+    "fidelitycards",
+    false,
+    transformFidelity
+).then(r => console.log("Completed fidelitycards"));
+
+migration(
+    mongoConnectionString,
+    dbName1,
+    dbName2,
+    "wallets",
+    "wallets",
+    false,
+    transformWallet
+).then(r => console.log("Completed wallets"));
+
+
+function transformFidelity(doc) {
+    return {
+        _id: doc.id,
+        customerId: doc.customerId,
+        solariumPurchases: doc.solariumPurchases,
+        vouchers: doc.vouchers.map(v => ({
+            _id: v.id,
+            _type: v._type,
+            treatment: v.treatment,
+            isUsed: v.isUsed,
+            createdAt: v.createdAt
+        })),
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt ?? new Date(),
+    };
+}
+
+function transformWallet(doc) {
+    return {
+        _id: doc.id,
+        owner: doc.owner,
+        activeGiftCards: doc.activeGiftCards.map(g => ({
+            _id: g.id,
+            customerId: g.customerId,
+            availableAmount: g.availableAmount,
+            amount: g.amount,
+            amountSpent: g.amountSpent,
+            expireAt: g.expireAt,
+            createdAt: g.createdAt,
+        })),
+        availableAmount: doc.availableAmount,
+        spentAmount: doc.spentAmount,
+        operations: doc.operations,
+        createdAt: doc.createdAt,
+        updatedAt: doc.updatedAt ?? new Date(),
+    };
+}
