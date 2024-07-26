@@ -27,7 +27,7 @@ class FidelityCard(
             is TreatmentPurchase -> {
                 val purchases = purchaseCounter.getOrDefault(purchase.treatment.name, 0)
                 if (purchases + 1 >= 10) {
-                    vouchers += Voucher.ofTreatment(purchase.treatment)
+                    vouchers = listOf(Voucher.ofTreatment(purchase.treatment)) + vouchers
                     purchaseCounter += (purchase.treatment.name to 0)
                     vouchers.last()
                 } else {
@@ -55,7 +55,8 @@ class FidelityCard(
                     FidelityCard(
                         id = id,
                         customerId = customerId,
-                        vouchers = vouchers - foundVoucher + foundVoucher.copy(isUsed = true)
+                        vouchers =
+                            listOf(foundVoucher.copy(isUsed = true)) + (vouchers - foundVoucher)
                     )
                 )
         }
