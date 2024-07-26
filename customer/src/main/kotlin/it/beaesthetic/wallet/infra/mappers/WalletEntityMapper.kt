@@ -7,7 +7,7 @@ import org.mapstruct.InheritInverseConfiguration
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 
-@Mapper(uses = [WalletEventEntityMapper::class, MoneyMapper::class, GiftCardMapper::class])
+@Mapper(componentModel = "cdi", uses = [WalletEventEntityMapper::class, MoneyMapper::class, GiftCardMapper::class])
 interface WalletEntityMapper {
 
     @Mapping(source = "giftCards", target = "activeGiftCards")
@@ -19,7 +19,7 @@ interface WalletEntityMapper {
     fun entityToWallet(entity: WalletEntity): Wallet
 }
 
-@Mapper
+@Mapper(componentModel = "cdi")
 abstract class MoneyMapper {
     fun unwrapMoney(money: Money): Double = money.amount
     fun wrapMoney(money: Double): Money = Money(money)
