@@ -5,9 +5,10 @@ import io.vertx.core.Vertx
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.SupervisorJob
 
 private val coroutineScope: CoroutineScope by lazy {
-    CoroutineScope(Vertx.currentContext().dispatcher())
+    CoroutineScope(Vertx.currentContext().dispatcher() + SupervisorJob())
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)
