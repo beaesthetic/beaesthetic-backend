@@ -40,7 +40,7 @@ data class Wallet(
         require(residual == Money.Zero) { "Cannot redeem $amount from gift cards" }
         return copy(
             availableAmount = updatedWallet.availableAmount - amount,
-            operations = operations + MoneyCharge(now, amount),
+            operations = listOf(MoneyCharge(now, amount)) + operations,
             spentAmount = updatedWallet.spentAmount + amount,
             giftCards = giftCards
         )
@@ -49,7 +49,7 @@ data class Wallet(
     fun creditMoney(amount: Money, now: Instant = Instant.now()): Wallet {
         return copy(
             availableAmount = availableAmount + amount,
-            operations = operations + MoneyCredited(now, amount)
+            operations = listOf(MoneyCredited(now, amount)) + operations
         )
     }
 
@@ -60,14 +60,15 @@ data class Wallet(
         return copy(
             availableAmount = availableAmount + giftCard.availableAmount,
             operations =
-                operations +
+                listOf(
                     GiftCardMoneyCredited(
                         at = now,
                         giftCardId = giftCard.id,
                         expiresAt = giftCard.expiresAt,
                         amount = giftCard.availableAmount
-                    ),
-            giftCards = giftCards + giftCard
+                    )
+                ) + operations,
+            giftCards = listOf(giftCard) + giftCards
         )
     }
 
@@ -76,7 +77,8 @@ data class Wallet(
         if (expiredGiftCard != null) {
             return copy(
                 availableAmount = availableAmount - expiredGiftCard.availableAmount,
-                operations = operations + GiftCardMoneyExpired(at = now, giftCardId = giftCard.id),
+                operations =
+                    listOf(GiftCardMoneyExpired(at = now, giftCardId = giftCard.id)) + operations,
                 giftCards = giftCards - expiredGiftCard
             )
         }
