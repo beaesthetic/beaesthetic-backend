@@ -2,6 +2,7 @@ package it.beaesthetic.customer.infra
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.quarkus.mongodb.reactive.ReactiveMongoDatabase
+import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.common.DomainEventRegistry
 import java.util.*
@@ -26,13 +27,21 @@ class OutboxRepository<E>(
                 eventContent = event
             )
         val rawEvent = objectMapper.writeValueAsString(decoratedOutboxEvent)
-        return collection.insertOne(Document.parse(rawEvent)).awaitSuspending().insertedId
+        return collection
+            .insertOne(Document.parse(rawEvent).apply { remove("_id") })
+            .awaitSuspending()
+            .insertedId
     }
 
     suspend fun save(domainEventRegistry: DomainEventRegistry<E>) {
         domainEventRegistry.events.forEach { (type, event) ->
-            val id = save(type, event)
-            collection.deleteOne(BsonDocument("_id", id)).awaitSuspending()
+            Uni.createFrom()
+                .item(save(type, event))
+                //                .onItem()
+                //                .delayIt()
+                //                .by(Duration.ofMillis(100))
+                .flatMap { collection.deleteOne(BsonDocument("_id", it)) }
+                .awaitSuspending()
         }
         domainEventRegistry.clearEvents()
     }
