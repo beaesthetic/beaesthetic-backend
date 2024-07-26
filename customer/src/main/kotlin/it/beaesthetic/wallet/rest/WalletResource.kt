@@ -76,6 +76,7 @@ class WalletResource(
             spent = spentAmount.amount.toBigDecimal(),
             history = operations.map { op -> op.toResource() },
             createdAt = createdAt.atOffset(ZoneOffset.UTC),
+            updatedAt = updatedAt.atOffset(ZoneOffset.UTC)
         )
 
     private fun WalletEvent.toResource() =

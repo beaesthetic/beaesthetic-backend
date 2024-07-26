@@ -14,7 +14,6 @@ import org.mapstruct.Mapping
 interface WalletEntityMapper {
 
     @Mapping(source = "giftCards", target = "activeGiftCards")
-    @Mapping(target = "updatedAt", expression = "java(Instant.now())")
     fun walletToEntity(wallet: Wallet): WalletEntity
 
     @InheritInverseConfiguration
