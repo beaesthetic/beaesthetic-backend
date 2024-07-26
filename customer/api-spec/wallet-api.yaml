@@ -60,27 +60,6 @@ paths:
                     $ref: '#/components/schemas/WalletId'
         '400':
           description: "Bad request"
-    get:
-      tags:
-        - wallets
-      operationId: getWallets
-      parameters:
-        - in: query
-          name: filter
-          schema:
-            type: string
-            default: null
-      responses:
-        '200':
-          description: All matching wallets
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Wallet'
-        '400':
-          description: Bad request
 
   /wallets/{walletId}/charge:
     put:
@@ -137,6 +116,29 @@ paths:
           description: Bad request
         '404':
           description: Not found
+
+  /wallets:
+    get:
+      tags:
+        - wallets
+      operationId: getWallets
+      parameters:
+        - in: query
+          name: filter
+          schema:
+            type: string
+            default: null
+      responses:
+        '200':
+          description: All matching wallets
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Wallet'
+        '400':
+          description: Bad request
 
 components:
   schemas:
