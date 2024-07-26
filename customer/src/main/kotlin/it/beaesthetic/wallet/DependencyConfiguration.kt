@@ -29,7 +29,7 @@ class DependencyConfiguration {
                         listOf(
                             IndexModel(Indexes.ascending("owner"), IndexOptions().unique(true)),
                             IndexModel(
-                                Indexes.ascending("activeGiftCards.id"),
+                                Indexes.ascending("activeGiftCards._id"),
                                 IndexOptions().unique(true)
                             ),
                         )
