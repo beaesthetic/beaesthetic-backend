@@ -31,11 +31,14 @@ data class Customer(
                     note = note,
                     domainEventRegistry = DomainEventRegistryDelegate()
                 )
-                .apply { addEvent(CustomerCreated(id, name, surname, contacts)) }
+                .apply { addEvent("CustomerCreated", CustomerCreated(id, name, surname, contacts)) }
     }
 
     fun changeContacts(contacts: Contacts): Customer {
-        domainEventRegistry.addEvent(CustomerChanged(id, name, surname, contacts))
+        domainEventRegistry.addEvent(
+            "CustomerChanged",
+            CustomerChanged(id, name, surname, contacts)
+        )
         return copy(contacts = contacts)
     }
 
