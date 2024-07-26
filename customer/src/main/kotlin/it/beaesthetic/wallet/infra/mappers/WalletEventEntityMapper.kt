@@ -8,6 +8,7 @@ import org.mapstruct.SubclassExhaustiveStrategy
 import org.mapstruct.SubclassMapping
 
 @Mapper(
+    componentModel = "cdi",
     uses = [MoneyMapper::class],
     subclassExhaustiveStrategy = SubclassExhaustiveStrategy.RUNTIME_EXCEPTION
 )
