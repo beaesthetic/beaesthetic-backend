@@ -13,6 +13,7 @@ data class Wallet(
     val operations: List<WalletEvent>,
     val giftCards: List<GiftCard>,
     val createdAt: Instant = Instant.now(),
+    val updatedAt: Instant = Instant.now(),
     private val processorPolicy: GiftCardProcessorPolicy
 ) {
 
