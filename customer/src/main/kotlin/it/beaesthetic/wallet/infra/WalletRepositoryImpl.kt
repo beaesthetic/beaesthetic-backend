@@ -7,15 +7,14 @@ import it.beaesthetic.wallet.domain.WalletId
 import it.beaesthetic.wallet.domain.WalletRepository
 import it.beaesthetic.wallet.infra.mappers.WalletEntityMapper
 import jakarta.enterprise.context.ApplicationScoped
-import org.mapstruct.factory.Mappers
 
 @ApplicationScoped class PanacheWalletRepository : ReactivePanacheMongoRepository<WalletEntity>
 
 @ApplicationScoped
-class WalletRepositoryImpl(private val panacheWalletRepository: PanacheWalletRepository) :
-    WalletRepository {
-
-    private val mapper = Mappers.getMapper(WalletEntityMapper::class.java)
+class WalletRepositoryImpl(
+    private val mapper: WalletEntityMapper,
+    private val panacheWalletRepository: PanacheWalletRepository,
+) : WalletRepository {
 
     override suspend fun findAll(): List<Wallet> {
         return panacheWalletRepository.findAll().list().awaitSuspending().map {
