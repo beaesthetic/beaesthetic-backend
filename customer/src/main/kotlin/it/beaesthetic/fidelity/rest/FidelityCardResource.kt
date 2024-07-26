@@ -1,5 +1,6 @@
 package it.beaesthetic.fidelity.rest
 
+import io.quarkus.runtime.annotations.RegisterForReflection
 import it.beaesthetic.fidelity.application.FidelityCardService
 import it.beaesthetic.fidelity.domain.*
 import it.beaesthetic.fidelity.generated.api.FidelityCardsApi
@@ -13,6 +14,12 @@ import java.time.Instant
 import java.util.*
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper
 
+@RegisterForReflection(
+    targets =
+        [
+            FidelityCardResponseDto::class,
+        ]
+)
 class FidelityCardResource(
     private val fidelityCardService: FidelityCardService,
     private val fidelityCardRepository: FidelityCardRepository
