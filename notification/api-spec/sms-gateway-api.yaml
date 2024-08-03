@@ -1,0 +1,482 @@
+openapi: 3.0.0
+info:
+  title: SMS Gateway
+  description: ""
+  contact:
+    email: petretiandrea@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers: []
+paths:
+
+  /phones/:
+    post:
+      tags:
+        - phone
+      summary: "Register new phone"
+      operationId: registerPhone
+      security:
+        - ApiKeyAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterPhoneRequestDto"
+      responses:
+        '201':
+          description: "Phone registered"
+          content:
+            application/json:
+              schema:
+                type: string
+                format: uuid
+                description: "Phone ID"
+        '400':
+          description: "Invalid request"
+  /phones/{phoneId}:
+    put:
+      tags:
+        - phone
+      security:
+        - ApiKeyAuth: [ ]
+      description: "Update fcm token"
+      operationId: updateFcmToken
+      parameters:
+        - name: phoneId
+          required: true
+          in: path
+          description: "Phone id"
+          schema:
+            type: string
+            format: uuid
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePhoneFirebaseTokenDto'
+
+      responses:
+        '200':
+          description: "Update successfully"
+        '400':
+          description: "Invalid request"
+    get:
+      tags:
+        - phone
+      security:
+        - ApiKeyAuth: [ ]
+      description: "Get phone"
+      operationId: getPhoneById
+      parameters:
+        - name: phoneId
+          required: true
+          in: path
+          description: "Phone id"
+          schema:
+            type: string
+      responses:
+        '200':
+          description: "Update successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PhoneEntityResponse'
+        '400':
+          description: "Invalid request"
+        '404':
+          description: "Phone not found"
+
+  /accounts/:
+    post:
+      tags:
+        - account
+      summary: "Register new account"
+      operationId: registerAccount
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAccountRequestDto"
+      responses:
+        '201':
+          description: "Account created"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AccountEntityDto"
+        '400':
+          description: "Invalid request"
+  /accounts/{accountId}:
+    get:
+      tags:
+        - account
+      description: "Get user account"
+      operationId: getAccountById
+      parameters:
+        - name: accountId
+          required: true
+          in: path
+          description: "Account id"
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: "Account details"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountEntityDto'
+        '400':
+          description: "Invalid request"
+        '404':
+          description: "Account not found"
+
+  /messages/{smsId}:
+    get:
+      tags:
+        - sms
+      summary: "Get an sms"
+      operationId: getSmsById
+      security:
+        - ApiKeyAuth: [ ]
+      parameters:
+        - in: path
+          name: smsId
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: "Sms"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SmsEntityResponse"
+  /messages/:
+    get:
+      tags:
+        - sms
+      summary: "Get all filtered sms"
+      operationId: getMessages
+      security:
+        - ApiKeyAuth: [ ]
+      parameters:
+        - in: query
+          name: from
+          required: false
+          schema:
+            type: string
+        - in: query
+          name: isSent
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: "Found messges"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  messages:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/SmsEntityResponse"
+        '400':
+          description: "Invalid request"
+    post:
+      tags:
+        - sms
+      summary: "Send a new sms"
+      operationId: sendSms
+      security:
+        - ApiKeyAuth: [ ]
+      parameters:
+        - in: header
+          name: "Idempotency-Key"
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SendSmsRequest"
+      callbacks:
+        messageCallback:
+          '/callbackUrl':
+            post:
+              operationId: notifyMessageDelivery
+              requestBody:
+                required: true
+                content:
+                  application/json:
+                    schema:
+                      $ref: '#/components/schemas/EventNotificationDto'
+              responses:
+                200:
+                  description: "Callback accepted"
+      responses:
+        "201":
+          description: "Send sms takes"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SmsEntityResponse"
+        '400':
+          description: "Invalid request"
+
+  /webhooks/:
+    post:
+      tags:
+        - webhooks
+      summary: Enable webhook delivery
+      security:
+        - ApiKeyAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWebhookRequest'
+      responses:
+        "200":
+          description: "Webhook registered"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WebhookEntityResponse'
+        "400":
+          description: "Bad request"
+
+  /attempts/:
+    post:
+      tags:
+        - reports
+      operationId: reportMessageStatus
+      security:
+        - ApiKeyAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendAttempt'
+      responses:
+        "202":
+          description: "Attempt registered"
+        "400":
+          description: "Invalid request"
+        "500":
+          description: "Internal error"
+
+components:
+  schemas:
+    SendAttempt:
+      type: object
+      properties:
+        messageId:
+          type: string
+          format: uuid
+        phoneId:
+          type: string
+          format: uuid
+        attempt:
+          description: "Number of attempt"
+          type: integer
+        result:
+          oneOf:
+            - $ref: '#/components/schemas/SuccessfulAttempt'
+            - $ref: '#/components/schemas/FailedAttempt'
+          discriminator:
+            propertyName: type
+            mapping:
+              success: '#/components/schemas/SuccessfulAttempt'
+              failure: '#/components/schemas/FailedAttempt'
+    FailedAttempt:
+      type: object
+      properties:
+        type:
+          type: string
+          format: "failure"
+        reason:
+          type: string
+          description: "Reason of failure attempt"
+    SuccessfulAttempt:
+      type: object
+      properties:
+        type:
+          type: string
+          pattern: "success"
+
+    WebhookEntityResponse:
+      type: object
+      properties:
+        webhookURL:
+          type: string
+        enabled:
+          type: boolean
+    CreateWebhookRequest:
+      type: object
+      properties:
+        defaultWebhookUrl:
+          type: string
+        enabled:
+          type: boolean
+      required:
+        - webhookURL
+        - enabled
+    EventNotificationType:
+      type: string
+      enum:
+        - message.deliver.succeeded
+        - message.deliver.failed
+    EventNotificationDto:
+      type: object
+      properties:
+        eventType:
+          $ref: '#/components/schemas/EventNotificationType'
+        data:
+          $ref: '#/components/schemas/SmsEntityResponse'
+        metadata:
+          $ref: '#/components/schemas/AdditionalMetadata'
+    SmsEntityResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        content:
+          type: string
+        from:
+          type: string
+        to:
+          type: string
+        owner:
+          type: string
+          format: uuid
+        isSent:
+          type: boolean
+        lastAttempt:
+          type: object
+          properties:
+            attemptCount:
+              type: integer
+          oneOf:
+            - $ref: '#/components/schemas/SuccessfulAttempt'
+            - $ref: '#/components/schemas/FailedAttempt'
+          discriminator:
+            propertyName: type
+            mapping:
+              success: '#/components/schemas/SuccessfulAttempt'
+              failure: '#/components/schemas/FailedAttempt'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - content
+        - from
+        - to
+        - owner
+        - isSent
+        - createdAt
+        - updatedAt
+    SendSmsRequest:
+      type: object
+      properties:
+        content:
+          type: string
+        from:
+          type: string
+        to:
+          type: string
+        webhook:
+          $ref: '#/components/schemas/WebhookOnDemandConfig'
+        metadata:
+          $ref: '#/components/schemas/AdditionalMetadata'
+      required:
+        - content
+        - from
+        - to
+    WebhookOnDemandConfig:
+      type: object
+      properties:
+        url:
+          type: string
+    AdditionalMetadata:
+      type: object
+      additionalProperties:
+        type: string
+    RegisterPhoneRequestDto:
+      type: object
+      properties:
+        phone:
+          type: string
+      required:
+        - phone
+    UpdatePhoneFirebaseTokenDto:
+      type: object
+      properties:
+        token:
+          type: string
+    PhoneEntityResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phone:
+          type: string
+        account:
+          type: string
+          format: uuid
+        fcmToken:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateAccountRequestDto:
+      type: object
+      properties:
+        phoneNumber:
+          type: string
+      required:
+        - phoneNumber
+
+    AccountEntityDto:
+      type: object
+      properties:
+        accountId:
+          type: string
+        phoneNumber:
+          type: string
+        apiKey:
+          type: string
+        isActive:
+          type: boolean
+        createAt:
+          type: string
+          format: date-time
+      required:
+        - accountId
+        - phoneNumber
+        - apiKey
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Api-Key
