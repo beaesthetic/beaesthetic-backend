@@ -17,21 +17,26 @@ class NotificationService(
         content: String,
         channel: Channel
     ): Result<Notification> {
-        val notification = Notification.of(
-            id = UUID.randomUUID().toString(),
-            title = title,
-            content = content,
-            channel = channel
-        )
+        val notification =
+            Notification.of(
+                id = UUID.randomUUID().toString(),
+                title = title,
+                content = content,
+                channel = channel
+            )
         return notificationRepository.save(notification)
     }
 
     suspend fun sendNotification(notificationId: String): Result<Notification> {
-        val notification = notificationRepository.findById(notificationId)
-            ?: return Result.failure(IllegalArgumentException("Notification $notificationId not found"))
+        val notification =
+            notificationRepository.findById(notificationId)
+                ?: return Result.failure(
+                    IllegalArgumentException("Notification $notificationId not found")
+                )
 
         if (notificationProvider.isSupported(notification)) {
-            return notificationProvider.send(notification)
+            return notificationProvider
+                .send(notification)
                 .map { notification.markSendWith(it) }
                 .flatMap { notificationRepository.save(it) }
         } else {
@@ -42,8 +47,11 @@ class NotificationService(
     }
 
     suspend fun confirmNotificationSent(notificationId: String): Result<Notification> {
-        val notification = notificationRepository.findById(notificationId)
-            ?: return Result.failure(IllegalArgumentException("Notification $notificationId not found"))
+        val notification =
+            notificationRepository.findById(notificationId)
+                ?: return Result.failure(
+                    IllegalArgumentException("Notification $notificationId not found")
+                )
         return notificationRepository.save(notification.confirmSend())
     }
 }

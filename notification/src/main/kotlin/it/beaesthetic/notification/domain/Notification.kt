@@ -17,32 +17,29 @@ data class Notification(
 ) : DomainEventRegistry<NotificationEvent> by domainEventRegistry {
 
     companion object {
-        fun of(id: String, title: String, content: String, channel: Channel): Notification = Notification(
-            id = id,
-            title = title,
-            content = content,
-            channel = channel,
-            isSent = false,
-            isSentConfirmed = false,
-            channelMetadata = null,
-            createdAt = Instant.now(),
-            domainEventRegistry = DomainEventRegistryDelegate()
-        ).apply {
-            addEvent(NotificationCreated(id))
-        }
+        fun of(id: String, title: String, content: String, channel: Channel): Notification =
+            Notification(
+                    id = id,
+                    title = title,
+                    content = content,
+                    channel = channel,
+                    isSent = false,
+                    isSentConfirmed = false,
+                    channelMetadata = null,
+                    createdAt = Instant.now(),
+                    domainEventRegistry = DomainEventRegistryDelegate()
+                )
+                .apply { addEvent(NotificationCreated(id)) }
     }
 
-    fun <T: Channel> isChannelSupported(klazz: Class<T>): Boolean {
+    fun <T : Channel> isChannelSupported(klazz: Class<T>): Boolean {
         return klazz.isAssignableFrom(channel::class.java)
     }
 
     fun markSendWith(channelMetadata: ChannelMetadata): Notification {
         if (!isSent) {
             addEvent(NotificationSent(id))
-            return copy(
-                isSent = true,
-                channelMetadata = channelMetadata
-            )
+            return copy(isSent = true, channelMetadata = channelMetadata)
         }
         return this
     }
@@ -54,5 +51,4 @@ data class Notification(
         }
         return this
     }
-
 }
