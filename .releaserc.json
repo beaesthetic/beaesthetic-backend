@@ -27,7 +27,9 @@
           "gateway/gradle.properties",
           "gateway/helm/Chart.yaml",
           "customer/gradle.properties",
-          "customer/helm/Chart.yaml"
+          "customer/helm/Chart.yaml",
+          "notification/gradle.properties",
+          "notification/helm/Chart.yaml"
         ],
         "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
