@@ -4,10 +4,10 @@ import it.beaesthetic.generated.smsgateway.api.SmsApi
 import it.beaesthetic.notification.application.NotificationService
 import it.beaesthetic.notification.configmapping.SmsGatewayConfig
 import it.beaesthetic.notification.domain.*
+import it.beaesthetic.notification.infra.providers.SmsNotificationProvider
 import jakarta.enterprise.context.Dependent
 import jakarta.enterprise.inject.Produces
 import jakarta.inject.Singleton
-import java.util.UUID
 import org.bson.codecs.configuration.CodecProvider
 import org.bson.codecs.pojo.ClassModel
 import org.bson.codecs.pojo.PojoCodecProvider
@@ -30,17 +30,7 @@ class DependencyConfiguration {
         smsGatewayConfig: SmsGatewayConfig
     ): NotificationProvider {
         return CompoundNotificationProvider(
-            listOf(
-                object : NotificationProvider {
-                    override suspend fun isSupported(notification: Notification): Boolean = true
-
-                    override suspend fun send(notification: Notification): Result<ChannelMetadata> =
-                        Result.success(
-                            ChannelMetadata(providerResourceId = UUID.randomUUID().toString())
-                        )
-                },
-                // SmsNotificationProvider(smsApi, smsGatewayConfig.senderNumber())
-            )
+            listOf(SmsNotificationProvider(smsApi, smsGatewayConfig.senderNumber()))
         )
     }
 
