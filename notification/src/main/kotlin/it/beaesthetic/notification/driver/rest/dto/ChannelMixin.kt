@@ -16,16 +16,10 @@ import it.beaesthetic.notification.generated.api.model.WhatsappChannelDto
 )
 @JsonSubTypes(
     value =
-    [
-        JsonSubTypes.Type(
-            value = EmailChannelDto::class,
-            name = "email"
-        ),
-        JsonSubTypes.Type(
-            value = SmsChannelDto::class,
-            name = "sms"
-        ),
-        JsonSubTypes.Type(value = WhatsappChannelDto::class, name = "whatsapp"),
-    ]
+        [
+            JsonSubTypes.Type(value = EmailChannelDto::class, name = "email"),
+            JsonSubTypes.Type(value = SmsChannelDto::class, name = "sms"),
+            JsonSubTypes.Type(value = WhatsappChannelDto::class, name = "whatsapp"),
+        ]
 )
 interface ChannelMixin

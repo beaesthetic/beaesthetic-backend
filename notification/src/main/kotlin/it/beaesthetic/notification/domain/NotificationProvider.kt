@@ -5,10 +5,8 @@ interface NotificationProvider {
     suspend fun send(notification: Notification): Result<ChannelMetadata>
 }
 
-
-class CompoundNotificationProvider(
-    private val providers: List<NotificationProvider>
-) : NotificationProvider {
+class CompoundNotificationProvider(private val providers: List<NotificationProvider>) :
+    NotificationProvider {
 
     override suspend fun isSupported(notification: Notification): Boolean {
         return findProviderFor(notification) != null
@@ -16,9 +14,8 @@ class CompoundNotificationProvider(
 
     override suspend fun send(notification: Notification): Result<ChannelMetadata> {
         val provider = findProviderFor(notification)
-        return provider?.send(notification) ?: Result.failure(
-            NoSuchElementException("No provider found for $notification")
-        )
+        return provider?.send(notification)
+            ?: Result.failure(NoSuchElementException("No provider found for $notification"))
     }
 
     private suspend fun findProviderFor(notification: Notification): NotificationProvider? {

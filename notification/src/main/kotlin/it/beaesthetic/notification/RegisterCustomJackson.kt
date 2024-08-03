@@ -9,8 +9,6 @@ import jakarta.inject.Singleton
 @Singleton
 class RegisterCustomJackson : ObjectMapperCustomizer {
     override fun customize(objectMapper: ObjectMapper) {
-        objectMapper.addMixIn(
-            NotificationEvent::class.java, NotificationEventMixin::class.java
-        )
+        objectMapper.addMixIn(NotificationEvent::class.java, NotificationEventMixin::class.java)
     }
 }
