@@ -13,7 +13,10 @@ import it.beaesthetic.notification.infra.NotificationEventMixin.Companion.NOTIFI
 @JsonSubTypes(
     JsonSubTypes.Type(value = NotificationCreated::class, name = NOTIFICATION_CREATED_TYPE),
     JsonSubTypes.Type(value = NotificationSent::class, name = NOTIFICATION_SENT_TYPE),
-    JsonSubTypes.Type(value = NotificationSentConfirmed::class, name = NOTIFICATION_SENT_CONFIRMED_TYPE)
+    JsonSubTypes.Type(
+        value = NotificationSentConfirmed::class,
+        name = NOTIFICATION_SENT_CONFIRMED_TYPE
+    )
 )
 interface NotificationEventMixin {
     companion object {
