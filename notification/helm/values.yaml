@@ -1,0 +1,54 @@
+namespace: "beaesthetic"
+name: "notification-service-v2"
+labels:
+  app: "notification-api-v2"
+
+replicaCount: 1
+
+image:
+  repository: petretiandrea/notification-service-v2
+  pullPolicy: IfNotPresent
+
+service:
+  create: true
+  type: ClusterIP
+  ports:
+    - 8080
+
+envConfig:
+  OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
+  MONGO_DATABASE_NAME: "notifications-v2"
+  SMS_GATEWAY_URL: "http://sms-gateway-service-v2.beaesthetic.svc.cluster.local:8080"
+  SMS_GATEWAY_FROM_NUMBER: "+393515253634"
+
+resources:
+  requests:
+    memory: "100Mi"
+    cpu: "80m"
+  limits:
+    memory: "100Mi"
+    cpu: "80m"
+
+secretKeyRef:
+  - name: MONGO_CONNECTION_STRING
+    secretRefName: notification-service
+    key: MONGO_DB_URI
+  - name: SMS_GATEWAY_API_KEY
+    secretRefName: notification-service
+    key: SMS_GATEWAY_API_KEY
+
+readinessProbe:
+  httpGet:
+    path: /q/health/ready
+    port: 8080
+  initialDelaySeconds: 30
+  failureThreshold: 10
+  periodSeconds: 30
+
+livenessProbe:
+  httpGet:
+    path: /q/health/live
+    port: 8080
+  initialDelaySeconds: 30
+  failureThreshold: 10
+  periodSeconds: 30
