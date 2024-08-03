@@ -20,6 +20,8 @@ envConfig:
   MONGO_DATABASE_NAME: "notifications-v2"
   SMS_GATEWAY_URL: "http://sms-gateway-service-v2.beaesthetic.svc.cluster.local:8080"
   SMS_GATEWAY_FROM_NUMBER: "+393515253634"
+  RABBITMQ_HOST: "rabbitmq.common.svc.cluster.local"
+  RABBITMQ_PORT: "5672"
 
 resources:
   requests:
