@@ -8,10 +8,14 @@ import it.beaesthetic.notification.infra.providers.SmsNotificationProvider
 import jakarta.enterprise.context.Dependent
 import jakarta.enterprise.inject.Produces
 import jakarta.inject.Singleton
+import jakarta.ws.rs.core.Response
+import jakarta.ws.rs.ext.ContextResolver
+import jakarta.ws.rs.ext.Provider
 import org.bson.codecs.configuration.CodecProvider
 import org.bson.codecs.pojo.ClassModel
 import org.bson.codecs.pojo.PojoCodecProvider
 import org.eclipse.microprofile.rest.client.inject.RestClient
+import org.jboss.resteasy.reactive.client.handlers.RedirectHandler
 
 @Dependent
 class DependencyConfiguration {
@@ -49,5 +53,21 @@ class DependencyConfiguration {
                     .build()
             )
             .build()
+    }
+
+    /** Allows to follow redirection of sms gateway rest client */
+    @Provider
+    class AlwaysRedirectHandler : ContextResolver<RedirectHandler> {
+        override fun getContext(aClass: Class<*>?): RedirectHandler {
+            return RedirectHandler { response: Response ->
+                if (
+                    Response.Status.Family.familyOf(response.status) ===
+                        Response.Status.Family.REDIRECTION
+                ) {
+                    return@RedirectHandler response.location
+                }
+                null
+            }
+        }
     }
 }
