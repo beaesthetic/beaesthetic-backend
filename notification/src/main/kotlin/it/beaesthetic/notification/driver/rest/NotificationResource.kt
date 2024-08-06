@@ -1,5 +1,6 @@
 package it.beaesthetic.notification.driver.rest
 
+import io.quarkus.runtime.annotations.RegisterForReflection
 import it.beaesthetic.notification.application.NotificationService
 import it.beaesthetic.notification.domain.Email
 import it.beaesthetic.notification.domain.NotificationRepository
@@ -11,6 +12,7 @@ import jakarta.ws.rs.BadRequestException
 import jakarta.ws.rs.NotFoundException
 import java.util.*
 
+@RegisterForReflection(targets = [CreateNotification200ResponseDto::class, NotificationDto::class])
 class NotificationResource(
     private val notificationService: NotificationService,
     private val notificationRepository: NotificationRepository,
