@@ -38,6 +38,10 @@ class SmsNotificationProvider(private val smsApi: SmsApi, private val fromNumber
 
                 ChannelMetadata(providerResourceId = response.id.toString())
             }
-            .onSuccess { log.info("Successfully send sms notification ${it.providerResourceId}") }
+            .onSuccess {
+                log.info(
+                    "Successfully send sms notification with provider resource id ${it.providerResourceId}"
+                )
+            }
             .onFailure { log.error("Error sending sms notification ${it.message}", it) }
 }
