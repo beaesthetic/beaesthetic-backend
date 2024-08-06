@@ -54,20 +54,4 @@ class DependencyConfiguration {
             )
             .build()
     }
-
-    /** Allows to follow redirection of sms gateway rest client */
-    @Provider
-    class AlwaysRedirectHandler : ContextResolver<RedirectHandler> {
-        override fun getContext(aClass: Class<*>?): RedirectHandler {
-            return RedirectHandler { response: Response ->
-                if (
-                    Response.Status.Family.familyOf(response.status) ===
-                        Response.Status.Family.REDIRECTION
-                ) {
-                    return@RedirectHandler response.location
-                }
-                null
-            }
-        }
-    }
 }
