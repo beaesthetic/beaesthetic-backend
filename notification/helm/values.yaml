@@ -22,8 +22,8 @@ envConfig:
   SMS_GATEWAY_FROM_NUMBER: "+393515253634"
   RABBITMQ_HOST: "rabbitmq.common.svc.cluster.local"
   RABBITMQ_PORT: "5672"
-  QUEUE_NOTIFICATION_NAME: "NotificationQueueV2"
-  QUEUE_NOTIFICATION_CONFIRM_NAME: "NotificationConfirmQueueV2"
+  QUEUE_NOTIFICATION_NAME: "NotificationQueue"
+  QUEUE_NOTIFICATION_CONFIRM_NAME: "NotificationConfirmQueue"
 
 resources:
   requests:
