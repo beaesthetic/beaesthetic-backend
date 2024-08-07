@@ -1,0 +1,774 @@
+openapi: 3.0.3
+info:
+  title: Appointments - OpenAPI 3.0
+  description: |-
+    Welcome to the Appointment API!
+
+    This API allows you to manage appointments, including creating, updating, and retrieving appointments.
+    You can also cancel appointments and query them based on various criteria.
+  contact:
+    email: petretiandrea@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: https://agenda.beaesthetic.it/appointment-service/
+tags:
+  - name: activities
+    description: Everything about agenda activity management
+  - name: Services
+    description: "Api group to create services for appointments"
+  - name: Insight
+    description: Insights api group.
+paths:
+  /activities:
+    post:
+      tags:
+        - activities
+      summary: Create a new agenda event
+      operationId: createAgendaActivity
+      requestBody:
+        $ref: '#/components/requestBodies/CreateEventRequestBody'
+      responses:
+        '201':
+          description: Appointment created
+          content:
+            application/json:
+              example:
+                id: "97bb1a68-2d8c-4848-9a2d-94224e857ab5"
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: Invalid date range or other validation error
+    get:
+      summary: Get appointments by time range and customer ID
+      operationId: getAppointmentsByTimeRangeOrCustomer
+      tags:
+        - activities
+      parameters:
+        - name: start
+          in: query
+          description: The start time of the time range
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          description: The end time of the time range
+          schema:
+            type: string
+            format: date-time
+        - name: attendeeId
+          in: query
+          description: The attendee ID (optional)
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The agenda activity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: Invalid parameters
+
+  /activities/{activityId}:
+    put:
+      operationId: updateActivity
+      summary: Update an activity
+      tags:
+        - activities
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          description: The ID of the activity to update
+          schema:
+            type: string
+            format: uuid # Assuming the appointmentId is a UUID
+      requestBody:
+        $ref: '#/components/requestBodies/EditAgendaActivityRequestBody'
+      responses:
+        '200':
+          description: Updated activity
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: Invalid data or missing appointmentId
+    delete:
+      summary: Delete an activity
+      operationId: deleteActivity
+      tags:
+        - activities
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          description: The ID of the activity to delete
+          schema:
+            type: string
+            format: uuid # Assuming the appointmentId is a UUID
+        - name: reason
+          in: query
+          description: The reason for deletion (optional)
+          schema:
+            type: string
+            enum:
+              - customer_cancel
+              - deleted
+      responses:
+        '204':
+          description: No Content
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: id is required
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                error: Appointment not found
+    get:
+      summary: Get an activity by ID
+      operationId: getActivityById
+      tags:
+        - appointments
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          description: The ID of the activity to retrieve
+          schema:
+            type: string
+            format: uuid # Assuming the appointmentId is a UUID
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: id is required
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                error: Appointment not found
+
+  /insight/customer-ranking:
+    get:
+      summary: Get customer ranking
+      operationId: getCustomerRanking
+      tags:
+        - Insight
+      parameters:
+        - name: page
+          in: query
+          description: Page number (optional)
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Number of items per page (optional)
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/CustomerRankingResponseBody'
+  /insight/customer-cancellation-ranking:
+    get:
+      summary: Get customer cancellation ranking
+      operationId: getCustomerCancelRanking
+      tags:
+        - Insight
+      parameters:
+        - name: page
+          in: query
+          description: Page number (optional)
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          description: Number of items per page (optional)
+          schema:
+            type: integer
+      responses:
+        '200':
+          $ref: '#/components/responses/CustomerCancellationRankingResponseBody'
+  /insight/overview:
+    get:
+      summary: Get overview statistics
+      operationId: getInsightOverview
+      tags:
+        - Insight
+      responses:
+        '200':
+          $ref: '#/components/responses/StatisticsResponseBody'
+
+  /services:
+    post:
+      summary: Create a new service
+      operationId: createService
+      tags:
+        - Services
+      requestBody:
+        $ref: '#/components/requestBodies/CreateServiceRequestBody'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: Invalid data or missing fields
+
+  /services/{serviceId}:
+    patch:
+      summary: Patch an existing service
+      operationId: updateService
+      tags:
+        - Services
+      parameters:
+        - in: path
+          name: serviceId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        $ref: '#/components/requestBodies/UpdateServiceRequestBody'
+      responses:
+        '200':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Service'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: Invalid data or missing fields
+
+  /services/search:
+    get:
+      summary: Search for services
+      operationId: searchService
+      tags:
+        - Services
+      parameters:
+        - name: text
+          in: query
+          description: Text to search for
+          required: false
+          schema:
+            type: string
+        - name: limit
+          in: query
+          description: Maximum number of results
+          required: false
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+
+  /services/all:
+    get:
+      summary: Get all service
+      operationId: getAllServices
+      tags:
+        - Services
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Service'
+
+
+components:
+  schemas:
+    AppointmentEvent:
+      type: object
+      properties:
+        eventType:
+          type: string
+          enum:
+            - appointment
+          description: The type of event (appointment)
+        start:
+          type: string
+          format: date-time
+          description: The start time of the event
+        end:
+          type: string
+          format: date-time
+          description: The end time of the event
+        title:
+          type: string
+          description: The title of the event
+        appointment:
+          type: object
+          properties:
+            services:
+              type: array
+              items:
+                type: string
+              description: List of services for the appointment
+          description: Details of the appointment
+        attendeeId:
+          type: string
+          format: uuid
+          description: The ID of the attendee
+        reminder:
+          type: object
+          properties:
+            minutesBefore:
+              type: number
+              description: Minutes before the event to send a reminder
+      required:
+        - eventType
+        - start
+        - end
+        - title
+        - attendeeId
+        - reminder
+        - appointment
+
+    GenericEvent:
+      type: object
+      properties:
+        eventType:
+          type: string
+          enum:
+            - event
+          description: The type of event (event)
+        start:
+          type: string
+          format: date-time
+          description: The start time of the event
+        end:
+          type: string
+          format: date-time
+          description: The end time of the event
+        title:
+          type: string
+          description: The title of the event
+        description:
+          type: string
+          description: The description of the event
+        attendeeId:
+          type: string
+          format: uuid
+          description: The ID of the attendee
+      required:
+        - eventType
+        - start
+        - end
+        - title
+        - attendeeId
+
+    Attendee:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The ID of the attendee
+        name:
+          type: string
+          description: The name of the attendee
+        surname:
+          type: string
+          description: The surname of the attendee
+      required:
+        - id
+        - name
+        - surname
+
+    ActivityResponse:
+      oneOf:
+        - $ref: '#/components/schemas/AppointmentEventResponse'
+        - $ref: '#/components/schemas/EventResponse'
+
+    AppointmentEventResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The ID of the event
+        type:
+          type: string
+          enum:
+            - appointment
+          description: The type of event (appointment)
+        title:
+          type: string
+          description: The title of the event
+        start:
+          type: string
+          format: date-time
+          description: The start time of the event
+        end:
+          type: string
+          format: date-time
+          description: The end time of the event
+        description:
+          type: string
+          description: The description of the event
+        attendee:
+          $ref: '#/components/schemas/Attendee'
+        appointment:
+          type: object
+          properties:
+            services:
+              type: array
+              items:
+                type: string
+              description: List of services for the appointment
+          description: Details of the appointment
+        reminderSent:
+          type: boolean
+          description: Indicates if a reminder was sent
+        reminder:
+          type: object
+          properties:
+            reminderMinutes:
+              type: integer
+              description: Minutes before the event to send a reminder
+            timeSent:
+              type: string
+              format: date-time
+              nullable: true
+              description: Time when the reminder was sent
+            status:
+              type: string
+              description: Status of the reminder
+        isCanceled:
+          type: boolean
+          description: Indicates if the event is canceled
+        cancelReason:
+          type: string
+          nullable: true
+          description: Reason for cancellation
+      required:
+        - id
+        - type
+        - start
+        - end
+        - attendee
+        - reminderSent
+        - reminder
+        - isCanceled
+        - appointment
+      additionalProperties: false
+
+    EventResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: The ID of the event
+        type:
+          type: string
+          enum:
+            - event
+          description: The type of event (event)
+        title:
+          type: string
+          description: The title of the event
+        start:
+          type: string
+          format: date-time
+          description: The start time of the event
+        end:
+          type: string
+          format: date-time
+          description: The end time of the event
+        description:
+          type: string
+          description: The description of the event
+        attendee:
+          $ref: '#/components/schemas/Attendee'
+        reminderSent:
+          type: boolean
+          description: Indicates if a reminder was sent
+        reminder:
+          type: object
+          properties:
+            reminderMinutes:
+              type: integer
+              description: Minutes before the event to send a reminder
+            timeSent:
+              type: string
+              format: date-time
+              nullable: true
+              description: Time when the reminder was sent
+            status:
+              type: string
+              description: Status of the reminder
+        isCanceled:
+          type: boolean
+          description: Indicates if the event is canceled
+        cancelReason:
+          type: string
+          nullable: true
+          description: Reason for cancellation
+      required:
+        - id
+        - type
+        - start
+        - end
+        - attendee
+        - reminderSent
+        - reminder
+        - isCanceled
+      additionalProperties: false
+
+    CustomerRankItemDto:
+      type: object
+      properties:
+        customerId:
+          type: string
+          format: uuid
+        customerName:
+          type: string
+        customerSurname:
+          type: string
+        numberOfAppointments:
+          type: integer
+
+    CustomerCancellationRankItemDto:
+      type: object
+      properties:
+        customerId:
+          type: string
+          format: uuid
+        customerName:
+          type: string
+        customerSurname:
+          type: string
+        numberOfCancellation:
+          type: integer
+
+    CancellationDayOfWeekCount:
+      type: object
+      properties:
+        dayOfWeek:
+          type: string
+          enum:
+            - Monday
+            - Tuesday
+            - Wednesday
+            - Thursday
+            - Friday
+            - Saturday
+            - Sunday
+        cancellationCount:
+          type: integer
+
+    Service:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        price:
+          type: number
+        tags:
+          type: array
+          items:
+            type: string
+          default: []
+        color:
+          type: string
+      required:
+        - id
+        - name
+        - price
+        - tags
+
+
+  responses:
+    CustomerRankingResponseBody:
+      description: "Customer ranking"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerRankItemDto'
+              nextPage:
+                type: string
+
+    CustomerCancellationRankingResponseBody:
+      description: "Ranking of customer cancellation"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              items:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerCancellationRankItemDto'
+              nextPage:
+                type: string
+
+    StatisticsResponseBody:
+      description: "General statistics"
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              cancellationDayOfWeek:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CancellationDayOfWeekCount'
+
+  requestBodies:
+    CreateEventRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - $ref: '#/components/schemas/AppointmentEvent'
+              - $ref: '#/components/schemas/GenericEvent'
+
+    CreateAppointmentRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+              start:
+                type: string
+                format: date-time
+                example: "2023-09-11T08:00:00Z" # ISO 8601 format example
+              end:
+                type: string
+                format: date-time
+                example: "2023-09-11T08:00:00Z" # ISO 8601 format example
+              description:
+                type: string
+              customerId:
+                type: string
+                format: uuid
+
+            required:
+              - title
+              - start
+              - end
+              - customerId
+    EditAgendaActivityRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              title:
+                type: string
+              start:
+                type: string
+                format: date-time
+              end:
+                type: string
+                format: date-time
+              description:
+                type: string
+              attendeeId:
+                type: string
+              services:
+                type: array
+                items:
+                  type: string
+    CreateServiceRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              name:
+                type: string
+              price:
+                type: number
+              tags:
+                type: array
+                items:
+                  type: string
+                default: []
+              color:
+                type: string
+            required:
+              - name
+              - price
+    UpdateServiceRequestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              price:
+                type: number
+              tags:
+                type: array
+                items:
+                  type: string
+                default: [ ]
+              color:
+                type: string
