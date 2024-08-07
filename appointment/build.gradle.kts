@@ -86,16 +86,10 @@ allOpen {
   annotation("io.quarkus.test.junit.QuarkusTest")
 }
 
-sourceSets {
-  main {
-    java {
-      srcDirs("$buildDir/generated/src/main/java")
-    }
-  }
-}
+sourceSets { main { java { srcDirs("$buildDir/generated/src/main/java") } } }
 
 tasks.withType<KotlinCompile> {
-  //dependsOn("notification-api", "sms-gateway-webhook-api")
+  // dependsOn("notification-api", "sms-gateway-webhook-api")
   kotlinOptions { jvmTarget = "17" }
 }
 
