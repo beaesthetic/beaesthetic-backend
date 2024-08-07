@@ -1,0 +1,57 @@
+namespace: "beaesthetic"
+name: "appointment-service-v2"
+labels:
+  app: "appointment-api-v2"
+
+replicaCount: 1
+
+image:
+  repository: petretiandrea/appointment-service-v2
+  pullPolicy: IfNotPresent
+
+service:
+  create: true
+  type: ClusterIP
+  ports:
+    - 8080
+
+envConfig:
+  OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
+  REDIS_HOST: "redis-headless.common.svc.cluster.local:6379"
+  SERVICES_CACHE_TTL: "1h"
+  SERVICES_SEARCH_CACHE_TTL: "1h"
+  MONGO_DATABASE_NAME: "appointments-v2"
+  QUARKUS_REDIS_MAX_POOL_WAITING: "100"
+  QUARKUS_REDIS_RECONNECT_ATTEMPTS: "3"
+
+resources:
+  requests:
+    memory: "100Mi"
+    cpu: "80m"
+  limits:
+    memory: "100Mi"
+    cpu: "80m"
+
+secretKeyRef:
+  - name: MONGO_CONNECTION_STRING
+    secretRefName: appointment-secrets
+    key: MONGO_DB_URI
+  - name: REDIS_PASSWORD
+    secretRefName: appointment-secrets
+    key: REDIS_PASSWORD
+
+readinessProbe:
+  httpGet:
+    path: /q/health/ready
+    port: 8080
+  initialDelaySeconds: 30
+  failureThreshold: 10
+  periodSeconds: 30
+
+livenessProbe:
+  httpGet:
+    path: /q/health/live
+    port: 8080
+  initialDelaySeconds: 30
+  failureThreshold: 10
+  periodSeconds: 30
