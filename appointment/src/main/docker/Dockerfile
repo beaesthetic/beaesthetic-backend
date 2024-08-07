@@ -7,7 +7,7 @@ COPY --chown=quarkus:quarkus --chmod=0755 ./ /code/
 #COPY --chown=quarkus:quarkus --chmod=0755 gradle.properties /code/
 USER quarkus
 WORKDIR /code
-RUN ./gradlew agenda:build -Dquarkus.package.type=native -DskipTests
+RUN ./gradlew appointment:build -Dquarkus.package.type=native -DskipTests
 
 # also a distroless is available https://quarkus.io/guides/building-native-image#using-a-distroless-base-image
 FROM quay.io/quarkus/quarkus-micro-image:2.0 AS runtime
