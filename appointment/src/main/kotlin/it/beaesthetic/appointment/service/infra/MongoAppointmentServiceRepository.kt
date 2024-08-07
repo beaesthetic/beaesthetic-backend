@@ -10,10 +10,10 @@ import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoRepository
 import io.quarkus.runtime.Startup
 import io.quarkus.runtime.annotations.RegisterForReflection
 import io.smallrye.mutiny.coroutines.awaitSuspending
+import it.beaesthetic.appointment.service.common.SearchGram
 import it.beaesthetic.appointment.service.domain.AppointmentService
 import it.beaesthetic.appointment.service.domain.AppointmentServiceRepository
 import it.beaesthetic.appointment.service.domain.Color
-import it.beaesthetic.appointment.service.common.SearchGram
 import jakarta.enterprise.context.ApplicationScoped
 import kotlinx.coroutines.runBlocking
 import org.bson.Document
@@ -24,7 +24,9 @@ import org.bson.conversions.Bson
 
 @RegisterForReflection
 @MongoEntity(collection = "services")
-data class AppointmentServiceEntity @BsonCreator constructor(
+data class AppointmentServiceEntity
+@BsonCreator
+constructor(
     @BsonId val id: String,
     @BsonProperty("name") val name: String,
     @BsonProperty("price") val price: Double,
@@ -71,53 +73,55 @@ class MongoAppointmentServiceRepository(
     }
 
     override suspend fun findAll(): List<AppointmentService> {
-        return panacheAppointmentRepository.findAll()
-            .list()
-            .awaitSuspending()
-            .map { Mapper.toDomain(it) }
+        return panacheAppointmentRepository.findAll().list().awaitSuspending().map {
+            Mapper.toDomain(it)
+        }
     }
 
     override suspend fun findById(id: String): AppointmentService? {
-        return panacheAppointmentRepository.find("_id", id)
+        return panacheAppointmentRepository
+            .find("_id", id)
             .firstResult()
             .map { e -> e?.let { Mapper.toDomain(it) } }
             .awaitSuspending()
     }
 
     override suspend fun save(appointmentService: AppointmentService): Result<AppointmentService> {
-        val searchTerms = appointmentService.tags.flatMap { SearchGram.Default.nGrams(it, 2) } +
+        val searchTerms =
+            appointmentService.tags.flatMap { SearchGram.Default.nGrams(it, 2) } +
                 SearchGram.Default.nGrams(appointmentService.name.trim().lowercase(), 2)
-        val entity = Mapper.toEntity(appointmentService).copy(
-            searchGrams = searchTerms.toSet().joinToString(" ")
-        )
+        val entity =
+            Mapper.toEntity(appointmentService)
+                .copy(searchGrams = searchTerms.toSet().joinToString(" "))
         return runCatching {
-            panacheAppointmentRepository.persistOrUpdate(entity)
-                .awaitSuspending()
-                .let { Mapper.toDomain(entity) }
+            panacheAppointmentRepository.persistOrUpdate(entity).awaitSuspending().let {
+                Mapper.toDomain(entity)
+            }
         }
     }
 
     override suspend fun delete(id: String): Result<String> = runCatching {
-        panacheAppointmentRepository.delete("_id", id)
-            .awaitSuspending()
+        panacheAppointmentRepository.delete("_id", id).awaitSuspending()
         id
     }
 
     private object Mapper {
-        fun toDomain(entity: AppointmentServiceEntity): AppointmentService = AppointmentService(
-            id = entity.id,
-            name = entity.name,
-            price = entity.price,
-            tags = entity.tags.toSet(),
-            color = entity.colorHex?.let { Color(it) }
-        )
+        fun toDomain(entity: AppointmentServiceEntity): AppointmentService =
+            AppointmentService(
+                id = entity.id,
+                name = entity.name,
+                price = entity.price,
+                tags = entity.tags.toSet(),
+                color = entity.colorHex?.let { Color(it) }
+            )
 
-        fun toEntity(service: AppointmentService): AppointmentServiceEntity = AppointmentServiceEntity(
-            id = service.id,
-            name = service.name,
-            price = service.price,
-            tags = service.tags.toList(),
-            colorHex = service.color?.hex
-        )
+        fun toEntity(service: AppointmentService): AppointmentServiceEntity =
+            AppointmentServiceEntity(
+                id = service.id,
+                name = service.name,
+                price = service.price,
+                tags = service.tags.toList(),
+                colorHex = service.color?.hex
+            )
     }
 }
