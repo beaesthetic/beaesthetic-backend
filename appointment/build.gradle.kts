@@ -89,7 +89,7 @@ allOpen {
 sourceSets { main { java { srcDirs("$buildDir/generated/src/main/java") } } }
 
 tasks.withType<KotlinCompile> {
-  // dependsOn("notification-api", "sms-gateway-webhook-api")
+  dependsOn("appointment-api")
   kotlinOptions { jvmTarget = "17" }
 }
 
