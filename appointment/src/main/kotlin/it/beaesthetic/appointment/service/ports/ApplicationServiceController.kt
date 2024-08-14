@@ -4,10 +4,10 @@ import io.quarkus.cache.CacheKey
 import io.quarkus.cache.CacheResult
 import io.quarkus.runtime.annotations.RegisterForReflection
 import io.smallrye.mutiny.Uni
-import it.beaesthetic.appointment.generated.api.ServicesApi
-import it.beaesthetic.appointment.generated.api.model.CreateServiceRequestDto
-import it.beaesthetic.appointment.generated.api.model.ServiceDto
-import it.beaesthetic.appointment.generated.api.model.UpdateServiceRequestDto
+import it.beaesthetic.appointment.agenda.generated.api.ServicesApi
+import it.beaesthetic.appointment.agenda.generated.api.model.CreateServiceRequestDto
+import it.beaesthetic.appointment.agenda.generated.api.model.ServiceDto
+import it.beaesthetic.appointment.agenda.generated.api.model.UpdateServiceRequestDto
 import it.beaesthetic.appointment.service.common.uniWithScope
 import it.beaesthetic.appointment.service.domain.AppointmentService
 import it.beaesthetic.appointment.service.domain.AppointmentServiceRepository
