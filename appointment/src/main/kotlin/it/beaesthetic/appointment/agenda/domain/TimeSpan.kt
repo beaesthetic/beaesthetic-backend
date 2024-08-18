@@ -3,10 +3,7 @@ package it.beaesthetic.appointment.agenda.domain
 import java.time.Instant
 import java.time.OffsetDateTime
 
-data class TimeSpan(
-    val start: Instant,
-    val end: Instant
-) {
+data class TimeSpan(val start: Instant, val end: Instant) {
     init {
         require(start.isBefore(end)) { "start ($start) must be before ($end)" }
     }

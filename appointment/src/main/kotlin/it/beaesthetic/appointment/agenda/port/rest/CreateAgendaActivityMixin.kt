@@ -15,15 +15,9 @@ import it.beaesthetic.appointment.agenda.generated.api.model.GenericEventDto
 )
 @JsonSubTypes(
     value =
-    [
-        JsonSubTypes.Type(
-            value = GenericEventDto::class,
-            name = "event"
-        ),
-        JsonSubTypes.Type(
-            value = AppointmentEventDto::class,
-            name = "appointment"
-        ),
-    ]
+        [
+            JsonSubTypes.Type(value = GenericEventDto::class, name = "event"),
+            JsonSubTypes.Type(value = AppointmentEventDto::class, name = "appointment"),
+        ]
 )
 interface CreateAgendaActivityMixin

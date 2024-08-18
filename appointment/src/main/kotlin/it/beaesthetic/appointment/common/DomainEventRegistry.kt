@@ -6,8 +6,9 @@ interface DomainEventRegistry<E> {
     val events: List<Pair<String, E>>
 
     companion object {
-        fun <E> delegate(domainEvents: List<Pair<String, E>> = emptyList()): DomainEventRegistry<E> =
-            DomainEventRegistryDelegate(domainEvents)
+        fun <E> delegate(
+            domainEvents: List<Pair<String, E>> = emptyList()
+        ): DomainEventRegistry<E> = DomainEventRegistryDelegate(domainEvents)
 
         private class DomainEventRegistryDelegate<E>(
             private var domainEvents: List<Pair<String, E>> = emptyList(),
@@ -25,4 +26,3 @@ interface DomainEventRegistry<E> {
         }
     }
 }
-

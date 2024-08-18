@@ -13,22 +13,19 @@ data class AgendaSchedule(
     val createdAt: Instant,
 ) {
 
-    val title = when(data) {
-        is BasicScheduleData -> data.title
-        is AppointmentScheduleData -> data.services.joinToString(",") { it.name }
-    }
+    val title =
+        when (data) {
+            is BasicScheduleData -> data.title
+            is AppointmentScheduleData -> data.services.joinToString(",") { it.name }
+        }
 
     fun reschedule(timeSpan: TimeSpan): AgendaSchedule {
-        require(cancelReason == null) { "Event already canceled"}
+        require(cancelReason == null) { "Event already canceled" }
         return copy(timeSpan = timeSpan)
     }
 
     fun cancel(reason: CancelReason): AgendaSchedule {
-        require(cancelReason == null) { "Event already canceled"}
-        return copy(
-            cancelReason = reason
-        )
+        require(cancelReason == null) { "Event already canceled" }
+        return copy(cancelReason = reason)
     }
 }
-
-
