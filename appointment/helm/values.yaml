@@ -23,6 +23,7 @@ envConfig:
   MONGO_DATABASE_NAME: "appointments-v2"
   QUARKUS_REDIS_MAX_POOL_WAITING: "100"
   QUARKUS_REDIS_RECONNECT_ATTEMPTS: "3"
+  CUSTOMER_SERVICE_BASEURL: "http://customer-service-v2:8080"
 
 resources:
   requests:
