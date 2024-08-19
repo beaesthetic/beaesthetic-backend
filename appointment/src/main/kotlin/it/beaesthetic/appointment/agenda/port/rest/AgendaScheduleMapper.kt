@@ -31,7 +31,8 @@ object AgendaScheduleMapper {
                     // TODO: implement this
                     ),
             appointment =
-                AppointmentEventAppointmentDto(services = scheduleData.services.map { it.name })
+                AppointmentEventAppointmentDto(services = scheduleData.services.map { it.name }),
+            cancelReason = schedule.cancelReason?.let { mapCancelReasonResource(it) }
         )
     }
 

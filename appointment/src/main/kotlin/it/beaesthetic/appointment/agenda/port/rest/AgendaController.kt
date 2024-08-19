@@ -13,7 +13,8 @@ import kotlin.IllegalArgumentException as IllegalArgumentException1
 class AgendaController(
     private val createAgendaScheduleHandler: CreateAgendaScheduleHandler,
     private val editAgendaScheduleHandler: EditAgendaScheduleHandler,
-    private val deleteAgendaScheduleHandler: DeleteAgendaScheduleHandler
+    private val deleteAgendaScheduleHandler: DeleteAgendaScheduleHandler,
+    private val queryHandler: AgendaQueryHandler
 ) : ActivitiesApi {
 
     override fun createAgendaActivity(
@@ -89,6 +90,13 @@ class AgendaController(
             .getOrThrow()
     }
 
+    override fun getActivityById(activityId: UUID): Uni<ActivityResponseDto> = uniWithScope {
+        queryHandler
+            .handle(activityId.toString())
+            .map { AgendaScheduleMapper.toResourceDto(it) }
+            .getOrThrow()
+    }
+
     override fun deleteActivity(activityId: UUID, reason: String?): Uni<Void> =
         uniWithScope {
                 deleteAgendaScheduleHandler
@@ -110,7 +118,17 @@ class AgendaController(
         start: OffsetDateTime?,
         end: OffsetDateTime?,
         attendeeId: String?
-    ): Uni<ActivityResponseDto> {
-        TODO("Not yet implemented")
+    ): Uni<ActivityResponseDto> = uniWithScope {
+        val timeSpan =
+            start?.let {
+                end?.let { TimeSpan.fromOffsetDateTime(start, end) }
+                    ?: throw IllegalArgumentException("end must be specified")
+            }
+
+        when {
+            timeSpan != null -> queryHandler.handle(timeSpan)
+            attendeeId != null -> queryHandler.handleByAttendeeId(attendeeId)
+            else -> emptyList()
+        }.map { AgendaScheduleMapper.toResourceDto(it) }
     }
 }
