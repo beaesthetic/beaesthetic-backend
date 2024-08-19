@@ -15,7 +15,7 @@ class DeleteAgendaScheduleHandler(private val agendaRepository: AgendaRepository
         val (schedule, version) =
             agendaRepository.findSchedule(command.id.toString())
                 ?: throw IllegalArgumentException("Schedule not found")
-        schedule.cancel(command.reason)
-        return agendaRepository.saveSchedule(schedule, version)
+
+        return agendaRepository.saveSchedule(schedule.cancel(command.reason), version)
     }
 }
