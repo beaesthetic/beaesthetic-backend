@@ -61,6 +61,10 @@ dependencies {
   implementation("io.quarkus:quarkus-opentelemetry")
   implementation("io.quarkus:quarkus-micrometer")
 
+  // rest client generator
+  implementation("io.quarkiverse.openapi.generator:quarkus-openapi-generator:2.4.2")
+  implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
+
   implementation(kotlin("reflect"))
 
   testImplementation("io.quarkus:quarkus-junit5")
@@ -86,7 +90,14 @@ allOpen {
   annotation("io.quarkus.test.junit.QuarkusTest")
 }
 
-sourceSets { main { java { srcDirs("$buildDir/generated/src/main/java") } } }
+sourceSets {
+  main {
+    java {
+      srcDirs("$buildDir/generated/src/main/java")
+      srcDirs("$buildDir/classes/java/quarkus-generated-sources/open-api-yaml")
+    }
+  }
+}
 
 tasks.withType<KotlinCompile> {
   dependsOn("appointment-api")
@@ -110,13 +121,13 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
 }
 
 tasks.register<GenerateTask>("appointment-api") {
-  description = "Generate REST API interface for appointments"
+  description = "Generate REST API interface for customer"
   group = "openapi-generation"
   generatorName.set("kotlin-server")
   inputSpec.set("$rootDir/api-spec/openapi.yaml")
   outputDir.set("$buildDir/generated")
-  apiPackage.set("it.beaesthetic.appointment.generated.api")
-  modelPackage.set("it.beaesthetic.appointment.generated.api.model")
+  apiPackage.set("it.beaesthetic.appointment.agenda.generated.api")
+  modelPackage.set("it.beaesthetic.appointment.agenda.generated.api.model")
   generateApiTests.set(false)
   generateApiDocumentation.set(false)
   generateApiTests.set(false)
@@ -125,6 +136,8 @@ tasks.register<GenerateTask>("appointment-api") {
 
   library.set("jaxrs-spec")
   modelNameSuffix.set("Dto")
+  templateDir.set("${projectDir.path}/src/main/resources/kotlin-server")
+
   configOptions.set(
     mapOf(
       "sourceFolder" to "src/main/java",
@@ -143,7 +156,23 @@ tasks.register<GenerateTask>("appointment-api") {
       "useBeanValidation" to "true",
       "dateLibrary" to "java8",
       "useJakartaEe" to "true",
-      "useTags" to "true"
+      "useTags" to "true",
+      "returnResponse" to "false"
+    )
+  )
+  typeMappings.putAll(
+    mapOf(
+      "CreateAgendaActivityRequestDto" to "CreateAgendaActivityMixin",
+    )
+  )
+  schemaMappings.putAll(mapOf("CreateAgendaActivityRequest" to "CreateAgendaActivityMixin"))
+
+  importMappings.putAll(
+    mapOf(
+      "CreateAgendaActivityRequestDto" to
+        "it.beaesthetic.appointment.agenda.port.rest.CreateAgendaActivityMixin",
+      "CreateAgendaActivityMixin" to
+        "it.beaesthetic.appointment.agenda.port.rest.CreateAgendaActivityMixin"
     )
   )
 }

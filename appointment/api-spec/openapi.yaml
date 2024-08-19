@@ -29,12 +29,22 @@ paths:
       summary: Create a new agenda event
       operationId: createAgendaActivity
       requestBody:
-        $ref: '#/components/requestBodies/CreateEventRequestBody'
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAgendaActivityRequest'
       responses:
         '201':
           description: Appointment created
           content:
             application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    format: uuid
               example:
                 id: "97bb1a68-2d8c-4848-9a2d-94224e857ab5"
         '400':
@@ -150,7 +160,7 @@ paths:
       summary: Get an activity by ID
       operationId: getActivityById
       tags:
-        - appointments
+        - activities
       parameters:
         - name: activityId
           in: path
@@ -330,13 +340,9 @@ paths:
 components:
   schemas:
     AppointmentEvent:
+      x-implements: "it.beaesthetic.appointment.agenda.port.rest.CreateAgendaActivityMixin"
       type: object
       properties:
-        eventType:
-          type: string
-          enum:
-            - appointment
-          description: The type of event (appointment)
         start:
           type: string
           format: date-time
@@ -368,7 +374,6 @@ components:
               type: number
               description: Minutes before the event to send a reminder
       required:
-        - eventType
         - start
         - end
         - title
@@ -377,13 +382,9 @@ components:
         - appointment
 
     GenericEvent:
+      x-implements: "it.beaesthetic.appointment.agenda.port.rest.CreateAgendaActivityMixin"
       type: object
       properties:
-        eventType:
-          type: string
-          enum:
-            - event
-          description: The type of event (event)
         start:
           type: string
           format: date-time
@@ -403,7 +404,6 @@ components:
           format: uuid
           description: The ID of the attendee
       required:
-        - eventType
         - start
         - end
         - title
@@ -631,6 +631,17 @@ components:
         - name
         - price
         - tags
+
+    CreateAgendaActivityRequest:
+      oneOf:
+        - $ref: '#/components/schemas/AppointmentEvent'
+        - $ref: '#/components/schemas/GenericEvent'
+      discriminator:
+        propertyName: eventType
+        mapping:
+          appointment: "#/components/schemas/AppointmentEvent"
+          event: "#/components/schemas/GenericEvent"
+
 
 
   responses:
