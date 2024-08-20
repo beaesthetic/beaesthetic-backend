@@ -15,4 +15,4 @@ EXPOSE 8080
 
 COPY --from=builder /code/scheduler/build/native/nativeCompile/scheduler .
 
-ENTRYPOINT ["./pagopa-helpdesk-commands-service"]
+ENTRYPOINT ["./scheduler"]
