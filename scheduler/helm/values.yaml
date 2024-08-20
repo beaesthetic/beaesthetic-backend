@@ -1,0 +1,64 @@
+namespace: "common"
+name: "scheduler-service"
+labels:
+  app: "scheduler-service"
+
+replicaCount: 1
+
+image:
+  repository: petretiandrea/scheduler-service
+  pullPolicy: IfNotPresent
+
+service:
+  create: true
+  type: ClusterIP
+  ports:
+    - 8080
+
+envConfig:
+  OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
+  RABBIT_HOST: "rabbitmq.common.svc.cluster.local"
+  RABBIT_PORT: "5672"
+  RABBIT_USER: "guest"
+  RABBIT_PASSWORD: "guest"
+
+  REDIS_HOST: "redis-headless.common.svc.cluster.local"
+  REDIS_PORT: "6379"
+
+  SCHEDULER_NAME: "reminders"
+  SCHEDULER_POLLING_INTERVAL: "60s"
+  SCHEDULER_PEEK_LEASE_TTL: "30s"
+  SCHEDULER_PEEK_BATCH_SIZE: "50"
+
+
+resources:
+  requests:
+    memory: "100Mi"
+    cpu: "80m"
+  limits:
+    memory: "100Mi"
+    cpu: "80m"
+
+secretKeyRef:
+  - name: MONGO_CONNECTION_STRING
+    secretRefName: notification-service
+    key: MONGO_DB_URI
+  - name: SMS_GATEWAY_API_KEY
+    secretRefName: notification-service
+    key: SMS_GATEWAY_API_KEY
+
+readinessProbe:
+  httpGet:
+    path: /q/health/ready
+    port: 8080
+  initialDelaySeconds: 30
+  failureThreshold: 10
+  periodSeconds: 30
+
+livenessProbe:
+  httpGet:
+    path: /q/health/live
+    port: 8080
+  initialDelaySeconds: 30
+  failureThreshold: 10
+  periodSeconds: 30
