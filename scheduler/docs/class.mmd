@@ -1,0 +1,25 @@
+classDiagram
+    class ScheduleEvent
+
+    class Subscription {
+        + unsubscribe()
+    }
+
+    class Scheduler {
+        + subscribe(consumer JobScheduleConsumer) Subscription
+        + schedule(event ScheduledEvent)
+        + remove(event)
+    }
+
+    class SchedulerRuntime {
+        + tick(delta Duration) ScheduleEvent[]
+        # add(event ScheduledEvent)
+        # remove(event ScheduleEvent)
+    }
+
+    class JobScheduleConsumer {
+        onEvent(event ScheduleEvent)
+    }
+
+    Scheduler "1" -- "1" SchedulerRuntime
+    Scheduler o-- JobScheduleConsumer
