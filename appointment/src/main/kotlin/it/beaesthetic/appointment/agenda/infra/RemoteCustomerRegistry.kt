@@ -1,8 +1,8 @@
 package it.beaesthetic.appointment.agenda.infra
 
 import io.smallrye.mutiny.coroutines.awaitSuspending
-import it.beaesthetic.appointment.agenda.domain.Customer
-import it.beaesthetic.appointment.agenda.domain.CustomerRegistry
+import it.beaesthetic.appointment.agenda.domain.event.Customer
+import it.beaesthetic.appointment.agenda.domain.event.CustomerRegistry
 import it.beaesthetic.generated.customer.client.api.CustomersApi
 
 class RemoteCustomerRegistry(private val customersApi: CustomersApi) : CustomerRegistry {
@@ -12,7 +12,8 @@ class RemoteCustomerRegistry(private val customersApi: CustomersApi) : CustomerR
             .map {
                 Customer(
                     customerId = it.id,
-                    displayName = listOf(it.name, it.surname).joinToString(" ")
+                    displayName = listOf(it.name, it.surname).joinToString(" "),
+                    phoneNumber = it.phone
                 )
             }
             .onFailure()

@@ -1,10 +1,15 @@
 package it.beaesthetic.appointment.agenda.infra.mongo
 
-import it.beaesthetic.appointment.agenda.domain.*
+import it.beaesthetic.appointment.agenda.domain.event.*
+import it.beaesthetic.appointment.agenda.domain.reminder.Reminder
+import it.beaesthetic.appointment.agenda.domain.reminder.ReminderOptions
+import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
+import it.beaesthetic.appointment.common.DomainEventRegistry
+import java.time.Duration
 import java.time.Instant
 
 object EntityMapper {
-    fun toEntity(scheduleAgenda: AgendaSchedule, version: Long): AgendaEntity {
+    fun toEntity(scheduleAgenda: AgendaEvent, version: Long): AgendaEntity {
         return AgendaEntity(
             id = scheduleAgenda.id,
             attendee =
@@ -19,22 +24,29 @@ object EntityMapper {
             updatedAt = Instant.now(),
             data =
                 when (scheduleAgenda.data) {
-                    is AppointmentScheduleData ->
+                    is AppointmentEventData ->
                         AgendaAppointmentData(
                             services = scheduleAgenda.data.services.map { it.name }
                         )
-                    is BasicScheduleData ->
+                    is BasicEventData ->
                         AgendaBasicData(
                             title = scheduleAgenda.data.title,
                             description = scheduleAgenda.data.description ?: ""
                         )
                 },
-            version = version
+            version = version,
+            reminderStatus = scheduleAgenda.activeReminder.status.name,
+            remindBeforeSeconds = scheduleAgenda.reminderOptions.triggerBefore.toSeconds()
         )
     }
 
-    fun toDomain(scheduleAgendaEntity: AgendaEntity): AgendaSchedule {
-        return AgendaSchedule(
+    fun toDomain(scheduleAgendaEntity: AgendaEntity): AgendaEvent {
+        val reminderOptions =
+            ReminderOptions(
+                wantRecap = false,
+                triggerBefore = Duration.ofSeconds(scheduleAgendaEntity.remindBeforeSeconds),
+            )
+        return AgendaEvent(
             id = scheduleAgendaEntity.id,
             timeSpan = TimeSpan(scheduleAgendaEntity.start, scheduleAgendaEntity.end),
             attendee =
@@ -46,17 +58,22 @@ object EntityMapper {
             data =
                 when (scheduleAgendaEntity.data) {
                     is AgendaAppointmentData ->
-                        AppointmentScheduleData(
+                        AppointmentEventData(
                             services =
                                 scheduleAgendaEntity.data.services.map { AppointmentService(it) }
                         )
                     is AgendaBasicData ->
-                        BasicScheduleData(
+                        BasicEventData(
                             title = scheduleAgendaEntity.data.title,
                             description = scheduleAgendaEntity.data.description,
                         )
                 },
-            createdAt = scheduleAgendaEntity.createdAt
+            createdAt = scheduleAgendaEntity.createdAt,
+            reminderOptions = reminderOptions,
+            activeReminder =
+                Reminder.from(scheduleAgendaEntity.start, reminderOptions)
+                    .copy(status = ReminderStatus.valueOf(scheduleAgendaEntity.reminderStatus)),
+            domainEventRegistry = DomainEventRegistry.delegate()
         )
     }
 }

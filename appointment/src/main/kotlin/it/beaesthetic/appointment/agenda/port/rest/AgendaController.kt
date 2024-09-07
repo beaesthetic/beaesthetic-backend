@@ -1,8 +1,8 @@
 package it.beaesthetic.appointment.agenda.port.rest
 
 import io.smallrye.mutiny.Uni
-import it.beaesthetic.appointment.agenda.application.*
-import it.beaesthetic.appointment.agenda.domain.*
+import it.beaesthetic.appointment.agenda.application.events.*
+import it.beaesthetic.appointment.agenda.domain.event.*
 import it.beaesthetic.appointment.agenda.generated.api.ActivitiesApi
 import it.beaesthetic.appointment.agenda.generated.api.model.*
 import it.beaesthetic.appointment.service.common.uniWithScope
@@ -31,7 +31,7 @@ class AgendaController(
                             ),
                         attendeeId = createAgendaActivityMixin.attendeeId.toString(),
                         data =
-                            BasicScheduleData(
+                            BasicEventData(
                                 title = createAgendaActivityMixin.title,
                                 description = createAgendaActivityMixin.description
                             )
@@ -45,7 +45,7 @@ class AgendaController(
                             ),
                         attendeeId = createAgendaActivityMixin.attendeeId.toString(),
                         data =
-                            AppointmentScheduleData(
+                            AppointmentEventData(
                                 services =
                                     createAgendaActivityMixin.appointment.services?.map {
                                         AppointmentService(it)

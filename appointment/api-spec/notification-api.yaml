@@ -1,0 +1,158 @@
+openapi: 3.0.0
+info:
+  title: Notification API
+  description: |
+    Welcome to the Customer API documentation. This API allows you to manage customer data, including creating, updating, searching, and retrieving customer records. It provides endpoints for various customer-related operations.
+    
+    ## Endpoints
+    - **Get Customers**: Retrieve a list of customers with pagination support.
+    - **Search Customers**: Search for customers by name or other criteria.
+    - **Get Customer by ID**: Retrieve a customer's details by their unique ID.
+    - **Create Customer**: Create a new customer record.
+    - **Update Customer**: Update an existing customer's information.
+    
+    ## Request and Response Formats
+    All requests and responses follow the JSON format. Please refer to the schemas section for detailed information on request and response payloads.
+    
+    ## Error Handling
+    In case of errors, the API will respond with appropriate status codes and error messages. Refer to the error handling section for a list of possible errors and their meanings.
+    
+    ## Version
+    This documentation covers version 1.0.0 of the Customer API.
+  contact:
+    email: petretiandrea@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+paths:
+  /notifications:
+    post:
+      tags:
+        - notifications
+      operationId: createNotification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendNotificationRequest'
+      responses:
+        '200':
+          description: 'Notification successfully processed'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notificationId:
+                    $ref: '#/components/schemas/NotificationId'
+        '400':
+          description: "Bad request"
+
+  /notifications/{notificationId}:
+    get:
+      tags:
+        - notifications
+      operationId: getNotification
+      parameters:
+        - in: path
+          name: notificationId
+          required: true
+          schema:
+            $ref: '#/components/schemas/NotificationId'
+      responses:
+        '200':
+          description: "Notification state of given id"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '400':
+          description: 'Bad request'
+        '404':
+          description: 'Notification not found'
+
+components:
+  schemas:
+    NotificationId:
+      type: string
+      format: uuid
+
+    SendNotificationRequest:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        channel:
+          $ref: "#/components/schemas/NotificationChannel"
+      required:
+        - title
+        - content
+        - channel
+
+    # refactor to support quarkus-openapi-generator
+    NotificationChannel:
+      type: object
+      properties:
+        type:
+          type: string
+          enum:
+            - sms
+            - email
+            - whatsapp
+        phone:
+          type: string
+        email:
+          type: string
+      required:
+        - type
+
+    SmsChannel:
+      type: object
+      properties:
+        type:
+          type: string
+        phone:
+          type: string
+      required:
+        - type
+        - phone
+
+    EmailChannel:
+      type: object
+      properties:
+        type:
+          type: string
+        email:
+          type: string
+      required:
+        - type
+        - email
+
+    WhatsappChannel:
+      type: object
+      properties:
+        phone:
+          type: string
+      required:
+        - type
+        - phone
+
+    Notification:
+      type: object
+      properties:
+        notificationId:
+          $ref: '#/components/schemas/NotificationId'
+        title:
+          type: string
+        content:
+          type: string
+        isSent:
+          type: boolean
+        isSentConfirmed:
+          type: boolean
+        channel:
+          $ref: '#/components/schemas/NotificationChannel'

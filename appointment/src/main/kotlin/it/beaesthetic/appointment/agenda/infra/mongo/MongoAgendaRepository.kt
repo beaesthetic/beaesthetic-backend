@@ -7,7 +7,10 @@ import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoRepository
 import io.quarkus.runtime.Startup
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
-import it.beaesthetic.appointment.agenda.domain.*
+import io.vertx.mutiny.core.eventbus.EventBus
+import it.beaesthetic.appointment.agenda.domain.event.AgendaEvent
+import it.beaesthetic.appointment.agenda.domain.event.AgendaRepository
+import it.beaesthetic.appointment.agenda.domain.event.TimeSpan
 import it.beaesthetic.appointment.common.OptimisticConcurrency
 import it.beaesthetic.appointment.common.OptimisticLockException
 import it.beaesthetic.appointment.common.panache.PanacheUtils.updateOne
@@ -32,11 +35,13 @@ class PanacheAgendaRepository : ReactivePanacheMongoRepository<AgendaEntity> {
 }
 
 @ApplicationScoped
-class MongoAgendaRepository(private val panacheAgendaRepository: PanacheAgendaRepository) :
-    AgendaRepository {
-    override suspend fun findSchedule(
+class MongoAgendaRepository(
+    private val panacheAgendaRepository: PanacheAgendaRepository,
+    private val eventBus: EventBus,
+) : AgendaRepository {
+    override suspend fun findEvent(
         scheduleId: String
-    ): OptimisticConcurrency.VersionedEntity<AgendaSchedule>? {
+    ): OptimisticConcurrency.VersionedEntity<AgendaEvent>? {
         return panacheAgendaRepository
             .find("_id", scheduleId)
             .firstResult()
@@ -48,39 +53,48 @@ class MongoAgendaRepository(private val panacheAgendaRepository: PanacheAgendaRe
             .awaitSuspending()
     }
 
-    override suspend fun saveSchedule(
-        schedule: AgendaSchedule,
+    override suspend fun saveEvent(
+        schedule: AgendaEvent,
         expectedVersion: Long
-    ): Result<AgendaSchedule> =
-        kotlin.runCatching {
-            val entity =
-                EntityMapper.toEntity(schedule, expectedVersion).let {
-                    it.copy(version = it.version + 1)
-                }
-            val filter =
-                Filters.and(Filters.eq("_id", schedule.id), Filters.eq("version", expectedVersion))
-            when (expectedVersion) {
-                0.toLong() ->
-                    panacheAgendaRepository
-                        .persist(entity)
-                        .map { EntityMapper.toDomain(it) }
-                        .awaitSuspending()
-                else ->
-                    panacheAgendaRepository
-                        .updateOne(filter, entity)
-                        .flatMap {
-                            if (it.matchedCount.toInt() == 0) {
-                                Uni.createFrom().failure(OptimisticLockException(expectedVersion))
-                            } else {
-                                Uni.createFrom().item(entity)
+    ): Result<AgendaEvent> =
+        kotlin
+            .runCatching {
+                val entity =
+                    EntityMapper.toEntity(schedule, expectedVersion).let {
+                        it.copy(version = it.version + 1)
+                    }
+                val filter =
+                    Filters.and(
+                        Filters.eq("_id", schedule.id),
+                        Filters.eq("version", expectedVersion)
+                    )
+                when (expectedVersion) {
+                    0.toLong() ->
+                        panacheAgendaRepository
+                            .persist(entity)
+                            .map { EntityMapper.toDomain(it) }
+                            .awaitSuspending()
+                    else ->
+                        panacheAgendaRepository
+                            .updateOne(filter, entity)
+                            .flatMap {
+                                if (it.matchedCount.toInt() == 0) {
+                                    Uni.createFrom()
+                                        .failure(OptimisticLockException(expectedVersion))
+                                } else {
+                                    Uni.createFrom().item(entity)
+                                }
                             }
-                        }
-                        .map { EntityMapper.toDomain(it) }
-                        .awaitSuspending()
+                            .map { EntityMapper.toDomain(it) }
+                            .awaitSuspending()
+                }
             }
-        }
+            .also {
+                schedule.events.forEach { eventBus.publish(it.javaClass.simpleName, it) }
+                schedule.clearEvents()
+            }
 
-    override suspend fun findSchedules(timeSpan: TimeSpan): List<AgendaSchedule> {
+    override suspend fun findEvents(timeSpan: TimeSpan): List<AgendaEvent> {
         val schedules =
             panacheAgendaRepository.find(
                 """
@@ -104,7 +118,7 @@ class MongoAgendaRepository(private val panacheAgendaRepository: PanacheAgendaRe
             .awaitSuspending()
     }
 
-    override suspend fun findByAttendeeId(attendeeId: String): List<AgendaSchedule> {
+    override suspend fun findByAttendeeId(attendeeId: String): List<AgendaEvent> {
         return panacheAgendaRepository
             .find("attendee._id == ?1", attendeeId)
             .stream()
@@ -114,7 +128,7 @@ class MongoAgendaRepository(private val panacheAgendaRepository: PanacheAgendaRe
             .awaitSuspending()
     }
 
-    override suspend fun deleteSchedule(scheduleId: String): Result<Boolean> {
+    override suspend fun deleteEvent(scheduleId: String): Result<Boolean> {
         TODO("Not yet implemented")
     }
 }

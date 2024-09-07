@@ -1,14 +1,15 @@
-package it.beaesthetic.appointment.agenda.application
+package it.beaesthetic.appointment.agenda.application.events
 
 import arrow.core.flatMap
-import it.beaesthetic.appointment.agenda.domain.*
+import it.beaesthetic.appointment.agenda.domain.event.*
+import it.beaesthetic.appointment.agenda.domain.reminder.ReminderOptions
 import jakarta.enterprise.context.ApplicationScoped
-import java.time.Instant
+import java.time.Duration
 import java.util.*
 
 data class CreateAgendaSchedule(
     val timeSpan: TimeSpan,
-    val data: AgendaScheduleData,
+    val data: AgendaEventData,
     val attendeeId: String
 )
 
@@ -18,27 +19,26 @@ class CreateAgendaScheduleHandler(
     private val customerRegistry: CustomerRegistry
 ) {
 
-    suspend fun handle(command: CreateAgendaSchedule): Result<AgendaSchedule> =
+    suspend fun handle(command: CreateAgendaSchedule): Result<AgendaEvent> =
         kotlin
             .runCatching {
                 val attendee =
                     when (command.data) {
-                        is AppointmentScheduleData ->
+                        is AppointmentEventData ->
                             customerRegistry.findByCustomerId(command.attendeeId)?.let {
                                 Attendee(it.customerId, it.displayName)
                             }
-                        is BasicScheduleData -> Attendee(command.attendeeId, "self")
+                        else -> Attendee(command.attendeeId, "self")
                     }
                         ?: throw IllegalArgumentException("Unknown attendee ${command.attendeeId}")
 
-                AgendaSchedule(
+                AgendaEvent.create(
                     id = UUID.randomUUID().toString(),
                     timeSpan = command.timeSpan,
                     attendee = attendee,
-                    createdAt = Instant.now(),
-                    cancelReason = null,
                     data = command.data,
+                    reminderOptions = ReminderOptions(triggerBefore = Duration.ofSeconds(10))
                 )
             }
-            .flatMap { agendaRepository.saveSchedule(it) }
+            .flatMap { agendaRepository.saveEvent(it) }
 }

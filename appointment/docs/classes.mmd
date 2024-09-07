@@ -1,0 +1,22 @@
+
+
+classDiagram
+
+    class ReminderTemplate {
+        isValid(event: AgendaEvent)
+        process(event: AgendaEvent)
+    }
+
+    class ReminderTemplateEngine {
+        - ReminderTemplateEngine()
+        process(event: AgendaEvent)
+    }
+
+    class ReminderTemplateEngineBuilder {
+        add(template: Template)
+        fallback(template: Template)
+        build() ReminderTemplateEngine
+    }
+
+    ReminderTemplate --o ReminderTemplateEngine
+    ReminderTemplateEngineBuilder --> ReminderTemplateEngine: create

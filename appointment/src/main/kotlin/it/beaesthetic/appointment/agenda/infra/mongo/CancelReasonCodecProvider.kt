@@ -1,8 +1,8 @@
 package it.beaesthetic.appointment.agenda.infra.mongo
 
-import it.beaesthetic.appointment.agenda.domain.CancelReason
-import it.beaesthetic.appointment.agenda.domain.CustomerCancel
-import it.beaesthetic.appointment.agenda.domain.NoReason
+import it.beaesthetic.appointment.agenda.domain.event.CancelReason
+import it.beaesthetic.appointment.agenda.domain.event.CustomerCancel
+import it.beaesthetic.appointment.agenda.domain.event.NoReason
 import org.bson.BsonReader
 import org.bson.BsonWriter
 import org.bson.codecs.Codec
