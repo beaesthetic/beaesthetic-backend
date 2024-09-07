@@ -1,4 +1,4 @@
-package it.beaesthetic.appointment.agenda.domain
+package it.beaesthetic.appointment.agenda.domain.event
 
 import java.time.Instant
 import java.time.OffsetDateTime

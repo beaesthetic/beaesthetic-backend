@@ -24,6 +24,15 @@ envConfig:
   QUARKUS_REDIS_MAX_POOL_WAITING: "100"
   QUARKUS_REDIS_RECONNECT_ATTEMPTS: "3"
   CUSTOMER_SERVICE_BASEURL: "http://customer-service-v2:8080"
+  SCHEDULER_SERVICE_BASEURL: "http://scheduler-service:8080"
+  SCHEDULER_QUEUE_NAME: "reminders-times-up"
+
+  NOTIFICATION_SERVICE_BASEURL: "http://notification-service-v2:8080"
+  NOTIFICATION_CONFIRMED_QUEUE_NAME: "NotificationConfirmQueue"
+
+  RABBITMQ_HOST: "rabbitmq.common.svc.cluster.local"
+  RABBITMQ_PORT: "5672"
+
 
 resources:
   requests:

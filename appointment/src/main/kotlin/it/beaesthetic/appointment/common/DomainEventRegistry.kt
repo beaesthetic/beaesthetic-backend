@@ -1,27 +1,26 @@
 package it.beaesthetic.appointment.common
 
 interface DomainEventRegistry<E> {
-    fun addEvent(eventType: String, event: E)
+    fun addEvent(event: E)
     fun clearEvents()
-    val events: List<Pair<String, E>>
+    val events: List<E>
 
     companion object {
-        fun <E> delegate(
-            domainEvents: List<Pair<String, E>> = emptyList()
-        ): DomainEventRegistry<E> = DomainEventRegistryDelegate(domainEvents)
+        fun <E> delegate(domainEvents: List<E> = emptyList()): DomainEventRegistry<E> =
+            DomainEventRegistryDelegate(domainEvents)
 
         private class DomainEventRegistryDelegate<E>(
-            private var domainEvents: List<Pair<String, E>> = emptyList(),
+            private var domainEvents: List<E> = emptyList(),
         ) : DomainEventRegistry<E> {
-            override fun addEvent(eventType: String, event: E) {
-                domainEvents += eventType to event
+            override fun addEvent(event: E) {
+                domainEvents += event
             }
 
             override fun clearEvents() {
                 domainEvents = emptyList()
             }
 
-            override val events: List<Pair<String, E>>
+            override val events: List<E>
                 get() = domainEvents
         }
     }

@@ -51,6 +51,9 @@ dependencies {
   implementation("io.quarkus:quarkus-redis-client")
   implementation("io.quarkus:quarkus-redis-cache")
 
+  // rabbitmq
+  implementation("io.quarkus:quarkus-messaging-rabbitmq")
+
   // validation
   implementation("io.quarkus:quarkus-hibernate-validator")
 

@@ -1,0 +1,81 @@
+openapi: 3.0.0
+info:
+  title: Scheduler API
+  description: |
+    Scheduler API
+  contact:
+    email: petretiandrea@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+#servers:
+#  - url: https://agenda.beaesthetic.it/customer-service/
+paths:
+
+  /schedules/{scheduleId}:
+    put:
+      tags:
+        - schedules
+      operationId: addSchedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSchedule'
+      parameters:
+        - in: path
+          name: scheduleId
+          required: true
+          schema:
+            $ref: "#/components/schemas/ScheduleId"
+      responses:
+        '202':
+          description: "Accepted schedule job"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  scheduleId:
+                    $ref: "#/components/schemas/ScheduleId"
+    delete:
+      tags:
+        - schedules
+      operationId: removeSchedule
+      parameters:
+        - in: path
+          name: scheduleId
+          required: true
+          schema:
+            $ref: "#/components/schemas/ScheduleId"
+      responses:
+        '204':
+          description: "Schedule job deleted"
+        '404':
+          description: "Schedule job not found"
+
+components:
+  schemas:
+    ScheduleId:
+      type: string
+      format: uuid
+
+    CreateSchedule:
+      type: object
+      properties:
+        scheduleAt:
+          type: string
+          format: date-time
+        route:
+          description: "Receiver route"
+          type: string
+        data:
+          type: object
+          additionalProperties:
+            type: object
+      required:
+        - scheduleAt
+        - data
+        - route

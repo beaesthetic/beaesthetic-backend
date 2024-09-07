@@ -1,6 +1,7 @@
 package it.beaesthetic.appointment.agenda.port.rest
 
-import it.beaesthetic.appointment.agenda.domain.*
+import it.beaesthetic.appointment.agenda.domain.event.*
+import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
 import it.beaesthetic.appointment.agenda.generated.api.model.*
 import java.time.ZoneOffset
 import java.util.*
@@ -8,15 +9,15 @@ import java.util.*
 object AgendaScheduleMapper {
 
     // TODO: fix and avoid return Any
-    fun toResourceDto(schedule: AgendaSchedule): Any =
+    fun toResourceDto(schedule: AgendaEvent): Any =
         when (schedule.data) {
-            is AppointmentScheduleData -> mapAppointmentScheduleResource(schedule, schedule.data)
-            is BasicScheduleData -> mapBasicScheduleResource(schedule, schedule.data)
+            is AppointmentEventData -> mapAppointmentScheduleResource(schedule, schedule.data)
+            is BasicEventData -> mapBasicScheduleResource(schedule, schedule.data)
         }
 
     private fun mapAppointmentScheduleResource(
-        schedule: AgendaSchedule,
-        scheduleData: AppointmentScheduleData
+        schedule: AgendaEvent,
+        scheduleData: AppointmentEventData
     ): AppointmentEventResponseDto {
         return AppointmentEventResponseDto(
             type = AppointmentEventResponseDto.Type.APPOINTMENT,
@@ -25,11 +26,13 @@ object AgendaScheduleMapper {
             start = schedule.timeSpan.start.atOffset(ZoneOffset.UTC),
             end = schedule.timeSpan.end.atOffset(ZoneOffset.UTC),
             isCanceled = schedule.cancelReason != null,
-            reminderSent = false,
+            reminderSent = schedule.activeReminder.status == ReminderStatus.SENT,
             reminder =
                 AppointmentEventResponseReminderDto(
-                    // TODO: implement this
-                    ),
+                    status = schedule.activeReminder.status.name,
+                    reminderMinutes = schedule.reminderOptions.triggerBefore.toMinutes().toInt(),
+                    timeSent = schedule.activeReminder.timeToSend.atOffset(ZoneOffset.UTC)
+                ),
             appointment =
                 AppointmentEventAppointmentDto(services = scheduleData.services.map { it.name }),
             cancelReason = schedule.cancelReason?.let { mapCancelReasonResource(it) }
@@ -37,8 +40,8 @@ object AgendaScheduleMapper {
     }
 
     private fun mapBasicScheduleResource(
-        schedule: AgendaSchedule,
-        scheduleData: BasicScheduleData
+        schedule: AgendaEvent,
+        scheduleData: BasicEventData
     ): EventResponseDto {
         return EventResponseDto(
             type = EventResponseDto.Type.EVENT,
@@ -49,8 +52,13 @@ object AgendaScheduleMapper {
             title = scheduleData.title,
             description = scheduleData.description,
             isCanceled = schedule.cancelReason != null,
-            reminderSent = false,
-            reminder = AppointmentEventResponseReminderDto(), // TODO: handle this
+            reminderSent = schedule.activeReminder.status == ReminderStatus.SENT,
+            reminder =
+                AppointmentEventResponseReminderDto(
+                    status = schedule.activeReminder.status.name,
+                    reminderMinutes = schedule.reminderOptions.triggerBefore.toMinutes().toInt(),
+                    timeSent = schedule.activeReminder.timeToSend.atOffset(ZoneOffset.UTC)
+                ),
             cancelReason = schedule.cancelReason?.let { mapCancelReasonResource(it) }
         )
     }

@@ -1,7 +1,7 @@
-package it.beaesthetic.appointment.agenda.application
+package it.beaesthetic.appointment.agenda.application.events
 
 import arrow.core.flatMap
-import it.beaesthetic.appointment.agenda.domain.*
+import it.beaesthetic.appointment.agenda.domain.event.*
 import it.beaesthetic.appointment.common.OptimisticConcurrency.versioned
 import jakarta.enterprise.context.ApplicationScoped
 
@@ -16,21 +16,21 @@ data class EditAgendaSchedule(
 @ApplicationScoped
 class EditAgendaScheduleHandler(private val agendaRepository: AgendaRepository) {
 
-    suspend fun handle(command: EditAgendaSchedule): Result<AgendaSchedule> =
+    suspend fun handle(command: EditAgendaSchedule): Result<AgendaEvent> =
         kotlin
             .runCatching {
                 val (schedule, version) =
-                    agendaRepository.findSchedule(command.scheduleId)
+                    agendaRepository.findEvent(command.scheduleId)
                         ?: throw IllegalArgumentException("Schedule not found")
 
                 val scheduleData =
                     when (val data = schedule.data) {
-                        is BasicScheduleData ->
+                        is BasicEventData ->
                             data.copy(
                                 title = command.title ?: data.title,
                                 description = command.description ?: data.description
                             )
-                        is AppointmentScheduleData ->
+                        is AppointmentEventData ->
                             data.copy(services = command.services?.toList() ?: data.services)
                     }
                 val updatedSchedule =
@@ -39,5 +39,5 @@ class EditAgendaScheduleHandler(private val agendaRepository: AgendaRepository) 
 
                 updatedSchedule.copy(data = scheduleData).versioned(version)
             }
-            .flatMap { agendaRepository.saveSchedule(it.entity, expectedVersion = it.version) }
+            .flatMap { agendaRepository.saveEvent(it.entity, expectedVersion = it.version) }
 }

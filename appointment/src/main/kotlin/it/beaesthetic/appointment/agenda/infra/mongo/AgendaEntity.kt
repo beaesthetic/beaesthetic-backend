@@ -3,7 +3,7 @@ package it.beaesthetic.appointment.agenda.infra.mongo
 import io.quarkus.mongodb.panache.common.MongoEntity
 import io.quarkus.mongodb.panache.kotlin.PanacheMongoEntityBase
 import io.quarkus.runtime.annotations.RegisterForReflection
-import it.beaesthetic.appointment.agenda.domain.CancelReason
+import it.beaesthetic.appointment.agenda.domain.event.CancelReason
 import java.time.Instant
 import org.bson.codecs.pojo.annotations.BsonCreator
 import org.bson.codecs.pojo.annotations.BsonDiscriminator
@@ -21,6 +21,8 @@ constructor(
     @BsonProperty("attendee") val attendee: AttendeeEntity,
     @BsonProperty("data") val data: AgendaScheduleData,
     @BsonProperty("cancelReason") val cancelReason: CancelReason?,
+    @BsonProperty("remindBeforeMinutes") val remindBeforeSeconds: Long,
+    @BsonProperty("reminderStatus") val reminderStatus: String,
     @BsonProperty("version") val version: Long,
     @BsonProperty("createdAt") val createdAt: Instant,
     @BsonProperty("updatedAt") val updatedAt: Instant
