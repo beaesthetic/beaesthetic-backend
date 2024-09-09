@@ -1,7 +1,11 @@
 package it.beaesthetic.appointment.agenda.port.queue
 
+import arrow.core.flatMap
 import io.vertx.core.json.JsonObject
+import it.beaesthetic.appointment.agenda.application.reminder.ConfirmReminderSent
 import it.beaesthetic.appointment.agenda.application.reminder.ConfirmReminderSentHandler
+import it.beaesthetic.appointment.agenda.domain.notification.NotificationId
+import it.beaesthetic.appointment.agenda.domain.notification.NotificationService
 import jakarta.enterprise.context.ApplicationScoped
 import java.util.concurrent.CompletionStage
 import org.eclipse.microprofile.reactive.messaging.Incoming
@@ -10,6 +14,7 @@ import org.jboss.logging.Logger
 
 @ApplicationScoped
 class NotificationConfirmQueueConsumer(
+    private val notificationService: NotificationService,
     private val confirmReminderSentHandler: ConfirmReminderSentHandler
 ) {
 
@@ -18,24 +23,22 @@ class NotificationConfirmQueueConsumer(
     @Incoming("notifications-confirmed")
     suspend fun handle(message: Message<JsonObject>): CompletionStage<Void>? {
         log.info("Received notification confirm event ${message.payload}")
-        // confirmReminderSentHandler.handle(ConfirmReminderSent())
-        //        val event =
-        //            kotlin
-        //                .runCatching { message.payload.mapTo(ReminderTimesUp::class.java) }
-        //                .onFailure { log.error("Failed to parse reminder times up event
-        // ${it.message}", it) }
-        //                .getOrNull()
-        //        return when (event) {
-        //            is ReminderTimesUp ->
-        // sendAgendaScheduleReminderHandler.handle(SendReminder(event.eventId))
-        //                .onSuccess { log.info("Successfully sent reminder ${it.id}") }
-        //                .onFailure { log.error("Failed to send reminder ${event.eventId}", it) }
-        //                .fold({ message.ack() }, { message.nack(it) })
-        //            else -> {
-        //                log.debug("Unhandled reminder event")
-        //                message.ack()
-        //            }
-        //        }
+        val notificationId = message.payload.getString("notificationId")?.let { NotificationId(it) }
+        if (notificationId != null) {
+            notificationService
+                .findEventByNotification(notificationId)
+                .flatMap { agendaEventId ->
+                    confirmReminderSentHandler
+                        .handle(ConfirmReminderSent(agendaEventId))
+                        .onSuccess { log.info("Successfully confirm reminder for ${it.id}") }
+                        .onFailure {
+                            log.error("Failed to confirm reminder for $agendaEventId", it)
+                        }
+                }
+                .map { notificationService.removeTrackNotification(notificationId) }
+        } else {
+            log.warn("Notification message doesn't contains notificationId")
+        }
         return message.ack()
     }
 }

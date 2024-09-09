@@ -1,16 +1,21 @@
 package it.beaesthetic.appointment.agenda
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.quarkus.redis.datasource.ReactiveRedisDataSource
 import it.beaesthetic.appointment.agenda.domain.event.CustomerRegistry
+import it.beaesthetic.appointment.agenda.domain.notification.NotificationService
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderScheduler
+import it.beaesthetic.appointment.agenda.infra.NotificationServiceImpl
 import it.beaesthetic.appointment.agenda.infra.RemoteCustomerRegistry
 import it.beaesthetic.appointment.agenda.infra.RemoteScheduler
 import it.beaesthetic.appointment.agenda.infra.mongo.CancelReasonCodecProvider
 import it.beaesthetic.generated.customer.client.api.CustomersApi
+import it.beaesthetic.generated.notification.client.api.NotificationsApi
 import it.beaesthetic.generated.scheduler.client.api.SchedulesApi
 import jakarta.enterprise.context.Dependent
 import jakarta.enterprise.inject.Produces
 import jakarta.inject.Singleton
+import java.time.Duration
 import org.eclipse.microprofile.rest.client.inject.RestClient
 
 @Dependent
@@ -36,5 +41,20 @@ class DependencyConfig {
         objectMapper: ObjectMapper,
     ): ReminderScheduler {
         return RemoteScheduler(schedulerApi, objectMapper)
+    }
+
+    @Produces
+    @Singleton
+    fun notificationService(
+        @RestClient notificationsApi: NotificationsApi,
+        redis: ReactiveRedisDataSource,
+    ): NotificationService {
+        val notificationEventMap = redis.value(String::class.java)
+        val notificationEventMapExpire = Duration.ofDays(1)
+        return NotificationServiceImpl(
+            notificationsApi,
+            notificationEventMap,
+            notificationEventMapExpire
+        )
     }
 }

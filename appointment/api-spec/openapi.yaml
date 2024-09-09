@@ -485,6 +485,10 @@ components:
               description: Time when the reminder was sent
             status:
               type: string
+              enum:
+                - NOT_SENT
+                - SEND_IN_PROGRESS
+                - SENT
               description: Status of the reminder
         isCanceled:
           type: boolean
@@ -549,6 +553,10 @@ components:
               description: Time when the reminder was sent
             status:
               type: string
+              enum:
+                - NOT_SENT
+                - SEND_IN_PROGRESS
+                - SENT
               description: Status of the reminder
         isCanceled:
           type: boolean

@@ -9,6 +9,7 @@ import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import io.vertx.mutiny.core.eventbus.EventBus
 import it.beaesthetic.appointment.agenda.domain.event.AgendaEvent
+import it.beaesthetic.appointment.agenda.domain.event.AgendaEventId
 import it.beaesthetic.appointment.agenda.domain.event.AgendaRepository
 import it.beaesthetic.appointment.agenda.domain.event.TimeSpan
 import it.beaesthetic.appointment.common.OptimisticConcurrency
@@ -40,10 +41,10 @@ class MongoAgendaRepository(
     private val eventBus: EventBus,
 ) : AgendaRepository {
     override suspend fun findEvent(
-        scheduleId: String
+        scheduleId: AgendaEventId
     ): OptimisticConcurrency.VersionedEntity<AgendaEvent>? {
         return panacheAgendaRepository
-            .find("_id", scheduleId)
+            .find("_id", scheduleId.value)
             .firstResult()
             .map {
                 if (it != null)
@@ -65,7 +66,7 @@ class MongoAgendaRepository(
                     }
                 val filter =
                     Filters.and(
-                        Filters.eq("_id", schedule.id),
+                        Filters.eq("_id", schedule.id.value),
                         Filters.eq("version", expectedVersion)
                     )
                 when (expectedVersion) {
@@ -128,7 +129,7 @@ class MongoAgendaRepository(
             .awaitSuspending()
     }
 
-    override suspend fun deleteEvent(scheduleId: String): Result<Boolean> {
+    override suspend fun deleteEvent(scheduleId: AgendaEventId): Result<Boolean> {
         TODO("Not yet implemented")
     }
 }

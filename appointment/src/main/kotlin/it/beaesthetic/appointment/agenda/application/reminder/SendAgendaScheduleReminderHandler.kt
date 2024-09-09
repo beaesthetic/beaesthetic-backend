@@ -1,25 +1,23 @@
 package it.beaesthetic.appointment.agenda.application.reminder
 
 import arrow.core.flatMap
-import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.appointment.agenda.domain.event.AgendaEvent
+import it.beaesthetic.appointment.agenda.domain.event.AgendaEventId
 import it.beaesthetic.appointment.agenda.domain.event.AgendaRepository
 import it.beaesthetic.appointment.agenda.domain.event.CustomerRegistry
+import it.beaesthetic.appointment.agenda.domain.notification.NotificationService
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
 import it.beaesthetic.appointment.agenda.domain.reminder.template.ReminderTemplateEngine
-import it.beaesthetic.generated.notification.client.api.NotificationsApi
-import it.beaesthetic.generated.notification.client.model.NotificationChannel
-import it.beaesthetic.generated.notification.client.model.SendNotificationRequest
 import jakarta.enterprise.context.ApplicationScoped
 import org.jboss.logging.Logger
 
-data class SendReminder(val eventId: String)
+data class SendReminder(val eventId: AgendaEventId)
 
 @ApplicationScoped
 class SendAgendaScheduleReminderHandler(
     private val agendaRepository: AgendaRepository,
     private val customerRegistry: CustomerRegistry,
-    private val notificationApi: NotificationsApi,
+    private val notificationService: NotificationService,
     private val templateEngine: ReminderTemplateEngine
 ) {
 
@@ -38,20 +36,13 @@ class SendAgendaScheduleReminderHandler(
                 version
             )
         } else {
-            val message = templateEngine.process(event)
-            val notificationRequest =
-                SendNotificationRequest().apply {
-                    title = "Reminder of ${command.eventId} for ${customer.customerId}"
-                    content = message
-                    channel =
-                        NotificationChannel()
-                            .type(NotificationChannel.TypeEnum.SMS)
-                            .phone(customer.phoneNumber)
-                }
-
             return kotlin
                 .runCatching {
-                    notificationApi.createNotification(notificationRequest).awaitSuspending()
+                    notificationService.trackAndSendReminderNotification(
+                        event,
+                        templateEngine,
+                        customer.phoneNumber
+                    )
                 }
                 .onSuccess { log.info("Successfully sent reminder to notification service") }
                 .onFailure { log.error("Failed to sent reminder to notification service", it) }

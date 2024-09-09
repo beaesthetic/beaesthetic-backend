@@ -11,7 +11,7 @@ import java.time.Instant
 object EntityMapper {
     fun toEntity(scheduleAgenda: AgendaEvent, version: Long): AgendaEntity {
         return AgendaEntity(
-            id = scheduleAgenda.id,
+            id = scheduleAgenda.id.value,
             attendee =
                 AttendeeEntity(
                     id = scheduleAgenda.attendee.id,
@@ -47,7 +47,7 @@ object EntityMapper {
                 triggerBefore = Duration.ofSeconds(scheduleAgendaEntity.remindBeforeSeconds),
             )
         return AgendaEvent(
-            id = scheduleAgendaEntity.id,
+            id = AgendaEventId(scheduleAgendaEntity.id),
             timeSpan = TimeSpan(scheduleAgendaEntity.start, scheduleAgendaEntity.end),
             attendee =
                 Attendee(

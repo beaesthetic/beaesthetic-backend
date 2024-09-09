@@ -6,7 +6,7 @@ import it.beaesthetic.appointment.common.OptimisticConcurrency.versioned
 import jakarta.enterprise.context.ApplicationScoped
 
 data class EditAgendaSchedule(
-    val scheduleId: String,
+    val scheduleId: AgendaEventId,
     val timeSpan: TimeSpan?,
     val services: Set<AppointmentService>?,
     val title: String?,

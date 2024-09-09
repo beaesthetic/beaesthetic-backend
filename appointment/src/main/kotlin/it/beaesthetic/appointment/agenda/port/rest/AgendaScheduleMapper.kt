@@ -21,7 +21,7 @@ object AgendaScheduleMapper {
     ): AppointmentEventResponseDto {
         return AppointmentEventResponseDto(
             type = AppointmentEventResponseDto.Type.APPOINTMENT,
-            id = UUID.fromString(schedule.id),
+            id = UUID.fromString(schedule.id.value),
             attendee = mapAttendeeResource(schedule.attendee),
             start = schedule.timeSpan.start.atOffset(ZoneOffset.UTC),
             end = schedule.timeSpan.end.atOffset(ZoneOffset.UTC),
@@ -29,7 +29,7 @@ object AgendaScheduleMapper {
             reminderSent = schedule.activeReminder.status == ReminderStatus.SENT,
             reminder =
                 AppointmentEventResponseReminderDto(
-                    status = schedule.activeReminder.status.name,
+                    status = mapReminderStatusResource(schedule.activeReminder.status),
                     reminderMinutes = schedule.reminderOptions.triggerBefore.toMinutes().toInt(),
                     timeSent = schedule.activeReminder.timeToSend.atOffset(ZoneOffset.UTC)
                 ),
@@ -45,7 +45,7 @@ object AgendaScheduleMapper {
     ): EventResponseDto {
         return EventResponseDto(
             type = EventResponseDto.Type.EVENT,
-            id = UUID.fromString(schedule.id),
+            id = UUID.fromString(schedule.id.value),
             attendee = mapAttendeeResource(schedule.attendee),
             start = schedule.timeSpan.start.atOffset(ZoneOffset.UTC),
             end = schedule.timeSpan.end.atOffset(ZoneOffset.UTC),
@@ -55,7 +55,7 @@ object AgendaScheduleMapper {
             reminderSent = schedule.activeReminder.status == ReminderStatus.SENT,
             reminder =
                 AppointmentEventResponseReminderDto(
-                    status = schedule.activeReminder.status.name,
+                    status = mapReminderStatusResource(schedule.activeReminder.status),
                     reminderMinutes = schedule.reminderOptions.triggerBefore.toMinutes().toInt(),
                     timeSent = schedule.activeReminder.timeToSend.atOffset(ZoneOffset.UTC)
                 ),
@@ -78,4 +78,14 @@ object AgendaScheduleMapper {
             CustomerCancel -> "customer_cancel"
             NoReason -> "deleted"
         }
+
+    private fun mapReminderStatusResource(reminderStatus: ReminderStatus): AppointmentEventResponseReminderDto.Status {
+        return when(reminderStatus) {
+            ReminderStatus.SENT -> AppointmentEventResponseReminderDto.Status.SENT
+            ReminderStatus.SENT_REQUESTED -> AppointmentEventResponseReminderDto.Status.SEND_IN_PROGRESS
+            ReminderStatus.DELETED,
+            ReminderStatus.SCHEDULED,
+            ReminderStatus.PENDING -> AppointmentEventResponseReminderDto.Status.NOT_SENT
+        }
+    }
 }

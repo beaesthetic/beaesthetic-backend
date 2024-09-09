@@ -61,7 +61,7 @@ class AgendaController(
 
         createAgendaScheduleHandler
             .handle(command)
-            .map { CreateAgendaActivity201ResponseDto(UUID.fromString(it.id)) }
+            .map { CreateAgendaActivity201ResponseDto(UUID.fromString(it.id.value)) }
             .getOrThrow()
     }
 
@@ -71,7 +71,7 @@ class AgendaController(
     ): Uni<ActivityResponseDto> = uniWithScope {
         val command =
             EditAgendaSchedule(
-                scheduleId = activityId.toString(),
+                scheduleId = AgendaEventId(activityId.toString()),
                 description = updateActivityRequestDto.description,
                 title = updateActivityRequestDto.title,
                 services =
@@ -92,7 +92,7 @@ class AgendaController(
 
     override fun getActivityById(activityId: UUID): Uni<ActivityResponseDto> = uniWithScope {
         queryHandler
-            .handle(activityId.toString())
+            .handle(AgendaEventId(activityId.toString()))
             .map { AgendaScheduleMapper.toResourceDto(it) }
             .getOrThrow()
     }
@@ -102,7 +102,7 @@ class AgendaController(
                 deleteAgendaScheduleHandler
                     .handle(
                         DeleteAgendaSchedule(
-                            activityId,
+                            AgendaEventId(activityId.toString()),
                             when (reason) {
                                 "customer_cancel" -> CustomerCancel
                                 "deleted" -> NoReason
