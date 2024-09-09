@@ -2,10 +2,10 @@ FROM ghcr.io/graalvm/native-image:ol8-java17-22 AS builder
 
 RUN microdnf install -y findutils
 
-COPY . .
+COPY ./gateway .
 
 RUN chmod +x ./gradlew
-RUN ./gradlew :gateway:nativeCompile -Pnative
+RUN ./gradlew :nativeCompile -Pnative
 
 FROM ubuntu:lunar-20230128
 

@@ -3,10 +3,10 @@ WORKDIR /code
 
 RUN microdnf install -y findutils
 
-COPY . .
+COPY ./scheduler .
 
 RUN chmod +x ./gradlew
-RUN ./gradlew :scheduler:nativeCompile -DskipTests
+RUN ./gradlew :nativeCompile -DskipTests
 
 FROM debian:stable-20240701-slim
 WORKDIR /app/

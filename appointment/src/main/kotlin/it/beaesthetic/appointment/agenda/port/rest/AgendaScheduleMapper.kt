@@ -79,10 +79,13 @@ object AgendaScheduleMapper {
             NoReason -> "deleted"
         }
 
-    private fun mapReminderStatusResource(reminderStatus: ReminderStatus): AppointmentEventResponseReminderDto.Status {
-        return when(reminderStatus) {
+    private fun mapReminderStatusResource(
+        reminderStatus: ReminderStatus
+    ): AppointmentEventResponseReminderDto.Status {
+        return when (reminderStatus) {
             ReminderStatus.SENT -> AppointmentEventResponseReminderDto.Status.SENT
-            ReminderStatus.SENT_REQUESTED -> AppointmentEventResponseReminderDto.Status.SEND_IN_PROGRESS
+            ReminderStatus.SENT_REQUESTED ->
+                AppointmentEventResponseReminderDto.Status.SEND_IN_PROGRESS
             ReminderStatus.DELETED,
             ReminderStatus.SCHEDULED,
             ReminderStatus.PENDING -> AppointmentEventResponseReminderDto.Status.NOT_SENT
