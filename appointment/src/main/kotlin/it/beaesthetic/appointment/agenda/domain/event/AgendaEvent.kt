@@ -6,10 +6,12 @@ import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
 import it.beaesthetic.appointment.common.DomainEventRegistry
 import java.time.Instant
 
+@JvmInline value class AgendaEventId(val value: String)
+
 data class Attendee(val id: String, val displayName: String)
 
 data class AgendaEvent(
-    val id: String,
+    val id: AgendaEventId,
     val timeSpan: TimeSpan,
     val attendee: Attendee,
     val cancelReason: CancelReason?,
@@ -22,7 +24,7 @@ data class AgendaEvent(
 
     companion object {
         fun create(
-            id: String,
+            id: AgendaEventId,
             timeSpan: TimeSpan,
             attendee: Attendee,
             data: AgendaEventData,

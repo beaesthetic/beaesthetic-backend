@@ -1,17 +1,16 @@
 package it.beaesthetic.appointment.agenda.application.reminder
 
 import it.beaesthetic.appointment.agenda.domain.event.AgendaEvent
+import it.beaesthetic.appointment.agenda.domain.event.AgendaEventId
 import it.beaesthetic.appointment.agenda.domain.event.AgendaRepository
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
 import jakarta.enterprise.context.ApplicationScoped
 import org.jboss.logging.Logger
 
-data class ConfirmReminderSent(val eventId: String)
+data class ConfirmReminderSent(val eventId: AgendaEventId)
 
 @ApplicationScoped
-class ConfirmReminderSentHandler(
-    private val agendaRepository: AgendaRepository,
-) {
+class ConfirmReminderSentHandler(private val agendaRepository: AgendaRepository) {
 
     private val log = Logger.getLogger(SendAgendaScheduleReminderHandler::class.java)
 

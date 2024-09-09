@@ -3,6 +3,7 @@ package it.beaesthetic.appointment.agenda.port.queue
 import io.vertx.core.json.JsonObject
 import it.beaesthetic.appointment.agenda.application.reminder.SendAgendaScheduleReminderHandler
 import it.beaesthetic.appointment.agenda.application.reminder.SendReminder
+import it.beaesthetic.appointment.agenda.domain.event.AgendaEventId
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderTimesUp
 import jakarta.enterprise.context.ApplicationScoped
 import java.util.concurrent.CompletionStage
@@ -30,7 +31,7 @@ class SchedulerQueueConsumer(
         return when (event) {
             is ReminderTimesUp ->
                 sendAgendaScheduleReminderHandler
-                    .handle(SendReminder(event.eventId))
+                    .handle(SendReminder(AgendaEventId(event.eventId)))
                     .onSuccess { log.info("Successfully sent reminder ${it.id}") }
                     .onFailure { log.error("Failed to send reminder ${event.eventId}", it) }
                     .fold({ message.ack() }, { message.nack(it) })

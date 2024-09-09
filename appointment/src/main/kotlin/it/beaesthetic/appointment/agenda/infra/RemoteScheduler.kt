@@ -16,23 +16,18 @@ class RemoteScheduler(
     private val objectMapper: ObjectMapper
 ) : ReminderScheduler {
 
-    //    suspend fun schedule() {
-    //        schedulesApi.addSchedule(
-    //
-    //        )
-    //    }
-
     override suspend fun scheduleReminder(event: AgendaEvent): AgendaEvent {
-        val dataMap: Map<String, Any> = objectMapper.convertValue(ReminderTimesUp(event.id))
+        val dataMap: Map<String, Any> = objectMapper.convertValue(ReminderTimesUp(event.id.value))
         val request =
             CreateSchedule().apply {
                 scheduleAt = event.activeReminder.timeToSend.atOffset(ZoneOffset.UTC)
                 route = "reminders"
                 data = dataMap
             }
-        return schedulesApi.addSchedule(UUID.fromString(event.id), request).awaitSuspending().let {
-            event
-        }
+        return schedulesApi
+            .addSchedule(UUID.fromString(event.id.value), request)
+            .awaitSuspending()
+            .let { event }
     }
 
     override suspend fun unschedule(event: AgendaEvent): AgendaEvent {

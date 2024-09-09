@@ -1,11 +1,12 @@
 package it.beaesthetic.appointment.agenda.application.reminder
 
+import it.beaesthetic.appointment.agenda.domain.event.AgendaEventId
 import it.beaesthetic.appointment.agenda.domain.event.AgendaRepository
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderScheduler
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
 import jakarta.enterprise.context.ApplicationScoped
 
-data class DeleteReminder(val eventId: String)
+data class DeleteReminder(val eventId: AgendaEventId)
 
 @ApplicationScoped
 class DeleteReminderHandler(

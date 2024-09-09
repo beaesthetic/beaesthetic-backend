@@ -1,13 +1,14 @@
 package it.beaesthetic.appointment.agenda.application.reminder
 
 import arrow.core.flatMap
+import it.beaesthetic.appointment.agenda.domain.event.AgendaEventId
 import it.beaesthetic.appointment.agenda.domain.event.AgendaRepository
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderScheduler
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
 import jakarta.enterprise.context.ApplicationScoped
 import org.jboss.logging.Logger
 
-data class ScheduleReminder(val eventId: String)
+data class ScheduleReminder(val eventId: AgendaEventId)
 
 @ApplicationScoped
 class ScheduleReminderHandler(
