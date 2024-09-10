@@ -11,10 +11,14 @@ import java.time.OffsetDateTime
 import java.util.*
 import kotlin.IllegalArgumentException as IllegalArgumentException1
 
-@RegisterForReflection(targets = [
-    CreateAgendaActivity201ResponseDto::class,
-    ActivityResponseDto::class,
-], registerFullHierarchy = true)
+@RegisterForReflection(
+    targets =
+        [
+            CreateAgendaActivity201ResponseDto::class,
+            ActivityResponseDto::class,
+        ],
+    registerFullHierarchy = true
+)
 class AgendaController(
     private val createAgendaScheduleHandler: CreateAgendaScheduleHandler,
     private val editAgendaScheduleHandler: EditAgendaScheduleHandler,
