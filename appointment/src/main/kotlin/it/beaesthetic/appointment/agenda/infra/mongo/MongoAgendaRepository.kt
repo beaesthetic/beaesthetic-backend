@@ -17,6 +17,7 @@ import it.beaesthetic.appointment.common.OptimisticLockException
 import it.beaesthetic.appointment.common.panache.PanacheUtils.updateOne
 import jakarta.enterprise.context.ApplicationScoped
 import kotlinx.coroutines.runBlocking
+import javax.swing.text.Document
 
 @ApplicationScoped
 class PanacheAgendaRepository : ReactivePanacheMongoRepository<AgendaEntity> {
@@ -75,6 +76,7 @@ class MongoAgendaRepository(
                             .persist(entity)
                             .map { EntityMapper.toDomain(it) }
                             .awaitSuspending()
+
                     else ->
                         panacheAgendaRepository
                             .updateOne(filter, entity)
@@ -96,21 +98,14 @@ class MongoAgendaRepository(
             }
 
     override suspend fun findEvents(timeSpan: TimeSpan): List<AgendaEvent> {
+        val query = org.bson.Document(
+            "start",
+            org.bson.Document("\$gte", timeSpan.start).append("\$lte", timeSpan.end)
+        )
+            .append("cancelReason", org.bson.Document("\$exists", "false"))
         val schedules =
-            panacheAgendaRepository.find(
-                """
-                {
-                  ${'$'}or: [
-                   { start: { ${'$'}gte: ?1 } },
-                   { end: { ${'$'}lte: ?2 } }
-                  ],
-                  'cancelReason': { ${'$'}exists: false }
-                 }
-            """
-                    .trimIndent(),
-                timeSpan.start,
-                timeSpan.end
-            )
+            panacheAgendaRepository.find(query)
+
         return schedules
             .stream()
             .map { EntityMapper.toDomain(it) }

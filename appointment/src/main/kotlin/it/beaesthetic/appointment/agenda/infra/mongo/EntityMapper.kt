@@ -19,7 +19,6 @@ object EntityMapper {
                 ),
             start = scheduleAgenda.timeSpan.start,
             end = scheduleAgenda.timeSpan.end,
-            isCancelled = scheduleAgenda.cancelReason != null,
             cancelReason = scheduleAgenda.cancelReason,
             createdAt = scheduleAgenda.createdAt,
             updatedAt = Instant.now(),
@@ -37,7 +36,7 @@ object EntityMapper {
                 },
             version = version,
             reminderStatus = scheduleAgenda.activeReminder.status.name,
-            remindBeforeSeconds = scheduleAgenda.reminderOptions.triggerBefore.toSeconds()
+            remindBeforeSeconds = scheduleAgenda.reminderOptions.triggerBefore.toSeconds().toInt()
         )
     }
 
@@ -45,7 +44,7 @@ object EntityMapper {
         val reminderOptions =
             ReminderOptions(
                 wantRecap = false,
-                triggerBefore = Duration.ofSeconds(scheduleAgendaEntity.remindBeforeSeconds),
+                triggerBefore = Duration.ofSeconds(scheduleAgendaEntity.remindBeforeSeconds.toLong()),
             )
         return AgendaEvent(
             id = AgendaEventId(scheduleAgendaEntity.id),
