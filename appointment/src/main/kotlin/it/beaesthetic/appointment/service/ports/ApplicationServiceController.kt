@@ -1,5 +1,6 @@
 package it.beaesthetic.appointment.service.ports
 
+import io.quarkus.cache.CacheInvalidateAll
 import io.quarkus.cache.CacheKey
 import io.quarkus.cache.CacheResult
 import io.quarkus.runtime.annotations.RegisterForReflection
@@ -74,6 +75,8 @@ class ApplicationServiceController(
         }
     }
 
+    @CacheInvalidateAll(cacheName = "services-search")
+    @CacheInvalidateAll(cacheName = "all-services")
     override fun updateService(
         serviceId: String,
         updateServiceRequestDto: UpdateServiceRequestDto
