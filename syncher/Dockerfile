@@ -4,4 +4,4 @@ WORKDIR /app
 COPY . .
 RUN npm install
 
-ENTRYPOINT ["node", "/app/customer.js"]
+ENTRYPOINT ["node", "/app/agenda.js"]
