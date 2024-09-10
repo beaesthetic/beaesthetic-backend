@@ -1,5 +1,6 @@
 package it.beaesthetic.appointment.agenda.port.rest
 
+import io.quarkus.runtime.annotations.RegisterForReflection
 import io.smallrye.mutiny.Uni
 import it.beaesthetic.appointment.agenda.application.events.*
 import it.beaesthetic.appointment.agenda.domain.event.*
@@ -10,6 +11,10 @@ import java.time.OffsetDateTime
 import java.util.*
 import kotlin.IllegalArgumentException as IllegalArgumentException1
 
+@RegisterForReflection(targets = [
+    CreateAgendaActivity201ResponseDto::class,
+    ActivityResponseDto::class,
+], registerFullHierarchy = true)
 class AgendaController(
     private val createAgendaScheduleHandler: CreateAgendaScheduleHandler,
     private val editAgendaScheduleHandler: EditAgendaScheduleHandler,
