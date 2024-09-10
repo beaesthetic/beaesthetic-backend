@@ -44,7 +44,8 @@ object EntityMapper {
         val reminderOptions =
             ReminderOptions(
                 wantRecap = false,
-                triggerBefore = Duration.ofSeconds(scheduleAgendaEntity.remindBeforeSeconds.toLong()),
+                triggerBefore =
+                    Duration.ofSeconds(scheduleAgendaEntity.remindBeforeSeconds.toLong()),
             )
         return AgendaEvent(
             id = AgendaEventId(scheduleAgendaEntity.id),
