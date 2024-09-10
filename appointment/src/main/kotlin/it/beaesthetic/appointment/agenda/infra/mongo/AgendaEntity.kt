@@ -21,6 +21,7 @@ constructor(
     @BsonProperty("attendee") val attendee: AttendeeEntity,
     @BsonProperty("data") val data: AgendaScheduleData,
     @BsonProperty("cancelReason") val cancelReason: CancelReason?,
+    @BsonProperty("isCancelled") val isCancelled: Boolean,
     @BsonProperty("remindBeforeSeconds") val remindBeforeSeconds: Long,
     @BsonProperty("reminderStatus") val reminderStatus: String,
     @BsonProperty("version") val version: Long,

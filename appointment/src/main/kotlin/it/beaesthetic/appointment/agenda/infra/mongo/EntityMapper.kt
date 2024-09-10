@@ -19,6 +19,7 @@ object EntityMapper {
                 ),
             start = scheduleAgenda.timeSpan.start,
             end = scheduleAgenda.timeSpan.end,
+            isCancelled = scheduleAgenda.cancelReason != null,
             cancelReason = scheduleAgenda.cancelReason,
             createdAt = scheduleAgenda.createdAt,
             updatedAt = Instant.now(),

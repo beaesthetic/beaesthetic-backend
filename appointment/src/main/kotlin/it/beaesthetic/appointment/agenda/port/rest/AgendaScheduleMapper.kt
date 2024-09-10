@@ -1,11 +1,16 @@
 package it.beaesthetic.appointment.agenda.port.rest
 
+import io.quarkus.runtime.annotations.RegisterForReflection
 import it.beaesthetic.appointment.agenda.domain.event.*
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
 import it.beaesthetic.appointment.agenda.generated.api.model.*
 import java.time.ZoneOffset
 import java.util.*
 
+@RegisterForReflection(
+    targets = [EventResponseDto::class, AppointmentEventResponseDto::class],
+    registerFullHierarchy = true
+)
 object AgendaScheduleMapper {
 
     // TODO: fix and avoid return Any
