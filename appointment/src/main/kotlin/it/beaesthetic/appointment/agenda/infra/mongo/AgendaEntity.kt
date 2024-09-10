@@ -23,6 +23,7 @@ constructor(
     @BsonProperty("cancelReason") val cancelReason: CancelReason?,
     @BsonProperty("remindBeforeSeconds") val remindBeforeSeconds: Int,
     @BsonProperty("reminderStatus") val reminderStatus: String,
+    @BsonProperty("isCancelled") val isCancelled: Boolean,
     @BsonProperty("version") val version: Long,
     @BsonProperty("createdAt") val createdAt: Instant,
     @BsonProperty("updatedAt") val updatedAt: Instant

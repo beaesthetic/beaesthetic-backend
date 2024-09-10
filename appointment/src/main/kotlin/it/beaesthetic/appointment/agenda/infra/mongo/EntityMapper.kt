@@ -36,6 +36,7 @@ object EntityMapper {
                 },
             version = version,
             reminderStatus = scheduleAgenda.activeReminder.status.name,
+            isCancelled = scheduleAgenda.cancelReason != null,
             remindBeforeSeconds = scheduleAgenda.reminderOptions.triggerBefore.toSeconds().toInt()
         )
     }

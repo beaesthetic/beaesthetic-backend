@@ -103,7 +103,7 @@ class MongoAgendaRepository(
                     "start",
                     org.bson.Document("\$gte", timeSpan.start).append("\$lte", timeSpan.end)
                 )
-                .append("cancelReason", org.bson.Document("\$exists", "false"))
+                .append("isCancelled", false)
         val schedules = panacheAgendaRepository.find(query)
 
         return schedules
