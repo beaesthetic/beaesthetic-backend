@@ -6,7 +6,7 @@ async function initialSync(collectionDb1, collectionDb2, transformFunction) {
     const cursor = collectionDb1.find();
     while (await cursor.hasNext()) {
         const doc = await cursor.next();
-        const transformedDoc = transformFunction(doc);
+        const transformedDoc = await Promise.resolve(transformFunction(doc));
         if (initialSyncCount % 100 === 0) {
             console.log(`Sync ${initialSyncCount}`);
         }
@@ -27,7 +27,7 @@ function startChangeStreamSync(collectionDb1, collectionDb2, transformFunction) 
         const { operationType, fullDocument, documentKey } = change;
 
         if (operationType === 'insert' || operationType === 'replace' || operationType === 'update') {
-            const transformedDoc = transformFunction(fullDocument);
+            const transformedDoc = await Promise.resolve(transformFunction(fullDocument));
 
             const updateResult = await collectionDb2.updateOne(
                 { _id: transformedDoc._id },
@@ -63,6 +63,7 @@ module.exports.migration = async function(
 
     // Use connect method to connect to the server
     const clientDb1 = new MongoClient(mongoConnectionString, { useUnifiedTopology: true });
+    // const clientDb2 = new MongoClient("mongodb://localhost:27017/?directConnection=true", { useUnifiedTopology: true });
     const clientDb2 = new MongoClient(mongoConnectionString, { useUnifiedTopology: true });
 
     try {
