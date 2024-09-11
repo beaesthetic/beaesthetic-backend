@@ -64,7 +64,7 @@ class AuthConfiguration {
         configuration.allowedOrigins = listOf("*")
         configuration.setAllowedMethods(
             listOf(
-                "GET", "POST", "PUT",
+                "GET", "POST", "PUT", "PATCH",
                 "DELETE", "OPTIONS"
             )
         )
