@@ -1,10 +1,14 @@
-package it.beaesthetic.appointment.agenda
+package it.beaesthetic.appointment.agenda.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.quarkus.redis.datasource.ReactiveRedisDataSource
+import it.beaesthetic.appointment.agenda.domain.Clock
 import it.beaesthetic.appointment.agenda.domain.event.CustomerRegistry
 import it.beaesthetic.appointment.agenda.domain.notification.NotificationService
+import it.beaesthetic.appointment.agenda.domain.reminder.ReminderOptions
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderScheduler
+import it.beaesthetic.appointment.agenda.domain.reminder.ReminderService
+import it.beaesthetic.appointment.agenda.domain.reminder.template.ReminderTemplateEngine
 import it.beaesthetic.appointment.agenda.infra.NotificationServiceImpl
 import it.beaesthetic.appointment.agenda.infra.RemoteCustomerRegistry
 import it.beaesthetic.appointment.agenda.infra.RemoteScheduler
@@ -55,6 +59,28 @@ class DependencyConfig {
             notificationsApi,
             notificationEventMap,
             notificationEventMapExpire
+        )
+    }
+
+    @Produces
+    @Singleton
+    fun reminderService(
+        reminderConfiguration: ReminderConfiguration,
+        notificationService: NotificationService,
+        reminderScheduler: ReminderScheduler,
+        reminderTemplateEngine: ReminderTemplateEngine
+    ): ReminderService {
+        return ReminderService(
+            reminderScheduler = reminderScheduler,
+            notificationService = notificationService,
+            templateEngine = reminderTemplateEngine,
+            reminderOptions =
+                ReminderOptions(
+                    reminderConfiguration.triggerBefore(),
+                    reminderConfiguration.noSendThreshold(),
+                    reminderConfiguration.immediateSendThreshold()
+                ),
+            clock = Clock.default()
         )
     }
 }

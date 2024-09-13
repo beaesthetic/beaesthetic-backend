@@ -27,6 +27,9 @@ class NotificationConfirmQueueConsumer(
         if (notificationId != null) {
             notificationService
                 .findEventByNotification(notificationId)
+                .onSuccess {
+                    log.info("Found event associated to notification id ${notificationId}")
+                }
                 .flatMap { agendaEventId ->
                     confirmReminderSentHandler
                         .handle(ConfirmReminderSent(agendaEventId))
@@ -36,6 +39,9 @@ class NotificationConfirmQueueConsumer(
                         }
                 }
                 .map { notificationService.removeTrackNotification(notificationId) }
+                .onFailure {
+                    log.error("Failed to process confirm notification $notificationId", it)
+                }
         } else {
             log.warn("Notification message doesn't contains notificationId")
         }

@@ -2,7 +2,6 @@ package it.beaesthetic.appointment.agenda.infra.mongo
 
 import it.beaesthetic.appointment.agenda.domain.event.*
 import it.beaesthetic.appointment.agenda.domain.reminder.Reminder
-import it.beaesthetic.appointment.agenda.domain.reminder.ReminderOptions
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
 import it.beaesthetic.appointment.common.DomainEventRegistry
 import java.time.Duration
@@ -35,19 +34,16 @@ object EntityMapper {
                         )
                 },
             version = version,
-            reminderStatus = scheduleAgenda.activeReminder.status.name,
+            reminderStatus = scheduleAgenda.reminder.status.name,
+            remindBeforeSeconds = scheduleAgenda.remindBefore.toSeconds().toInt(),
+            reminderSentAt = scheduleAgenda.reminder.sentAt,
             isCancelled = scheduleAgenda.cancelReason != null,
-            remindBeforeSeconds = scheduleAgenda.reminderOptions.triggerBefore.toSeconds().toInt()
         )
     }
 
-    fun toDomain(scheduleAgendaEntity: AgendaEntity): AgendaEvent {
-        val reminderOptions =
-            ReminderOptions(
-                wantRecap = false,
-                triggerBefore =
-                    Duration.ofSeconds(scheduleAgendaEntity.remindBeforeSeconds.toLong()),
-            )
+    fun toDomain(
+        scheduleAgendaEntity: AgendaEntity,
+    ): AgendaEvent {
         return AgendaEvent(
             id = AgendaEventId(scheduleAgendaEntity.id),
             timeSpan = TimeSpan(scheduleAgendaEntity.start, scheduleAgendaEntity.end),
@@ -71,10 +67,13 @@ object EntityMapper {
                         )
                 },
             createdAt = scheduleAgendaEntity.createdAt,
-            reminderOptions = reminderOptions,
-            activeReminder =
-                Reminder.from(scheduleAgendaEntity.start, reminderOptions)
-                    .copy(status = ReminderStatus.valueOf(scheduleAgendaEntity.reminderStatus)),
+            reminder =
+                Reminder(
+                    eventId = AgendaEventId(scheduleAgendaEntity.id),
+                    status = ReminderStatus.valueOf(scheduleAgendaEntity.reminderStatus),
+                    sentAt = scheduleAgendaEntity.reminderSentAt,
+                ),
+            remindBefore = Duration.ofSeconds(scheduleAgendaEntity.remindBeforeSeconds.toLong()),
             domainEventRegistry = DomainEventRegistry.delegate()
         )
     }

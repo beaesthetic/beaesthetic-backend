@@ -3,11 +3,12 @@ package it.beaesthetic.appointment.agenda.infra
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.convertValue
 import io.smallrye.mutiny.coroutines.awaitSuspending
-import it.beaesthetic.appointment.agenda.domain.event.AgendaEvent
+import it.beaesthetic.appointment.agenda.domain.reminder.Reminder
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderScheduler
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderTimesUp
 import it.beaesthetic.generated.scheduler.client.api.SchedulesApi
 import it.beaesthetic.generated.scheduler.client.model.CreateSchedule
+import java.time.Instant
 import java.time.ZoneOffset
 import java.util.*
 
@@ -16,21 +17,22 @@ class RemoteScheduler(
     private val objectMapper: ObjectMapper
 ) : ReminderScheduler {
 
-    override suspend fun scheduleReminder(event: AgendaEvent): AgendaEvent {
-        val dataMap: Map<String, Any> = objectMapper.convertValue(ReminderTimesUp(event.id.value))
+    override suspend fun scheduleReminder(reminder: Reminder, sendAt: Instant): Reminder {
+        val dataMap: Map<String, Any> =
+            objectMapper.convertValue(ReminderTimesUp(reminder.eventId.value))
         val request =
             CreateSchedule().apply {
-                scheduleAt = event.activeReminder.timeToSend.atOffset(ZoneOffset.UTC)
+                scheduleAt = sendAt.atOffset(ZoneOffset.UTC)
                 route = "reminders"
                 data = dataMap
             }
         return schedulesApi
-            .addSchedule(UUID.fromString(event.id.value), request)
+            .addSchedule(UUID.fromString(reminder.eventId.value), request)
             .awaitSuspending()
-            .let { event }
+            .let { reminder }
     }
 
-    override suspend fun unschedule(event: AgendaEvent): AgendaEvent {
+    override suspend fun unschedule(reminder: Reminder): Reminder {
         TODO("Not yet implemented")
     }
 }
