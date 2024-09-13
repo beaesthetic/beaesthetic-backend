@@ -8,11 +8,12 @@ COPY ./scheduler .
 RUN chmod +x ./gradlew
 RUN ./gradlew :nativeCompile -DskipTests
 
+FROM prova as builder
 FROM debian:stable-20240701-slim
 WORKDIR /app/
 
 EXPOSE 8080
 
-COPY --from=builder /code/scheduler/build/native/nativeCompile/scheduler .
+COPY --from=builder /code/build/native/nativeCompile/code ./scheduler
 
 ENTRYPOINT ["./scheduler"]
