@@ -24,7 +24,7 @@ constructor(
     @BsonProperty("remindBeforeSeconds") val remindBeforeSeconds: Int,
     @BsonProperty("reminderStatus") val reminderStatus: String,
     @BsonProperty("reminderSentAt") val reminderSentAt: Instant?,
-    @BsonProperty("isCancelled") val isCancelled: Boolean,
+    @get:BsonProperty("isCancelled") @param:BsonProperty("isCancelled") val isCancelled: Boolean,
     @BsonProperty("version") val version: Long,
     @BsonProperty("createdAt") val createdAt: Instant,
     @BsonProperty("updatedAt") val updatedAt: Instant
