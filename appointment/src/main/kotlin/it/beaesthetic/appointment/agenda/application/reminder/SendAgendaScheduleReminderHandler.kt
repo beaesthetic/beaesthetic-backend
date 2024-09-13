@@ -1,13 +1,11 @@
 package it.beaesthetic.appointment.agenda.application.reminder
 
-import arrow.core.flatMap
 import it.beaesthetic.appointment.agenda.domain.event.AgendaEvent
 import it.beaesthetic.appointment.agenda.domain.event.AgendaEventId
 import it.beaesthetic.appointment.agenda.domain.event.AgendaRepository
 import it.beaesthetic.appointment.agenda.domain.event.CustomerRegistry
-import it.beaesthetic.appointment.agenda.domain.notification.NotificationService
+import it.beaesthetic.appointment.agenda.domain.reminder.ReminderService
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
-import it.beaesthetic.appointment.agenda.domain.reminder.template.ReminderTemplateEngine
 import jakarta.enterprise.context.ApplicationScoped
 import org.jboss.logging.Logger
 
@@ -17,8 +15,7 @@ data class SendReminder(val eventId: AgendaEventId)
 class SendAgendaScheduleReminderHandler(
     private val agendaRepository: AgendaRepository,
     private val customerRegistry: CustomerRegistry,
-    private val notificationService: NotificationService,
-    private val templateEngine: ReminderTemplateEngine
+    private val reminderService: ReminderService
 ) {
 
     private val log = Logger.getLogger(SendAgendaScheduleReminderHandler::class.java)
@@ -31,27 +28,22 @@ class SendAgendaScheduleReminderHandler(
         val customer = customerRegistry.findByCustomerId(event.attendee.id)
         if (customer?.phoneNumber == null) {
             log.info("Customer ${customer?.customerId} has no valid contacts, not sending reminder")
-            return agendaRepository.saveEvent(
-                event.updateReminderStatus(ReminderStatus.SENT),
-                version
-            )
+            return Result.success(event)
         } else {
-            return kotlin
-                .runCatching {
-                    notificationService.trackAndSendReminderNotification(
-                        event,
-                        templateEngine,
-                        customer.phoneNumber
-                    )
+            return reminderService
+                .sendReminder(event, customer.phoneNumber)
+                .let { agendaRepository.saveEvent(it, version) }
+                .onSuccess {
+                    when (event.reminder.status) {
+                        ReminderStatus.SENT ->
+                            log.info("Successfully sent reminder to notification service")
+                        else ->
+                            log.error(
+                                "Failed to sent reminder cause status is ${event.reminder.status}"
+                            )
+                    }
                 }
-                .onSuccess { log.info("Successfully sent reminder to notification service") }
-                .onFailure { log.error("Failed to sent reminder to notification service", it) }
-                .flatMap {
-                    agendaRepository.saveEvent(
-                        event.updateReminderStatus(ReminderStatus.SENT_REQUESTED),
-                        version
-                    )
-                }
+                .onFailure { log.error("Failed to save reminder status", it) }
         }
     }
 }

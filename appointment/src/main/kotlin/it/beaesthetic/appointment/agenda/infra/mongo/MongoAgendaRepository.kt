@@ -16,7 +16,6 @@ import it.beaesthetic.appointment.common.OptimisticConcurrency
 import it.beaesthetic.appointment.common.OptimisticLockException
 import it.beaesthetic.appointment.common.panache.PanacheUtils.updateOne
 import jakarta.enterprise.context.ApplicationScoped
-import javax.swing.text.Document
 import kotlinx.coroutines.runBlocking
 
 @ApplicationScoped

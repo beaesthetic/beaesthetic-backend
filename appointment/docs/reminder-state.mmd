@@ -1,0 +1,17 @@
+stateDiagram-v2
+
+    [*] --> PENDING
+    PENDING --> SCHEDULED
+    PENDING --> UNPROCESSABLE
+    SCHEDULED --> SEND_REQUESTED
+
+    SEND_REQUESTED --> SENT
+    SEND_REQUESTED --> FAIL_TO_SEND
+    SCHEDULED --> DELETED
+    SCHEDULED --> UNPROCESSABLE
+
+    SENT --> [*]
+    UNPROCESSABLE --> [*]
+    FAIL_TO_SEND --> [*]
+    DELETED --> [*]
+

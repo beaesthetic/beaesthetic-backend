@@ -3,6 +3,7 @@ package it.beaesthetic.appointment.agenda.port.rest
 import io.quarkus.runtime.annotations.RegisterForReflection
 import io.smallrye.mutiny.Uni
 import it.beaesthetic.appointment.agenda.application.events.*
+import it.beaesthetic.appointment.agenda.config.ReminderConfiguration
 import it.beaesthetic.appointment.agenda.domain.event.*
 import it.beaesthetic.appointment.agenda.generated.api.ActivitiesApi
 import it.beaesthetic.appointment.agenda.generated.api.model.*
@@ -23,7 +24,8 @@ class AgendaController(
     private val createAgendaScheduleHandler: CreateAgendaScheduleHandler,
     private val editAgendaScheduleHandler: EditAgendaScheduleHandler,
     private val deleteAgendaScheduleHandler: DeleteAgendaScheduleHandler,
-    private val queryHandler: AgendaQueryHandler
+    private val queryHandler: AgendaQueryHandler,
+    private val reminderConfiguration: ReminderConfiguration
 ) : ActivitiesApi {
 
     override fun createAgendaActivity(
@@ -39,6 +41,7 @@ class AgendaController(
                                 createAgendaActivityMixin.end
                             ),
                         attendeeId = createAgendaActivityMixin.attendeeId.toString(),
+                        triggerBefore = reminderConfiguration.triggerBefore(),
                         data =
                             BasicEventData(
                                 title = createAgendaActivityMixin.title,
@@ -53,6 +56,7 @@ class AgendaController(
                                 createAgendaActivityMixin.end
                             ),
                         attendeeId = createAgendaActivityMixin.attendeeId.toString(),
+                        triggerBefore = reminderConfiguration.triggerBefore(),
                         data =
                             AppointmentEventData(
                                 services =

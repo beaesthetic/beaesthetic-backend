@@ -1,9 +1,10 @@
 package it.beaesthetic.appointment.agenda.domain.event
 
+import it.beaesthetic.appointment.agenda.domain.Clock
 import it.beaesthetic.appointment.agenda.domain.reminder.Reminder
-import it.beaesthetic.appointment.agenda.domain.reminder.ReminderOptions
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
 import it.beaesthetic.appointment.common.DomainEventRegistry
+import java.time.Duration
 import java.time.Instant
 
 @JvmInline value class AgendaEventId(val value: String)
@@ -16,8 +17,8 @@ data class AgendaEvent(
     val attendee: Attendee,
     val cancelReason: CancelReason?,
     val data: AgendaEventData,
-    val reminderOptions: ReminderOptions,
-    val activeReminder: Reminder,
+    val reminder: Reminder,
+    val remindBefore: Duration,
     val createdAt: Instant,
     private val domainEventRegistry: DomainEventRegistry<AgendaLifecycleEvent>
 ) : DomainEventRegistry<AgendaLifecycleEvent> by domainEventRegistry {
@@ -28,7 +29,7 @@ data class AgendaEvent(
             timeSpan: TimeSpan,
             attendee: Attendee,
             data: AgendaEventData,
-            reminderOptions: ReminderOptions,
+            reminderBefore: Duration,
         ): AgendaEvent {
             val agendaEvent =
                 AgendaEvent(
@@ -37,8 +38,8 @@ data class AgendaEvent(
                     attendee,
                     null,
                     data,
-                    reminderOptions,
-                    Reminder.from(timeSpan, reminderOptions),
+                    Reminder(id, ReminderStatus.PENDING, null),
+                    reminderBefore,
                     Instant.now(),
                     DomainEventRegistry.delegate()
                 )
@@ -54,13 +55,7 @@ data class AgendaEvent(
 
     fun reschedule(timeSpan: TimeSpan): AgendaEvent {
         require(cancelReason == null) { "Event already canceled" }
-        val reminder =
-            activeReminder
-                .rescheduleTimeToSent(timeSpan, reminderOptions)
-                .fold(onSuccess = { it }, onFailure = { Reminder.from(timeSpan, reminderOptions) })
-        return copy(timeSpan = timeSpan, activeReminder = reminder).also {
-            it.addEvent(AgendaEventRescheduled(it))
-        }
+        return copy(timeSpan = timeSpan).also { it.addEvent(AgendaEventRescheduled(it)) }
     }
 
     fun cancel(reason: CancelReason): AgendaEvent {
@@ -68,11 +63,11 @@ data class AgendaEvent(
         return copy(cancelReason = reason).also { it.addEvent(AgendaEventDeleted(it)) }
     }
 
-    fun updateReminderStatus(reminderStatus: ReminderStatus): AgendaEvent {
-        return activeReminder
-            ?.updateStatus(reminderStatus)
-            ?.map { copy(activeReminder = it) }
-            ?.getOrThrow()
-            ?: this
+    fun updateReminder(reminder: Reminder): AgendaEvent {
+        return copy(reminder = reminder)
+    }
+
+    fun trackReminderAsSent(clock: Clock): AgendaEvent {
+        return copy(reminder = reminder.copy(status = ReminderStatus.SENT, sentAt = clock.now()))
     }
 }
