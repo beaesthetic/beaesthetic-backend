@@ -85,9 +85,7 @@ kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict") } }
 
 tasks.withType<KotlinCompile> {
   dependsOn("scheduler-api")
-  kotlinOptions {
-    jvmTarget = "17"
-  }
+  kotlinOptions { jvmTarget = "17" }
 }
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {

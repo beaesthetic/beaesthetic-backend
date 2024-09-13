@@ -20,6 +20,7 @@ class RabbitJobConsumer(private val rabbitTemplate: RabbitTemplate) : JobConsume
         withContext(Dispatchers.IO) {
             log.info("Publishing schedule job to Rabbit ${job.id} to route ${job.meta.route}")
             val message = jackson2JsonMessageConverter.toMessage(job.meta.data, MessageProperties())
+
             rabbitTemplate.send("", job.meta.route, message)
         }
 }

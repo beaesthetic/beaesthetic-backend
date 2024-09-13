@@ -8,6 +8,7 @@ import io.github.petretiandrea.scheduler.core.runtime.SchedulerRuntime
 import io.github.petretiandrea.scheduler.redis.RedisJobRepository
 import io.github.petretiandrea.scheduler.redis.ScheduleJobRedisOptions
 import java.time.Duration
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.core.ReactiveRedisTemplate
@@ -15,6 +16,7 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.scheduling.TaskScheduler
 
 @Configuration
+@RegisterReflectionForBinding(classes = [ScheduleJob::class])
 class SchedulerDI {
 
     @Bean
