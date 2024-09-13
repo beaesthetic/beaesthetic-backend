@@ -33,6 +33,9 @@ envConfig:
   RABBITMQ_HOST: "rabbitmq.common.svc.cluster.local"
   RABBITMQ_PORT: "5672"
 
+  REMIND_BEFORE: "24h"
+  NO_SEND_THRESHOLD_DURATION: "30m"
+  IMMEDIATELY_SEND_DELAY: "2m"
 
 resources:
   requests:
