@@ -13,6 +13,6 @@ WORKDIR /app/
 
 EXPOSE 8080
 
-COPY --from=builder /code/scheduler/build/native/nativeCompile/scheduler .
+COPY --from=builder /code/build/native/nativeCompile/scheduler .
 
 ENTRYPOINT ["./scheduler"]
