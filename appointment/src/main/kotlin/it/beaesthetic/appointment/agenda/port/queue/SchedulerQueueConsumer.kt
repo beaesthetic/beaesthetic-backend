@@ -13,7 +13,10 @@ import org.eclipse.microprofile.reactive.messaging.Message
 import org.jboss.logging.Logger
 
 @ApplicationScoped
-@RegisterForReflection(targets = [ReminderTimesUp::class])
+@RegisterForReflection(
+    targets = [ReminderTimesUp::class, JsonObject::class, Message::class],
+    registerFullHierarchy = true
+)
 class SchedulerQueueConsumer(
     private val sendAgendaScheduleReminderHandler: SendAgendaScheduleReminderHandler
 ) {
