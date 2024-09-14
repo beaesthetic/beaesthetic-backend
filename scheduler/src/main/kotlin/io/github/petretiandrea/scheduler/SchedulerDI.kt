@@ -7,16 +7,15 @@ import io.github.petretiandrea.scheduler.core.consumer.ConsumerStrategy
 import io.github.petretiandrea.scheduler.core.runtime.SchedulerRuntime
 import io.github.petretiandrea.scheduler.redis.RedisJobRepository
 import io.github.petretiandrea.scheduler.redis.ScheduleJobRedisOptions
-import java.time.Duration
-import org.springframework.aot.hint.annotation.RegisterReflectionForBinding
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.context.annotation.ImportRuntimeHints
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.scheduling.TaskScheduler
 
 @Configuration
-@RegisterReflectionForBinding(classes = [ScheduleJob::class])
+@ImportRuntimeHints(RedisJobRepository.RedisJobStoreRuntimeHints::class)
 class SchedulerDI {
 
     @Bean
@@ -58,8 +57,8 @@ class SchedulerDI {
                 ScheduleJobRedisOptions(
                     sortedSetName = "${schedulerConfig.name}-clock",
                     taskSetName = "${schedulerConfig.name}-tasks",
-                    peekBatchSize = 20,
-                    peekLeaseTTL = Duration.ofSeconds(5)
+                    peekBatchSize = schedulerConfig.peekBatchSize,
+                    peekLeaseTTL = schedulerConfig.peekLeaseTtl
                 )
         )
     }

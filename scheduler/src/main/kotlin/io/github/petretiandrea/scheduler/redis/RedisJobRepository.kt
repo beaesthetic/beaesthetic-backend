@@ -1,19 +1,21 @@
 package io.github.petretiandrea.scheduler.redis
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import io.github.petretiandrea.scheduler.core.Job
-import io.github.petretiandrea.scheduler.core.ScheduleId
-import io.github.petretiandrea.scheduler.core.ScheduleJob
-import io.github.petretiandrea.scheduler.core.ScheduleJobRepository
+import io.github.petretiandrea.scheduler.core.*
 import java.time.Duration
 import java.time.Instant
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.withContext
+import org.springframework.aot.hint.ExecutableMode
+import org.springframework.aot.hint.MemberCategory
+import org.springframework.aot.hint.RuntimeHints
+import org.springframework.aot.hint.RuntimeHintsRegistrar
 import org.springframework.data.redis.core.ReactiveRedisTemplate
 import org.springframework.data.redis.core.RedisOperations
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.core.SessionCallback
+import org.springframework.util.ReflectionUtils
 
 data class ScheduleJobRedisOptions(
     val sortedSetName: String,
@@ -150,5 +152,17 @@ class RedisJobRepository(
             }
 
         override suspend fun nack(reason: String?) = withContext(Dispatchers.IO) { TODO() }
+    }
+
+    object RedisJobStoreRuntimeHints : RuntimeHintsRegistrar {
+        override fun registerHints(hints: RuntimeHints, classLoader: ClassLoader?) {
+            setOf(ScheduleJob::class.java, ScheduleId::class.java, ScheduleMeta::class.java)
+                .forEach {
+                    hints.reflection().registerType(it, *MemberCategory.values())
+                    ReflectionUtils.getDeclaredMethods(it).forEach { method ->
+                        hints.reflection().registerMethod(method, ExecutableMode.INVOKE)
+                    }
+                }
+        }
     }
 }
