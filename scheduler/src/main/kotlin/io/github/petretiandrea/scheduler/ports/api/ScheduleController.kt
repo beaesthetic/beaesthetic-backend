@@ -7,16 +7,25 @@ import io.github.petretiandrea.scheduler.core.Scheduler
 import io.github.petretiandrea.scheduler.model.AddSchedule202ResponseDto
 import io.github.petretiandrea.scheduler.model.CreateScheduleDto
 import java.util.*
+import org.slf4j.LoggerFactory
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
 class ScheduleController(private val scheduler: Scheduler) : SchedulesApi {
 
+    private val log = LoggerFactory.getLogger(ScheduleController::class.java)
+
     override suspend fun addSchedule(
         scheduleId: UUID,
         createScheduleDto: CreateScheduleDto
     ): ResponseEntity<AddSchedule202ResponseDto> {
+        log.info(
+            "Adding schedule {} at {} will delivered on {}",
+            scheduleId,
+            createScheduleDto.scheduleAt,
+            createScheduleDto.route
+        )
         return scheduler
             .schedule(
                 scheduleId.toString(),
@@ -29,6 +38,7 @@ class ScheduleController(private val scheduler: Scheduler) : SchedulesApi {
     }
 
     override suspend fun removeSchedule(scheduleId: UUID): ResponseEntity<Unit> {
+        log.info("Removing schedule {}", scheduleId)
         return scheduler
             .delete(ScheduleId(scheduleId.toString()))
             .map { ResponseEntity.noContent().build<Unit>() }
