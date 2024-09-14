@@ -34,7 +34,7 @@ class SendAgendaScheduleReminderHandler(
                 .sendReminder(event, customer.phoneNumber)
                 .let { agendaRepository.saveEvent(it, version) }
                 .onSuccess {
-                    when (event.reminder.status) {
+                    when (it.reminder.status) {
                         ReminderStatus.SENT_REQUESTED ->
                             log.info("Successfully sent reminder to notification service")
                         else ->
