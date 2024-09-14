@@ -14,6 +14,7 @@ import java.util.*
 
 class RemoteScheduler(
     private val schedulesApi: SchedulesApi,
+    private val schedulerRoute: String,
     private val objectMapper: ObjectMapper
 ) : ReminderScheduler {
 
@@ -23,7 +24,7 @@ class RemoteScheduler(
         val request =
             CreateSchedule().apply {
                 scheduleAt = sendAt.atOffset(ZoneOffset.UTC)
-                route = "reminders"
+                route = schedulerRoute
                 data = dataMap
             }
         return schedulesApi
