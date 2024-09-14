@@ -34,6 +34,9 @@ class RemoteScheduler(
     }
 
     override suspend fun unschedule(reminder: Reminder): Reminder {
-        TODO("Not yet implemented")
+        return schedulesApi
+            .removeSchedule(UUID.fromString(reminder.eventId.value))
+            .awaitSuspending()
+            .let { reminder }
     }
 }

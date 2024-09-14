@@ -1,5 +1,6 @@
 package it.beaesthetic.appointment.agenda.port.queue
 
+import io.quarkus.runtime.annotations.RegisterForReflection
 import io.vertx.core.json.JsonObject
 import it.beaesthetic.appointment.agenda.application.reminder.SendAgendaScheduleReminderHandler
 import it.beaesthetic.appointment.agenda.application.reminder.SendReminder
@@ -12,6 +13,7 @@ import org.eclipse.microprofile.reactive.messaging.Message
 import org.jboss.logging.Logger
 
 @ApplicationScoped
+@RegisterForReflection(targets = [ReminderTimesUp::class])
 class SchedulerQueueConsumer(
     private val sendAgendaScheduleReminderHandler: SendAgendaScheduleReminderHandler
 ) {
