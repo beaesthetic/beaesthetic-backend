@@ -57,7 +57,7 @@ class ReminderService(
                         reminderOptions.immediateSendThreshold
                     )
                 val updatedReminder =
-                    if (sendAt == null) {
+                    if (sendAt == null && event.cancelReason == null) {
                         event.reminder.copy(status = ReminderStatus.UNPROCESSABLE)
                     } else {
                         runCatching {
