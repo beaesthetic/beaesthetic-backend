@@ -20,6 +20,7 @@ import jakarta.enterprise.context.Dependent
 import jakarta.enterprise.inject.Produces
 import jakarta.inject.Singleton
 import java.time.Duration
+import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.eclipse.microprofile.rest.client.inject.RestClient
 
 @Dependent
@@ -42,9 +43,10 @@ class DependencyConfig {
     @Singleton
     fun reminderScheduler(
         @RestClient schedulerApi: SchedulesApi,
+        @ConfigProperty(name = "queues.scheduler-queue") schedulerRoute: String,
         objectMapper: ObjectMapper,
     ): ReminderScheduler {
-        return RemoteScheduler(schedulerApi, objectMapper)
+        return RemoteScheduler(schedulerApi, schedulerRoute, objectMapper)
     }
 
     @Produces
