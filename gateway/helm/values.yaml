@@ -28,7 +28,7 @@ firebase_admin_secret: "firebase-admin-config"
 envConfig:
   FIREBASE_CREDENTIALS_FILE: "/app/admin-sdk.json"
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
-  APPOINTMENT_SERVICE_URL: "http://appointment-service:3000"
+  APPOINTMENT_SERVICE_URL: "http://appointment-service-v2:8080"
   CUSTOMER_SERVICE_URL: "http://customer-service-v2:8080"
   INSIGHTS_SERVICE_URL: "http://beaesthetic-insights:8080"
 
