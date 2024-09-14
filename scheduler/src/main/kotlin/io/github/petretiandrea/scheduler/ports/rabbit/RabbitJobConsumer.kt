@@ -19,7 +19,10 @@ class RabbitJobConsumer(private val rabbitTemplate: RabbitTemplate) : JobConsume
     override suspend fun consume(job: ScheduleJob) =
         withContext(Dispatchers.IO) {
             log.info("Publishing schedule job to Rabbit ${job.id} to route ${job.meta.route}")
-            val message = jackson2JsonMessageConverter.toMessage(job.meta.data, MessageProperties())
+            val message =
+                jackson2JsonMessageConverter.toMessage(job.meta.data, MessageProperties()).apply {
+                    messageProperties.contentEncoding = null
+                }
 
             rabbitTemplate.send("", job.meta.route, message)
         }
