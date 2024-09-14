@@ -30,4 +30,12 @@ object TemplateRuleUtils {
 
         return instant.atZone(zone).format(formatter)
     }
+
+    fun formatTime(instant: Instant): String {
+        val zone = ZoneId.of("Europe/Rome")
+        val locale = Locale.ITALY
+        val formatter = DateTimeFormatter.ofPattern("HH:mm", locale)
+
+        return instant.atZone(zone).format(formatter)
+    }
 }

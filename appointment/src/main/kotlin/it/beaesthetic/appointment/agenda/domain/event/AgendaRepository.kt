@@ -1,5 +1,6 @@
 package it.beaesthetic.appointment.agenda.domain.event
 
+import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
 import it.beaesthetic.appointment.common.OptimisticConcurrency
 
 interface AgendaRepository {
@@ -10,5 +11,6 @@ interface AgendaRepository {
     suspend fun findEvents(timeSpan: TimeSpan): List<AgendaEvent>
     suspend fun findByAttendeeId(attendeeId: String): List<AgendaEvent>
 
+    suspend fun findEventsWithReminderState(reminderStatus: ReminderStatus): List<AgendaEvent>
     suspend fun deleteEvent(scheduleId: AgendaEventId): Result<Boolean>
 }

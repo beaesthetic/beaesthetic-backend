@@ -25,7 +25,7 @@ class SchedulerQueueConsumer(
 
     @Incoming("schedules")
     suspend fun handle(message: Message<JsonObject>): CompletionStage<Void>? {
-        log.info("Received scheduler event ${message.payload}")
+        log.info("Received scheduled event ${message.payload}")
         val event =
             kotlin
                 .runCatching { message.payload.mapTo(ReminderTimesUp::class.java) }

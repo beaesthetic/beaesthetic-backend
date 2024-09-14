@@ -3,6 +3,7 @@ package it.beaesthetic.appointment.agenda
 import it.beaesthetic.appointment.agenda.domain.reminder.template.ReminderTemplate.Companion.template
 import it.beaesthetic.appointment.agenda.domain.reminder.template.ReminderTemplateEngine
 import it.beaesthetic.appointment.agenda.domain.reminder.template.TemplateRuleUtils.formatDateToRome
+import it.beaesthetic.appointment.agenda.domain.reminder.template.TemplateRuleUtils.formatTime
 import it.beaesthetic.appointment.agenda.domain.reminder.template.TemplateRuleUtils.timeIncludeDayRange
 import jakarta.enterprise.context.Dependent
 import jakarta.enterprise.inject.Produces
@@ -26,10 +27,10 @@ object ReminderTemplateConfig {
             timeIncludeDayRange(MonthDay.of(12, 10), MonthDay.of(1, 6)).invoke(it.timeSpan.start)
         }
         apply {
-            val start = formatDateToRome(it.timeSpan.start)
-            val end = formatDateToRome(it.timeSpan.end)
+            val day = formatDateToRome(it.timeSpan.start)
+            val hour = formatTime(it.timeSpan.start)
             """
-                    Il centro Be Aesthetic ti ricorda il tuo appuntamento di $start alle ore ${end}.
+                    Il centro Be Aesthetic ti ricorda il tuo appuntamento di $day alle ore $hour.
                     Buona giornata e buone feste!
                 """
                 .trimIndent()
@@ -39,10 +40,10 @@ object ReminderTemplateConfig {
     private val defaultTemplate = template {
         whenCondition { true }
         apply {
-            val start = formatDateToRome(it.timeSpan.start)
-            val end = formatDateToRome(it.timeSpan.end)
+            val day = formatDateToRome(it.timeSpan.start)
+            val hour = formatTime(it.timeSpan.start)
             """
-                    Il centro Be Aesthetic ti ricorda il tuo appuntamento di $start alle ore ${end}.
+                    Il centro Be Aesthetic ti ricorda il tuo appuntamento di $day alle ore $hour.
                     Buona giornata!
                 """
                 .trimIndent()

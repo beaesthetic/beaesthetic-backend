@@ -4,6 +4,7 @@ import com.mongodb.client.model.Filters
 import com.mongodb.client.model.IndexModel
 import com.mongodb.client.model.Indexes
 import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoRepository
+import io.quarkus.panache.common.Sort
 import io.quarkus.runtime.Startup
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
@@ -12,6 +13,7 @@ import it.beaesthetic.appointment.agenda.domain.event.AgendaEvent
 import it.beaesthetic.appointment.agenda.domain.event.AgendaEventId
 import it.beaesthetic.appointment.agenda.domain.event.AgendaRepository
 import it.beaesthetic.appointment.agenda.domain.event.TimeSpan
+import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
 import it.beaesthetic.appointment.common.OptimisticConcurrency
 import it.beaesthetic.appointment.common.OptimisticLockException
 import it.beaesthetic.appointment.common.panache.PanacheUtils.updateOne
@@ -29,6 +31,7 @@ class PanacheAgendaRepository : ReactivePanacheMongoRepository<AgendaEntity> {
                     IndexModel(Indexes.ascending("end")),
                     IndexModel(Indexes.ascending("attendee.id")),
                     IndexModel(Indexes.ascending("cancelReason")),
+                    IndexModel(Indexes.ascending("reminderStatus")),
                 )
             )
             .awaitSuspending()
@@ -116,6 +119,22 @@ class MongoAgendaRepository(
     override suspend fun findByAttendeeId(attendeeId: String): List<AgendaEvent> {
         return panacheAgendaRepository
             .find("attendee.id = ?1", attendeeId)
+            .stream()
+            .map { EntityMapper.toDomain(it) }
+            .collect()
+            .asList()
+            .awaitSuspending()
+    }
+
+    override suspend fun findEventsWithReminderState(
+        reminderStatus: ReminderStatus
+    ): List<AgendaEvent> {
+        return panacheAgendaRepository
+            .find(
+                "reminderStatus = ?1",
+                reminderStatus.name,
+                Sort.by("start", Sort.Direction.Ascending)
+            )
             .stream()
             .map { EntityMapper.toDomain(it) }
             .collect()

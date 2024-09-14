@@ -6,6 +6,7 @@ import it.beaesthetic.appointment.agenda.domain.notification.NotificationService
 import it.beaesthetic.appointment.agenda.domain.reminder.template.ReminderTemplateEngine
 import java.time.Duration
 import java.time.Instant
+import org.jboss.logging.Logger
 
 class ReminderService(
     private val clock: Clock,
@@ -14,6 +15,8 @@ class ReminderService(
     private val notificationService: NotificationService,
     private val templateEngine: ReminderTemplateEngine
 ) {
+
+    private val log = Logger.getLogger(ReminderService::class.java)
 
     suspend fun scheduleReminder(event: AgendaEvent): Result<AgendaEvent> {
         val sendAt =
@@ -24,6 +27,7 @@ class ReminderService(
                 reminderOptions.noSendThreshold,
                 reminderOptions.immediateSendThreshold
             )
+        log.info("Reminder for ${event.id}, start ${event.timeSpan.start}, scheduled at $sendAt")
         val updatedReminder =
             when {
                 sendAt == null ->

@@ -33,7 +33,6 @@ class NotificationConfirmQueueConsumer(
                 .flatMap { agendaEventId ->
                     confirmReminderSentHandler
                         .handle(ConfirmReminderSent(agendaEventId))
-                        .onSuccess { log.info("Successfully confirm reminder for ${it.id}") }
                         .onFailure {
                             log.error("Failed to confirm reminder for $agendaEventId", it)
                         }
