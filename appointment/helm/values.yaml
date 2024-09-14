@@ -36,7 +36,7 @@ envConfig:
   REMIND_BEFORE: "24h"
   NO_SEND_THRESHOLD_DURATION: "30m"
   IMMEDIATELY_SEND_DELAY: "2m"
-  RECOVERY_ENABLED: "false"
+  RECOVERY_ENABLED: "true"
 
 resources:
   requests:
