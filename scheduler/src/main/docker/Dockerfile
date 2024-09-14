@@ -8,7 +8,6 @@ COPY ./scheduler .
 RUN chmod +x ./gradlew
 RUN ./gradlew :nativeCompile -DskipTests
 
-FROM prova as builder
 FROM debian:stable-20240701-slim
 WORKDIR /app/
 
