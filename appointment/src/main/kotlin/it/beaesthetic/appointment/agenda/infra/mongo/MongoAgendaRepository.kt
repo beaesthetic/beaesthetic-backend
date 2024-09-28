@@ -118,7 +118,7 @@ class MongoAgendaRepository(
 
     override suspend fun findByAttendeeId(attendeeId: String): List<AgendaEvent> {
         return panacheAgendaRepository
-            .find("attendee.id = ?1", attendeeId)
+            .find("attendee.id = ?1 and isCancelled = ?2", attendeeId, false)
             .stream()
             .map { EntityMapper.toDomain(it) }
             .collect()
