@@ -1,18 +1,27 @@
 package it.beaesthetic.appointment.agenda.infra
 
 import arrow.core.flatMap
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import io.quarkus.redis.datasource.value.ReactiveValueCommands
 import io.quarkus.redis.datasource.value.SetArgs
 import io.smallrye.mutiny.coroutines.awaitSuspending
-import it.beaesthetic.appointment.agenda.domain.notification.Notification
-import it.beaesthetic.appointment.agenda.domain.notification.NotificationId
-import it.beaesthetic.appointment.agenda.domain.notification.NotificationService
-import it.beaesthetic.appointment.agenda.domain.notification.PendingNotification
+import it.beaesthetic.appointment.agenda.domain.notification.*
 import it.beaesthetic.appointment.agenda.domain.notification.template.NotificationTemplateEngine
 import it.beaesthetic.generated.notification.client.api.NotificationsApi
 import it.beaesthetic.generated.notification.client.model.NotificationChannel
 import it.beaesthetic.generated.notification.client.model.SendNotificationRequest
 import java.time.Duration
+
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes(
+    value =
+        [
+            JsonSubTypes.Type(value = NotificationType.Reminder::class, name = "reminder"),
+            JsonSubTypes.Type(value = NotificationType.Confirmation::class, name = "confirmation"),
+        ]
+)
+interface PendingNotificationMixin
 
 class NotificationServiceImpl(
     private val notificationsApi: NotificationsApi,
