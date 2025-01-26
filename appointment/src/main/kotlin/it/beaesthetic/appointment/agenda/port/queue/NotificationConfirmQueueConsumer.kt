@@ -29,15 +29,21 @@ class NotificationConfirmQueueConsumer(
             notificationService
                 .findPendingNotification(notificationId)
                 .onSuccess {
-                    log.info("Found event associated to notification id $notificationId of type ${it.notificationType}")
+                    log.info(
+                        "Found event associated to notification id $notificationId of type ${it.notificationType}"
+                    )
                 }
                 .flatMap { pendingNotification ->
-                    when(pendingNotification.notificationType) {
-                        NotificationType.Reminder -> confirmReminderSentHandler
-                            .handle(ConfirmReminderSent(pendingNotification.agendaEventId))
-                            .onFailure {
-                                log.error("Failed to confirm reminder for ${pendingNotification.agendaEventId}", it)
-                            }
+                    when (pendingNotification.notificationType) {
+                        NotificationType.Reminder ->
+                            confirmReminderSentHandler
+                                .handle(ConfirmReminderSent(pendingNotification.agendaEventId))
+                                .onFailure {
+                                    log.error(
+                                        "Failed to confirm reminder for ${pendingNotification.agendaEventId}",
+                                        it
+                                    )
+                                }
                         else -> Result.success(Unit)
                     }
                 }

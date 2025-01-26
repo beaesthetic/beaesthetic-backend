@@ -15,6 +15,6 @@ class NotificationTemplateBuilder {
     }
 
     fun build(): NotificationTemplate {
-        return NotificationTemplate.from({e -> applyWhen.all { it(e) }}, apply)
+        return NotificationTemplate.from({ e -> applyWhen.all { it(e) } }, apply)
     }
 }

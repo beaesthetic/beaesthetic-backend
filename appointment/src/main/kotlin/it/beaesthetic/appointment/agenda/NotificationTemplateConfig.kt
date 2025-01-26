@@ -51,7 +51,8 @@ object NotificationTemplateConfig {
             """
                 Il centro Be Aesthetic ti conferma la prenotazione del tuo appuntamento per il giorno $day alle ore $hour.
                 Buona giornata!
-            """.trimIndent()
+            """
+                .trimIndent()
         }
     }
 
@@ -63,7 +64,8 @@ object NotificationTemplateConfig {
             """
                  Il centro Be Aesthetic ti informa che il tuo appuntamento è stato spostato. La nuova data è $day alle ore $hour.
                  Buona giornata!
-            """.trimIndent()
+            """
+                .trimIndent()
         }
     }
 
