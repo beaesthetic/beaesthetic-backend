@@ -25,15 +25,19 @@ class NotificationServiceImpl(
         notification: Notification,
         phoneNumber: String
     ): Result<PendingNotification> {
-        return templateEngine.process(notification)
+        return templateEngine
+            .process(notification)
             .map { body ->
                 SendNotificationRequest().apply {
                     title = ""
                     content = body
                     channel =
-                        NotificationChannel().type(NotificationChannel.TypeEnum.SMS).phone(phoneNumber)
+                        NotificationChannel()
+                            .type(NotificationChannel.TypeEnum.SMS)
+                            .phone(phoneNumber)
                 }
-            }.flatMap { request ->
+            }
+            .flatMap { request ->
                 runCatching {
                     notificationsApi
                         .createNotification(request)
@@ -50,7 +54,8 @@ class NotificationServiceImpl(
                                     pendingNotification.notificationId.toString(),
                                     pendingNotification,
                                     SetArgs().px(defaultEventNotificationMapTTL)
-                                ).map { pendingNotification }
+                                )
+                                .map { pendingNotification }
                         }
                         .awaitSuspending()
                 }
