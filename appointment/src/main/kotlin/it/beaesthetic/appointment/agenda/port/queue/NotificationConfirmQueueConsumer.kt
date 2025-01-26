@@ -6,6 +6,7 @@ import it.beaesthetic.appointment.agenda.application.reminder.ConfirmReminderSen
 import it.beaesthetic.appointment.agenda.application.reminder.ConfirmReminderSentHandler
 import it.beaesthetic.appointment.agenda.domain.notification.NotificationId
 import it.beaesthetic.appointment.agenda.domain.notification.NotificationService
+import it.beaesthetic.appointment.agenda.domain.notification.NotificationType
 import jakarta.enterprise.context.ApplicationScoped
 import java.util.concurrent.CompletionStage
 import org.eclipse.microprofile.reactive.messaging.Incoming
@@ -26,16 +27,19 @@ class NotificationConfirmQueueConsumer(
         val notificationId = message.payload.getString("notificationId")?.let { NotificationId(it) }
         if (notificationId != null) {
             notificationService
-                .findEventByNotification(notificationId)
+                .findPendingNotification(notificationId)
                 .onSuccess {
-                    log.info("Found event associated to notification id ${notificationId}")
+                    log.info("Found event associated to notification id $notificationId of type ${it.notificationType}")
                 }
-                .flatMap { agendaEventId ->
-                    confirmReminderSentHandler
-                        .handle(ConfirmReminderSent(agendaEventId))
-                        .onFailure {
-                            log.error("Failed to confirm reminder for $agendaEventId", it)
-                        }
+                .flatMap { pendingNotification ->
+                    when(pendingNotification.notificationType) {
+                        NotificationType.Reminder -> confirmReminderSentHandler
+                            .handle(ConfirmReminderSent(pendingNotification.agendaEventId))
+                            .onFailure {
+                                log.error("Failed to confirm reminder for ${pendingNotification.agendaEventId}", it)
+                            }
+                        else -> Result.success(Unit)
+                    }
                 }
                 .map { notificationService.removeTrackNotification(notificationId) }
                 .onFailure {

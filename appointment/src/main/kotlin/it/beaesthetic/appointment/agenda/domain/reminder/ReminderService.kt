@@ -2,8 +2,9 @@ package it.beaesthetic.appointment.agenda.domain.reminder
 
 import it.beaesthetic.appointment.agenda.domain.Clock
 import it.beaesthetic.appointment.agenda.domain.event.AgendaEvent
+import it.beaesthetic.appointment.agenda.domain.notification.Notification
 import it.beaesthetic.appointment.agenda.domain.notification.NotificationService
-import it.beaesthetic.appointment.agenda.domain.reminder.template.ReminderTemplateEngine
+import it.beaesthetic.appointment.agenda.domain.notification.NotificationType
 import java.time.Duration
 import java.time.Instant
 import org.jboss.logging.Logger
@@ -13,7 +14,6 @@ class ReminderService(
     private val reminderOptions: ReminderOptions,
     private val reminderScheduler: ReminderScheduler,
     private val notificationService: NotificationService,
-    private val templateEngine: ReminderTemplateEngine
 ) {
 
     private val log = Logger.getLogger(ReminderService::class.java)
@@ -65,9 +65,8 @@ class ReminderService(
                         event.reminder.copy(status = ReminderStatus.UNPROCESSABLE)
                     } else {
                         runCatching {
-                                notificationService.trackAndSendReminderNotification(
-                                    event,
-                                    templateEngine,
+                                notificationService.trackAndSendNotification(
+                                    Notification(NotificationType.Reminder, event),
                                     phoneNumber
                                 )
                             }

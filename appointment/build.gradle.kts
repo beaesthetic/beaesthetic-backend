@@ -71,6 +71,8 @@ dependencies {
   implementation(kotlin("reflect"))
 
   testImplementation("io.quarkus:quarkus-junit5")
+  testImplementation(kotlin("test"))
+  testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }
 
 group = "it.beaesthetic.appointment"

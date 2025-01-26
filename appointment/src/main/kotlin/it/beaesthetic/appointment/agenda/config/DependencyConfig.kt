@@ -2,13 +2,15 @@ package it.beaesthetic.appointment.agenda.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.quarkus.redis.datasource.ReactiveRedisDataSource
+import io.quarkus.runtime.annotations.RegisterForReflection
 import it.beaesthetic.appointment.agenda.domain.Clock
 import it.beaesthetic.appointment.agenda.domain.event.CustomerRegistry
 import it.beaesthetic.appointment.agenda.domain.notification.NotificationService
+import it.beaesthetic.appointment.agenda.domain.notification.PendingNotification
+import it.beaesthetic.appointment.agenda.domain.notification.template.NotificationTemplateEngine
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderOptions
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderScheduler
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderService
-import it.beaesthetic.appointment.agenda.domain.reminder.template.ReminderTemplateEngine
 import it.beaesthetic.appointment.agenda.infra.NotificationServiceImpl
 import it.beaesthetic.appointment.agenda.infra.RemoteCustomerRegistry
 import it.beaesthetic.appointment.agenda.infra.RemoteScheduler
@@ -19,11 +21,15 @@ import it.beaesthetic.generated.scheduler.client.api.SchedulesApi
 import jakarta.enterprise.context.Dependent
 import jakarta.enterprise.inject.Produces
 import jakarta.inject.Singleton
-import java.time.Duration
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.eclipse.microprofile.rest.client.inject.RestClient
+import java.time.Duration
 
 @Dependent
+@RegisterForReflection(
+    targets = [PendingNotification::class],
+    registerFullHierarchy = true
+)
 class DependencyConfig {
 
     @Produces
@@ -53,12 +59,14 @@ class DependencyConfig {
     @Singleton
     fun notificationService(
         @RestClient notificationsApi: NotificationsApi,
+        notificationTemplateEngine: NotificationTemplateEngine,
         redis: ReactiveRedisDataSource,
     ): NotificationService {
-        val notificationEventMap = redis.value(String::class.java)
+        val notificationEventMap = redis.value(PendingNotification::class.java)
         val notificationEventMapExpire = Duration.ofDays(1)
         return NotificationServiceImpl(
             notificationsApi,
+            notificationTemplateEngine,
             notificationEventMap,
             notificationEventMapExpire
         )
@@ -70,12 +78,10 @@ class DependencyConfig {
         reminderConfiguration: ReminderConfiguration,
         notificationService: NotificationService,
         reminderScheduler: ReminderScheduler,
-        reminderTemplateEngine: ReminderTemplateEngine
     ): ReminderService {
         return ReminderService(
             reminderScheduler = reminderScheduler,
             notificationService = notificationService,
-            templateEngine = reminderTemplateEngine,
             reminderOptions =
                 ReminderOptions(
                     reminderConfiguration.triggerBefore(),
