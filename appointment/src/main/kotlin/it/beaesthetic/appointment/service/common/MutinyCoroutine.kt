@@ -4,11 +4,12 @@ import io.smallrye.mutiny.coroutines.uni
 import io.vertx.core.Vertx
 import io.vertx.kotlin.coroutines.dispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.SupervisorJob
 
 private val coroutineScope: CoroutineScope by lazy {
-    CoroutineScope(Vertx.currentContext().dispatcher() + SupervisorJob())
+    CoroutineScope((Vertx.currentContext()?.dispatcher() ?: Dispatchers.IO) + SupervisorJob())
 }
 
 @OptIn(ExperimentalCoroutinesApi::class)

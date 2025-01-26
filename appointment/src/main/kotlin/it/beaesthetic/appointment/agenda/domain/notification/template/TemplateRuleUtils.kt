@@ -1,4 +1,4 @@
-package it.beaesthetic.appointment.agenda.domain.reminder.template
+package it.beaesthetic.appointment.agenda.domain.notification.template
 
 import java.time.Instant
 import java.time.MonthDay
