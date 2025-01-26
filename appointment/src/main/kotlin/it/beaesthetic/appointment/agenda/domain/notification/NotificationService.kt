@@ -1,19 +1,22 @@
 package it.beaesthetic.appointment.agenda.domain.notification
 
-import it.beaesthetic.appointment.agenda.domain.event.AgendaEvent
 import it.beaesthetic.appointment.agenda.domain.event.AgendaEventId
-import it.beaesthetic.appointment.agenda.domain.reminder.template.ReminderTemplateEngine
 
 @JvmInline value class NotificationId(val value: String)
 
-interface NotificationService {
-    suspend fun trackAndSendReminderNotification(
-        event: AgendaEvent,
-        templateEngine: ReminderTemplateEngine,
-        phoneNumber: String
-    ): Result<NotificationId>
+data class PendingNotification(
+    val notificationId: NotificationId,
+    val agendaEventId: AgendaEventId,
+    val notificationType: NotificationType
+)
 
-    suspend fun findEventByNotification(notificationId: NotificationId): Result<AgendaEventId>
+interface NotificationService {
+    suspend fun trackAndSendNotification(
+        notification: Notification,
+        phoneNumber: String
+    ): Result<PendingNotification>
+
+    suspend fun findPendingNotification(notificationId: NotificationId): Result<PendingNotification>
 
     suspend fun removeTrackNotification(notificationId: NotificationId)
 }

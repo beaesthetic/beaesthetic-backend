@@ -38,6 +38,8 @@ envConfig:
   IMMEDIATELY_SEND_DELAY: "2m"
   RECOVERY_ENABLED: "true"
 
+  NOTIFICATION_ATTENDEE_WHITELIST: "ce25d641-77b8-47af-b640-3ef97f0ee770,141824e7-6554-4714-8fb6-d433494382d7"
+
 resources:
   requests:
     memory: "100Mi"
