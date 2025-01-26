@@ -21,15 +21,12 @@ import it.beaesthetic.generated.scheduler.client.api.SchedulesApi
 import jakarta.enterprise.context.Dependent
 import jakarta.enterprise.inject.Produces
 import jakarta.inject.Singleton
+import java.time.Duration
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.eclipse.microprofile.rest.client.inject.RestClient
-import java.time.Duration
 
 @Dependent
-@RegisterForReflection(
-    targets = [PendingNotification::class],
-    registerFullHierarchy = true
-)
+@RegisterForReflection(targets = [PendingNotification::class], registerFullHierarchy = true)
 class DependencyConfig {
 
     @Produces

@@ -23,14 +23,16 @@ class CreateAgendaScheduleHandler(
         kotlin
             .runCatching {
                 val attendee =
-                    when (command.data) {
-                        is AppointmentEventData ->
-                            customerRegistry.findByCustomerId(command.attendeeId)?.let {
-                                Attendee(it.customerId, it.displayName)
-                            }
-                        else -> Attendee(command.attendeeId, "self")
-                    }
-                        ?: throw IllegalArgumentException("Unknown attendee ${command.attendeeId}")
+                    //                    when (command.data) {
+                    //                        is AppointmentEventData ->
+                    //
+                    // customerRegistry.findByCustomerId(command.attendeeId)?.let {
+                    //                                Attendee(it.customerId, it.displayName)
+                    //                            }
+                    /*else -> */ Attendee(command.attendeeId, "self")
+                //                    }
+                //                        ?: throw IllegalArgumentException("Unknown attendee
+                // ${command.attendeeId}")
 
                 AgendaEvent.create(
                     id = AgendaEventId(UUID.randomUUID().toString()),

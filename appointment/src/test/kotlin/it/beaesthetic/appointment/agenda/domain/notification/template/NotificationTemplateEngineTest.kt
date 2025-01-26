@@ -11,7 +11,6 @@ import org.mockito.Mockito.mock
 
 class NotificationTemplateEngineTest {
 
-
     @Test
     fun `should process event with valid template`() {
         // Prepare a valid event and template
@@ -25,10 +24,11 @@ class NotificationTemplateEngineTest {
             apply { "TEST2" }
         }
 
-        val engine = NotificationTemplateEngine.builder()
-            .add(notificationTemplate2)
-            .add(notificationTemplate1)
-            .build()
+        val engine =
+            NotificationTemplateEngine.builder()
+                .add(notificationTemplate2)
+                .add(notificationTemplate1)
+                .build()
 
         val agendaEvent = mock<AgendaEvent>()
 
@@ -49,9 +49,7 @@ class NotificationTemplateEngineTest {
             apply { "TEST" }
         }
 
-        val engine = NotificationTemplateEngine.builder()
-            .add(notificationTemplate)
-            .build()
+        val engine = NotificationTemplateEngine.builder().add(notificationTemplate).build()
 
         // Process the event with no matching template and no fallback
         val result = engine.process(confirmEvent)

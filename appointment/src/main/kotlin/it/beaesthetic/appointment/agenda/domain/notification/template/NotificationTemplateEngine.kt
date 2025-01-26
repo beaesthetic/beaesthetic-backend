@@ -13,9 +13,7 @@ class NotificationTemplateEngine(
             return Result.failure(IllegalArgumentException("No valid template found"))
         }
         return runCatching { template.invoke(event) }
-            .recoverCatching {
-                fallbackTemplate?.invoke(event) ?: throw it
-            }
+            .recoverCatching { fallbackTemplate?.invoke(event) ?: throw it }
     }
 
     companion object {

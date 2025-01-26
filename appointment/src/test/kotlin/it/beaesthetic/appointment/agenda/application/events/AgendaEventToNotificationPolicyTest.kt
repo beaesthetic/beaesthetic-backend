@@ -13,9 +13,10 @@ import org.mockito.kotlin.mock
 
 class AgendaEventToNotificationPolicyTest {
 
-    private val notificationConfiguration = object : NotificationConfiguration {
-        override fun whitelist(): List<String> = listOf("123")
-    }
+    private val notificationConfiguration =
+        object : NotificationConfiguration {
+            override fun whitelist(): List<String> = listOf("123")
+        }
 
     private lateinit var sendNotificationHandler: SendNotificationHandler
     private lateinit var agentEventToNotificationPolicy: AgendaEventToNotificationPolicy
@@ -23,21 +24,15 @@ class AgendaEventToNotificationPolicyTest {
     @BeforeEach
     fun setup() {
         sendNotificationHandler = mock()
-        agentEventToNotificationPolicy = AgendaEventToNotificationPolicy(
-            notificationConfiguration,
-            sendNotificationHandler
-        )
+        agentEventToNotificationPolicy =
+            AgendaEventToNotificationPolicy(notificationConfiguration, sendNotificationHandler)
     }
 
     @Test
     fun aa(): Unit = runBlocking {
         val attendee1 = Attendee("123", "")
-        val agendaEvent = mock<AgendaEvent> {
-            on { attendee }.thenReturn(attendee1)
-        }
+        val agendaEvent = mock<AgendaEvent> { on { attendee }.thenReturn(attendee1) }
         val event = AgendaEventScheduled(agendaEvent)
-        agentEventToNotificationPolicy.handle(event)
-            .awaitSuspending()
+        agentEventToNotificationPolicy.handle(event).awaitSuspending()
     }
-
 }

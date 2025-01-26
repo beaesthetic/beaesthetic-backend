@@ -25,29 +25,33 @@ class AgendaEventToNotificationPolicy(
     fun handle(event: AgendaEventScheduled) = uniWithScope {
         log.info("Notification policy handle for new agenda scheduled event")
         if (!customerWhitelist.contains(event.agendaEvent.attendee.id)) {
-            log.info("Attendee ${event.agendaEvent.attendee.id} not in whitelist, skipping notification")
+            log.info(
+                "Attendee ${event.agendaEvent.attendee.id} not in whitelist, skipping notification"
+            )
             return@uniWithScope
         }
         log.info("Attendee in whitelist, sending notification")
-        sendNotification.handle(SendNotificationCommand(Notification(
-            NotificationType.Confirmation(),
-            event.agendaEvent
-        )))
+        sendNotification.handle(
+            SendNotificationCommand(
+                Notification(NotificationType.Confirmation(), event.agendaEvent)
+            )
+        )
     }
 
     @ConsumeEvent("AgendaEventRescheduled")
     fun handle(event: AgendaEventRescheduled) = uniWithScope {
         log.info("Notification policy handle for agenda re-scheduled event")
         if (!customerWhitelist.contains(event.agendaEvent.attendee.id)) {
-            log.info("Attendee ${event.agendaEvent.attendee.id} not in whitelist, skipping notification")
+            log.info(
+                "Attendee ${event.agendaEvent.attendee.id} not in whitelist, skipping notification"
+            )
             return@uniWithScope
         }
         log.info("Attendee in whitelist, sending notification")
-        sendNotification.handle(SendNotificationCommand(
-            Notification(
-                NotificationType.Confirmation(true),
-                event.agendaEvent
+        sendNotification.handle(
+            SendNotificationCommand(
+                Notification(NotificationType.Confirmation(true), event.agendaEvent)
             )
-        ))
+        )
     }
 }
