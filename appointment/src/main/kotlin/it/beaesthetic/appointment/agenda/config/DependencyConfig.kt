@@ -2,7 +2,6 @@ package it.beaesthetic.appointment.agenda.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.quarkus.redis.datasource.ReactiveRedisDataSource
-import io.quarkus.runtime.annotations.RegisterForReflection
 import it.beaesthetic.appointment.agenda.domain.Clock
 import it.beaesthetic.appointment.agenda.domain.event.CustomerRegistry
 import it.beaesthetic.appointment.agenda.domain.notification.NotificationService
@@ -26,7 +25,6 @@ import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.eclipse.microprofile.rest.client.inject.RestClient
 
 @Dependent
-@RegisterForReflection(targets = [PendingNotification::class], registerFullHierarchy = true)
 class DependencyConfig {
 
     @Produces
