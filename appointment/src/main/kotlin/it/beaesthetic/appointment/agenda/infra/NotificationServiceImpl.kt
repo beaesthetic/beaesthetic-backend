@@ -21,7 +21,7 @@ import java.time.Duration
             JsonSubTypes.Type(value = NotificationType.Confirmation::class, name = "confirmation"),
         ]
 )
-interface PendingNotificationMixin
+interface NotificationTypeMixin
 
 class NotificationServiceImpl(
     private val notificationsApi: NotificationsApi,
@@ -29,6 +29,13 @@ class NotificationServiceImpl(
     private val eventNotificationMap: ReactiveValueCommands<String, PendingNotification>,
     private val defaultEventNotificationMapTTL: Duration
 ) : NotificationService {
+
+    companion object {
+        private const val REDIS_PREFIX = "pending-notification"
+        private fun formatRedisKey(notificationId: NotificationId): String {
+            return "${REDIS_PREFIX}:${notificationId.value}"
+        }
+    }
 
     override suspend fun trackAndSendNotification(
         notification: Notification,
@@ -60,7 +67,7 @@ class NotificationServiceImpl(
                         .flatMap { pendingNotification ->
                             eventNotificationMap
                                 .set(
-                                    pendingNotification.notificationId.toString(),
+                                    formatRedisKey(pendingNotification.notificationId),
                                     pendingNotification,
                                     SetArgs().px(defaultEventNotificationMapTTL)
                                 )
@@ -74,10 +81,10 @@ class NotificationServiceImpl(
     override suspend fun findPendingNotification(
         notificationId: NotificationId
     ): Result<PendingNotification> = runCatching {
-        eventNotificationMap.get(notificationId.value).awaitSuspending()
+        eventNotificationMap.get(formatRedisKey(notificationId)).awaitSuspending()
     }
 
     override suspend fun removeTrackNotification(notificationId: NotificationId) {
-        eventNotificationMap.getdel(notificationId.value).awaitSuspending()
+        eventNotificationMap.getdel(formatRedisKey(notificationId)).awaitSuspending()
     }
 }
