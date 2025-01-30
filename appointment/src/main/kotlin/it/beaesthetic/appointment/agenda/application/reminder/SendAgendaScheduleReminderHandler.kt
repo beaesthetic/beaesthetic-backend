@@ -7,6 +7,7 @@ import it.beaesthetic.appointment.agenda.domain.event.CustomerRegistry
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderService
 import it.beaesthetic.appointment.agenda.domain.reminder.ReminderStatus
 import jakarta.enterprise.context.ApplicationScoped
+import kotlin.onSuccess
 import org.jboss.logging.Logger
 
 data class SendReminder(val eventId: AgendaEventId)
@@ -15,7 +16,7 @@ data class SendReminder(val eventId: AgendaEventId)
 class SendAgendaScheduleReminderHandler(
     private val agendaRepository: AgendaRepository,
     private val customerRegistry: CustomerRegistry,
-    private val reminderService: ReminderService
+    private val reminderService: ReminderService,
 ) {
 
     private val log = Logger.getLogger(SendAgendaScheduleReminderHandler::class.java)

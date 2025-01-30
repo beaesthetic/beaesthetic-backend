@@ -1,5 +1,6 @@
 package it.beaesthetic.appointment.agenda.domain.reminder
 
+import it.beaesthetic.appointment.agenda.application.reminder.ReminderTracker
 import it.beaesthetic.appointment.agenda.domain.Clock
 import it.beaesthetic.appointment.agenda.domain.event.AgendaEvent
 import it.beaesthetic.appointment.agenda.domain.notification.Notification
@@ -14,6 +15,7 @@ class ReminderService(
     private val reminderOptions: ReminderOptions,
     private val reminderScheduler: ReminderScheduler,
     private val notificationService: NotificationService,
+    private val reminderTracker: ReminderTracker,
 ) {
 
     private val log = Logger.getLogger(ReminderService::class.java)
@@ -37,7 +39,9 @@ class ReminderService(
                         .map { event.reminder.copy(status = ReminderStatus.SCHEDULED) }
             }
 
-        return updatedReminder.map { event.updateReminder(it) }
+        return updatedReminder
+            .onSuccess { reminderTracker.trackReminderState(it.status) }
+            .map { event.updateReminder(it) }
     }
 
     suspend fun unscheduleReminder(event: AgendaEvent): Result<AgendaEvent> {
@@ -46,6 +50,7 @@ class ReminderService(
             .runCatching {
                 reminderScheduler.unschedule(event.reminder).copy(status = ReminderStatus.DELETED)
             }
+            .onSuccess { reminderTracker.trackReminderState(it.status) }
             .map { event.updateReminder(it) }
     }
 
@@ -82,7 +87,7 @@ class ReminderService(
                 event.updateReminder(updatedReminder)
             }
             else -> event
-        }
+        }.apply { reminderTracker.trackReminderState(reminder.status) }
     }
 
     private fun computeSendTime(
