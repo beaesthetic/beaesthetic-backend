@@ -3,12 +3,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
-  kotlin("jvm") version "1.9.22"
-  kotlin("plugin.allopen") version "1.9.22"
+  kotlin("jvm") version "2.0.21"
+  kotlin("plugin.allopen") version "2.0.21"
   id("io.quarkus")
   id("org.openapi.generator") version "7.5.0"
   id("com.diffplug.spotless") version "6.18.0"
-  kotlin("kapt") version "1.7.0"
+  kotlin("kapt") version "2.0.21"
 }
 
 repositories {
@@ -40,7 +40,7 @@ dependencies {
   implementation("io.quarkus:quarkus-kotlin")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("io.quarkus:quarkus-mongodb-panache-kotlin")
-  implementation("io.smallrye.reactive:mutiny-kotlin:2.6.0")
+  implementation("io.smallrye.reactive:mutiny-kotlin:2.8.0")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
   // vertx-lang-kotlin-coroutines
@@ -63,9 +63,11 @@ dependencies {
   // observability
   implementation("io.quarkus:quarkus-opentelemetry")
   implementation("io.quarkus:quarkus-micrometer")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5")
+
 
   // rest client generator
-  implementation("io.quarkiverse.openapi.generator:quarkus-openapi-generator:2.4.2")
+  implementation("io.quarkiverse.openapi.generator:quarkus-openapi-generator:2.8.0")
   implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
 
   implementation(kotlin("reflect"))

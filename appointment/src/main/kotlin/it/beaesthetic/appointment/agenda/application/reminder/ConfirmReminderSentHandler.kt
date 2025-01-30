@@ -10,7 +10,10 @@ import org.jboss.logging.Logger
 data class ConfirmReminderSent(val eventId: AgendaEventId)
 
 @ApplicationScoped
-class ConfirmReminderSentHandler(private val agendaRepository: AgendaRepository) {
+class ConfirmReminderSentHandler(
+    private val agendaRepository: AgendaRepository,
+    private val reminderTracker: ReminderTracker
+) {
 
     private val log = Logger.getLogger(SendAgendaScheduleReminderHandler::class.java)
     private val clock = Clock.default()
@@ -21,6 +24,8 @@ class ConfirmReminderSentHandler(private val agendaRepository: AgendaRepository)
             agendaRepository.findEvent(command.eventId)
                 ?: throw IllegalArgumentException("No event with id ${command.eventId} found")
 
-        return agendaRepository.saveEvent(event.trackReminderAsSent(clock = clock), version)
+        return agendaRepository
+            .saveEvent(event.trackReminderAsSent(clock = clock), version)
+            .onSuccess { reminderTracker.trackReminderState(it.reminder.status) }
     }
 }

@@ -1,7 +1,12 @@
 package it.beaesthetic.appointment.agenda.config
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Metrics
+import io.opentelemetry.api.OpenTelemetry
+import io.opentelemetry.instrumentation.micrometer.v1_5.OpenTelemetryMeterRegistry
 import io.quarkus.redis.datasource.ReactiveRedisDataSource
+import it.beaesthetic.appointment.agenda.application.reminder.ReminderTracker
 import it.beaesthetic.appointment.agenda.domain.Clock
 import it.beaesthetic.appointment.agenda.domain.event.CustomerRegistry
 import it.beaesthetic.appointment.agenda.domain.notification.NotificationService
@@ -21,11 +26,24 @@ import jakarta.enterprise.context.Dependent
 import jakarta.enterprise.inject.Produces
 import jakarta.inject.Singleton
 import java.time.Duration
+import java.util.concurrent.TimeUnit
 import org.eclipse.microprofile.config.inject.ConfigProperty
 import org.eclipse.microprofile.rest.client.inject.RestClient
 
 @Dependent
 class DependencyConfig {
+
+    @Produces
+    @Singleton
+    fun openTelemetryMeterRegistry(openTelemetry: OpenTelemetry): MeterRegistry {
+        return OpenTelemetryMeterRegistry.builder(openTelemetry)
+            .setPrometheusMode(false)
+            .setMicrometerHistogramGaugesEnabled(true)
+            .setBaseTimeUnit(TimeUnit.MILLISECONDS)
+            .setClock(io.micrometer.core.instrument.Clock.SYSTEM)
+            .build()
+            .apply { Metrics.addRegistry(this) }
+    }
 
     @Produces
     fun notificationProvider(
@@ -73,6 +91,7 @@ class DependencyConfig {
         reminderConfiguration: ReminderConfiguration,
         notificationService: NotificationService,
         reminderScheduler: ReminderScheduler,
+        reminderTracker: ReminderTracker
     ): ReminderService {
         return ReminderService(
             reminderScheduler = reminderScheduler,
@@ -83,7 +102,8 @@ class DependencyConfig {
                     reminderConfiguration.noSendThreshold(),
                     reminderConfiguration.immediateSendThreshold()
                 ),
-            clock = Clock.default()
+            clock = Clock.default(),
+            reminderTracker = reminderTracker
         )
     }
 }
