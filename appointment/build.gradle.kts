@@ -65,6 +65,9 @@ dependencies {
   implementation("io.quarkus:quarkus-micrometer")
   implementation("io.opentelemetry.instrumentation:opentelemetry-micrometer-1.5")
 
+  // scheduler
+  implementation("io.quarkus:quarkus-scheduler")
+
   // rest client generator
   implementation("io.quarkiverse.openapi.generator:quarkus-openapi-generator:2.8.0")
   implementation("io.quarkus:quarkus-rest-client-reactive-jackson")

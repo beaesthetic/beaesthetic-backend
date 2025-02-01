@@ -26,6 +26,7 @@ envConfig:
   CUSTOMER_SERVICE_BASEURL: "http://customer-service-v2:8080"
   SCHEDULER_SERVICE_BASEURL: "http://scheduler-service:8080"
   SCHEDULER_QUEUE_NAME: "reminders-times-up"
+  MONITOR_REMINDERS_FAILED_FREQUENCY: "2h"
 
   NOTIFICATION_SERVICE_BASEURL: "http://notification-service-v2:8080"
   NOTIFICATION_CONFIRMED_QUEUE_NAME: "NotificationConfirmQueue"
