@@ -1,6 +1,5 @@
 package it.beaesthetic.appointment.agenda.application.reminder
 
-import io.quarkus.panache.common.Sort
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.appointment.agenda.domain.Clock
 import it.beaesthetic.appointment.agenda.domain.event.AgendaEvent
@@ -11,6 +10,7 @@ import jakarta.enterprise.context.ApplicationScoped
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
+import org.bson.Document
 import org.jboss.logging.Logger
 
 @ApplicationScoped
@@ -52,13 +52,11 @@ class FailedReminderMonitor(
 
         log.info("Monitor failed reminder from: $now, until: $tomorrowSameTime")
 
+        val query =
+            Document("start", Document("\$gte", now).append("\$lte", tomorrowSameTime))
+                .append("isCancelled", false)
         return panacheAgendaRepository
-            .find(
-                "start >= ?1 AND start <= ?2",
-                Sort.by("start", Sort.Direction.Ascending),
-                now,
-                tomorrowSameTime
-            )
+            .find(query, Document("start", 1))
             .stream()
             .map { EntityMapper.toDomain(it) }
             .collect()
