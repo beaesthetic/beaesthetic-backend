@@ -3,7 +3,6 @@ package it.beaesthetic.appointment.agenda.application.events
 import io.quarkus.vertx.ConsumeEvent
 import it.beaesthetic.appointment.agenda.application.notification.SendNotificationCommand
 import it.beaesthetic.appointment.agenda.application.notification.SendNotificationHandler
-import it.beaesthetic.appointment.agenda.config.NotificationConfiguration
 import it.beaesthetic.appointment.agenda.domain.event.AgendaEventRescheduled
 import it.beaesthetic.appointment.agenda.domain.event.AgendaEventScheduled
 import it.beaesthetic.appointment.agenda.domain.notification.Notification
@@ -13,9 +12,7 @@ import jakarta.enterprise.context.ApplicationScoped
 import org.jboss.logging.Logger
 
 @ApplicationScoped
-class AgendaEventToNotificationPolicy(
-    private val sendNotification: SendNotificationHandler
-) {
+class AgendaEventToNotificationPolicy(private val sendNotification: SendNotificationHandler) {
     private val log = Logger.getLogger(AgendaEventToNotificationPolicy::class.java)
 
     @ConsumeEvent("AgendaEventScheduled")
