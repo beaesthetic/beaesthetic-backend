@@ -74,11 +74,8 @@ group = "it.beaesthetic.customer"
 version = "${properties["version"]}"
 
 java { toolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
-kotlin {
-  jvmToolchain {
-    languageVersion.set(JavaLanguageVersion.of(21))
-  }
-}
+
+kotlin { jvmToolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
 
 tasks.withType<Test> {
   systemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager")
@@ -95,7 +92,7 @@ sourceSets { main { java { srcDirs("$buildDir/generated/src/main/java") } } }
 
 tasks.withType<KotlinCompile> {
   dependsOn("wallet-api", "customer-api", "fidelity-card-api")
-//  kotlinOptions { jvmTarget = "21" }
+  //  kotlinOptions { jvmTarget = "21" }
 }
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
