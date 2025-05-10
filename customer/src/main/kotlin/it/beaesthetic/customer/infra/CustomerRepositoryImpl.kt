@@ -5,6 +5,7 @@ import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoRepository
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.common.DomainEventRegistryDelegate
 import it.beaesthetic.common.SearchGram
+import it.beaesthetic.customer.application.CustomerReadRepository
 import it.beaesthetic.customer.domain.*
 import it.beaesthetic.customer.infra.CustomerRepositoryImpl.EntityMapper.toDomain
 import jakarta.enterprise.context.ApplicationScoped
@@ -18,7 +19,7 @@ import org.bson.conversions.Bson
 class CustomerRepositoryImpl(
     private val panacheCustomerRepository: PanacheCustomerRepository,
     private val outboxRepository: OutboxRepository<CustomerEvent>
-) : CustomerRepository {
+) : CustomerRepository, CustomerReadRepository {
 
     override suspend fun findById(id: CustomerId): Customer? {
         return panacheCustomerRepository
@@ -55,6 +56,32 @@ class CustomerRepositoryImpl(
             .awaitSuspending()
             .let { customer }
             .also { outboxRepository.save(customer) }
+    }
+
+    override suspend fun findNextPage(
+        pageToken: String?,
+        limit: Int?
+    ): CustomerReadRepository.CustomerPage {
+        val pageSize = limit ?: 50
+        val query =
+            when {
+                pageToken != null -> Document("_id", Document("\$gt", pageToken))
+                else -> Document()
+            }
+        val customers =
+            panacheCustomerRepository
+                .mongoCollection()
+                .find(FindOptions().filter(query).sort(Document().append("_id", 1)).limit(pageSize))
+                .map { toDomain(it) }
+                .collect()
+                .asList()
+                .awaitSuspending()
+
+        return CustomerReadRepository.CustomerPage(
+            customers,
+            customers.size,
+            nextToken = if (customers.size < pageSize) null else customers.lastOrNull()?.id?.value
+        )
     }
 
     override suspend fun findByKeyword(keyword: String, maxResults: Int): List<Customer> {

@@ -8,7 +8,7 @@ plugins {
   id("io.quarkus")
   id("org.openapi.generator") version "7.5.0"
   id("com.diffplug.spotless") version "6.18.0"
-  kotlin("kapt") version "1.7.0"
+  kotlin("kapt") version "1.9.22"
 }
 
 repositories {
@@ -73,9 +73,11 @@ group = "it.beaesthetic.customer"
 
 version = "${properties["version"]}"
 
-java {
-  sourceCompatibility = JavaVersion.VERSION_21
-  targetCompatibility = JavaVersion.VERSION_21
+java { toolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
+kotlin {
+  jvmToolchain {
+    languageVersion.set(JavaLanguageVersion.of(21))
+  }
 }
 
 tasks.withType<Test> {
@@ -93,7 +95,7 @@ sourceSets { main { java { srcDirs("$buildDir/generated/src/main/java") } } }
 
 tasks.withType<KotlinCompile> {
   dependsOn("wallet-api", "customer-api", "fidelity-card-api")
-  kotlinOptions { jvmTarget = "21" }
+//  kotlinOptions { jvmTarget = "21" }
 }
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
