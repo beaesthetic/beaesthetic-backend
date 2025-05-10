@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "packageRules": [
+    {
+      "matchFileNames": ["appointment/**"],
+      "groupName": "Appointment Service"
+    },
+    {
+      "matchFileNames": ["customer/**"],
+      "groupName": "Customer Service"
+    },
+    {
+      "matchFileNames": ["notification/**"],
+      "groupName": "Notification Service"
+    },
+    {
+      "matchFileNames": ["scheduler/**"],
+      "groupName": "Scheduler Service"
+    },
+    {
+      "matchFileNames": [".github/workflows/*.yml", ".github/workflows/*.yaml"],
+      "groupName": "GitHub Actions Workflows"
+    }
+  ]
+}
