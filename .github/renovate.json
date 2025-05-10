@@ -1,0 +1,25 @@
+{
+  "extends": ["config:base"],
+  "packageRules": [
+    {
+      "matchPaths": ["appointment/**"],
+      "groupName": "Appointment Service"
+    },
+    {
+      "matchPaths": ["customer/**"],
+      "groupName": "Customer Service"
+    },
+    {
+      "matchPaths": ["notification/**"],
+      "groupName": "Notification Service"
+    },
+    {
+      "matchPaths": ["scheduler/**"],
+      "groupName": "Scheduler Service"
+    },
+    {
+      "matchPaths": [".github/workflows/*.yml", ".github/workflows/*.yaml"],
+      "groupName": "GitHub Actions Workflows"
+    }
+  ]
+}
