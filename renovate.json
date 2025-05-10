@@ -5,23 +5,23 @@
   ],
   "packageRules": [
     {
-      "matchPaths": ["appointment/**"],
+      "matchFileNames": ["appointment/**"],
       "groupName": "Appointment Service"
     },
     {
-      "matchPaths": ["customer/**"],
+      "matchFileNames": ["customer/**"],
       "groupName": "Customer Service"
     },
     {
-      "matchPaths": ["notification/**"],
+      "matchFileNames": ["notification/**"],
       "groupName": "Notification Service"
     },
     {
-      "matchPaths": ["scheduler/**"],
+      "matchFileNames": ["scheduler/**"],
       "groupName": "Scheduler Service"
     },
     {
-      "matchPaths": [".github/workflows/*.yml", ".github/workflows/*.yaml"],
+      "matchFileNames": [".github/workflows/*.yml", ".github/workflows/*.yaml"],
       "groupName": "GitHub Actions Workflows"
     }
   ]
