@@ -6,6 +6,7 @@ import io.quarkus.cache.CacheResult
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.common.uniWithScope
+import it.beaesthetic.customer.application.CustomerReadRepository
 import it.beaesthetic.customer.application.CustomerService
 import it.beaesthetic.customer.domain.Customer
 import it.beaesthetic.customer.domain.CustomerId
@@ -14,10 +15,14 @@ import it.beaesthetic.customer.generated.api.CustomersApi
 import it.beaesthetic.customer.generated.api.model.*
 import it.beaesthetic.customer.rest.CustomerController.ResourceMapper.toResource
 import jakarta.ws.rs.NotFoundException
+import jakarta.ws.rs.WebApplicationException
+import jakarta.ws.rs.core.Response
+import java.math.BigDecimal
 
 class CustomerController(
     private val customerService: CustomerService,
-    private val customerRepository: CustomerRepository
+    private val customerRepository: CustomerRepository,
+    private val customerReadRepository: CustomerReadRepository
 ) : CustomersApi {
 
     override fun createCustomer(
@@ -69,8 +74,21 @@ class CustomerController(
         direction: String,
         pageToken: String?,
         limit: Int?
-    ): Uni<CustomersPaginatedDto> {
-        TODO("Not yet implemented")
+    ): Uni<CustomersPaginatedDto> = uniWithScope {
+        if (direction == "prev") {
+            throw WebApplicationException(
+                "Backward pagination not yet implemented",
+                Response.Status.NOT_IMPLEMENTED
+            )
+        }
+        var page = customerReadRepository.findNextPage(pageToken, limit)
+        return@uniWithScope CustomersPaginatedDto(
+            BigDecimal(page.pageSize),
+            page.customers.map { it.toResource() },
+            nextCursor = page.nextToken,
+            hasNextPage = page.nextToken != null,
+            hasPreviousPage = false
+        )
     }
 
     object ResourceMapper {
