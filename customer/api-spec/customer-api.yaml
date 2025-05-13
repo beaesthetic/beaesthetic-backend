@@ -54,6 +54,11 @@ paths:
           description: Page size (optional)
           schema:
             type: integer
+        - name: sortBy
+          in: query
+          description: Sort by specified field
+          schema:
+            type: string
       responses:
         '200':
           description: OK
