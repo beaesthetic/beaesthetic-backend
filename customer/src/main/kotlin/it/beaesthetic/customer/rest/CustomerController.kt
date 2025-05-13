@@ -3,6 +3,7 @@ package it.beaesthetic.customer.rest
 import io.quarkus.cache.CacheInvalidate
 import io.quarkus.cache.CacheKey
 import io.quarkus.cache.CacheResult
+import io.quarkus.panache.common.Sort
 import io.smallrye.mutiny.Uni
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.common.uniWithScope
@@ -51,6 +52,34 @@ class CustomerController(
                 ?: throw NotFoundException()
         }
 
+    override fun getCustomerByPage(
+        direction: String,
+        pageToken: String?,
+        limit: Int?,
+        sortBy: String?
+    ): Uni<CustomersPaginatedDto> = uniWithScope {
+        if (direction == "prev") {
+            throw WebApplicationException(
+                "Backward pagination not yet implemented",
+                Response.Status.NOT_IMPLEMENTED
+            )
+        }
+        var page =
+            customerReadRepository.findNextPage(
+                pageToken,
+                limit,
+                if (sortBy != null) listOf(sortBy) else listOf("name", "surname"),
+                sortDirection = Sort.Direction.Ascending
+            )
+        return@uniWithScope CustomersPaginatedDto(
+            BigDecimal(page.pageSize),
+            page.customers.map { it.toResource() },
+            nextCursor = page.nextToken,
+            hasNextPage = page.nextToken != null,
+            hasPreviousPage = false
+        )
+    }
+
     @CacheResult(cacheName = "customers-search")
     override fun getAllCustomers(
         @CacheKey limit: Int?,
@@ -68,27 +97,6 @@ class CustomerController(
         @CacheKey filter: String?
     ): Uni<List<CustomerResponseDto>> = uniWithScope {
         customerRepository.findByKeyword(filter ?: "", limit ?: 10).map { it.toResource() }
-    }
-
-    override fun getCustomerByPage(
-        direction: String,
-        pageToken: String?,
-        limit: Int?
-    ): Uni<CustomersPaginatedDto> = uniWithScope {
-        if (direction == "prev") {
-            throw WebApplicationException(
-                "Backward pagination not yet implemented",
-                Response.Status.NOT_IMPLEMENTED
-            )
-        }
-        var page = customerReadRepository.findNextPage(pageToken, limit)
-        return@uniWithScope CustomersPaginatedDto(
-            BigDecimal(page.pageSize),
-            page.customers.map { it.toResource() },
-            nextCursor = page.nextToken,
-            hasNextPage = page.nextToken != null,
-            hasPreviousPage = false
-        )
     }
 
     object ResourceMapper {

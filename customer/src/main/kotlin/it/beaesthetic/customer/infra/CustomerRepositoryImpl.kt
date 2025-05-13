@@ -1,7 +1,10 @@
 package it.beaesthetic.customer.infra
 
+import com.mongodb.client.model.Collation
+import com.mongodb.client.model.CollationStrength
 import io.quarkus.mongodb.FindOptions
 import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoRepository
+import io.quarkus.panache.common.Sort
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.common.DomainEventRegistryDelegate
 import it.beaesthetic.common.SearchGram
@@ -60,18 +63,28 @@ class CustomerRepositoryImpl(
 
     override suspend fun findNextPage(
         pageToken: String?,
-        limit: Int?
+        limit: Int?,
+        sortBy: List<String>,
+        sortDirection: Sort.Direction
     ): CustomerReadRepository.CustomerPage {
         val pageSize = limit ?: 50
-        val query =
+        var pageBuilder = MongoPageBuilder(sortBy + "_id", sortDirection)
+        val filter =
             when {
-                pageToken != null -> Document("_id", Document("\$gt", pageToken))
+                pageToken != null -> pageBuilder.generateCursorFilter(pageToken)
                 else -> Document()
             }
+        var sort = pageBuilder.generateSortDocument()
+        var collation =
+            Collation.builder()
+                .locale("en")
+                .caseLevel(false)
+                .collationStrength(CollationStrength.SECONDARY)
+                .build()
         val customers =
             panacheCustomerRepository
                 .mongoCollection()
-                .find(FindOptions().filter(query).sort(Document().append("_id", 1)).limit(pageSize))
+                .find(FindOptions().filter(filter).sort(sort).limit(pageSize).collation(collation))
                 .map { toDomain(it) }
                 .collect()
                 .asList()
@@ -80,7 +93,9 @@ class CustomerRepositoryImpl(
         return CustomerReadRepository.CustomerPage(
             customers,
             customers.size,
-            nextToken = if (customers.size < pageSize) null else customers.lastOrNull()?.id?.value
+            nextToken =
+                if (customers.size < pageSize) null
+                else pageBuilder.getNextPageToken(customers.last().id.value, customers.last())
         )
     }
 

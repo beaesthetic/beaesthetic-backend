@@ -40,7 +40,13 @@ class DependencyConfiguration {
             override suspend fun initialize() {
                 panacheCustomerRepository
                     .mongoCollection()
-                    .createIndexes(listOf(IndexModel(Indexes.text("searchGrams"))))
+                    .createIndexes(
+                        listOf(
+                            IndexModel(Indexes.ascending("name")),
+                            IndexModel(Indexes.ascending("surname")),
+                            IndexModel(Indexes.text("searchGrams"))
+                        )
+                    )
                     .awaitSuspending()
             }
         }
