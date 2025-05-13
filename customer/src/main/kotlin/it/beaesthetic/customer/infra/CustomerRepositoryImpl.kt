@@ -1,7 +1,5 @@
 package it.beaesthetic.customer.infra
 
-import com.mongodb.client.model.Collation
-import com.mongodb.client.model.CollationStrength
 import io.quarkus.mongodb.FindOptions
 import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoRepository
 import io.quarkus.panache.common.Sort
@@ -67,35 +65,20 @@ class CustomerRepositoryImpl(
         sortBy: List<String>,
         sortDirection: Sort.Direction
     ): CustomerReadRepository.CustomerPage {
-        val pageSize = limit ?: 50
-        var pageBuilder = MongoPageBuilder(sortBy + "_id", sortDirection)
-        val filter =
-            when {
-                pageToken != null -> pageBuilder.generateCursorFilter(pageToken)
-                else -> Document()
+        val pageBuilder =
+            MongoPageBuilder(
+                panacheCustomerRepository,
+                limit ?: 50,
+                sortBy + "_id",
+                sortDirection
+            ) { i ->
+                i.id
             }
-        var sort = pageBuilder.generateSortDocument()
-        var collation =
-            Collation.builder()
-                .locale("en")
-                .caseLevel(false)
-                .collationStrength(CollationStrength.SECONDARY)
-                .build()
-        val customers =
-            panacheCustomerRepository
-                .mongoCollection()
-                .find(FindOptions().filter(filter).sort(sort).limit(pageSize).collation(collation))
-                .map { toDomain(it) }
-                .collect()
-                .asList()
-                .awaitSuspending()
-
+        val customerPage = pageBuilder.paginate(pageToken)
         return CustomerReadRepository.CustomerPage(
-            customers,
-            customers.size,
-            nextToken =
-                if (customers.size < pageSize) null
-                else pageBuilder.getNextPageToken(customers.last().id.value, customers.last())
+            customerPage.items.map { toDomain(it) },
+            customerPage.items.size,
+            nextToken = customerPage.lastItemToken
         )
     }
 
