@@ -84,7 +84,8 @@ class MongoPageBuilder<K, T : Any>(
                             .getDeclaredField(field)
                             .apply { isAccessible = true }
                             .get(item)
-                            .toString()
+                            ?.toString()
+                            ?: ""
                 }
             }
         return encodePageToken(values)
