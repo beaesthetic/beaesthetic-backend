@@ -1,0 +1,53 @@
+name: Code Quality
+
+on:
+  pull_request:
+    paths:
+      - '**/*.kt'
+      - '**/*.java'
+      - '**/build.gradle*'
+  push:
+    branches:
+      - main
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Detect changed services
+        id: set-matrix
+        run: |
+          changed=$(git diff --name-only ${{ github.event.pull_request.base.sha || github.event.before }} ${{ github.sha }} \
+            | cut -d/ -f1 \
+            | grep -E '^service-' \
+            | sort -u | uniq)
+
+          echo "Changed services:"
+          echo "$changed"
+
+          json_array=$(echo "$changed" | jq -R . | jq -s .)
+          echo "matrix={\"folder\":$json_array}" >> $GITHUB_OUTPUT
+          
+  run-code-quality:
+    needs: detect-changes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
+    name: Check ${{ matrix.folder }}
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Run ./gradlew check in ${{ matrix.folder }}
+        run: |
+          cd ${{ matrix.folder }}
+          ./gradlew check
