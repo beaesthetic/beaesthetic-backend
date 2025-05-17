@@ -60,10 +60,15 @@ class CustomerRepositoryImpl(
     }
 
     override suspend fun delete(customerId: CustomerId): Boolean {
-        return panacheCustomerRepository.update(
-            "deleted = ?1, deletedAt = ?2 where id = ?3",
-            true, Instant.now(), customerId.value
-        ).all().awaitSuspending() == 1L
+        return panacheCustomerRepository
+            .update(
+                "deleted = ?1, deletedAt = ?2 where id = ?3",
+                true,
+                Instant.now(),
+                customerId.value
+            )
+            .all()
+            .awaitSuspending() == 1L
     }
 
     override suspend fun findNextPage(
