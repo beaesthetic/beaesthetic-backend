@@ -3,8 +3,11 @@ package it.beaesthetic.customer.application
 import it.beaesthetic.customer.domain.*
 import it.beaesthetic.customer.generated.api.model.CustomerCreateDto
 import it.beaesthetic.customer.generated.api.model.CustomerUpdateDto
+import org.jboss.logging.Logger
 
 class CustomerService(private val customerRepository: CustomerRepository) {
+
+    private val log = Logger.getLogger(CustomerService::class.java)
 
     suspend fun createCustomer(createRequest: CustomerCreateDto): Customer {
         val contacts =
@@ -43,5 +46,10 @@ class CustomerService(private val customerRepository: CustomerRepository) {
                 }
 
         return customer?.let { customerRepository.save(customer) }
+    }
+
+    suspend fun deleteCustomer(customerId: CustomerId): Boolean {
+        log.infof("Deleting customer: [%s]", customerId.value)
+        return customerRepository.delete(customerId)
     }
 }
