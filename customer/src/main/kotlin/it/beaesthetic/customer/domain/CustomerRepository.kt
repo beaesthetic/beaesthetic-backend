@@ -5,4 +5,5 @@ interface CustomerRepository {
     suspend fun findById(id: CustomerId): Customer?
     suspend fun findAll(): List<Customer>
     suspend fun save(customer: Customer): Customer
+    suspend fun delete(customerId: CustomerId): Boolean
 }

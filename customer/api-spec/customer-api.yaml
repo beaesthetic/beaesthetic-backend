@@ -158,6 +158,21 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomerResponse'
+    delete:
+      operationId: deleteCustomer
+      summary: Delete customer by ID
+      tags:
+        - Customers
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: Customer ID
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Customer deleted
     put:
       summary: Update customer by ID
       operationId: updateCustomerById

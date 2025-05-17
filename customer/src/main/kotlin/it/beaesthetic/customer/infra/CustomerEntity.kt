@@ -20,5 +20,7 @@ constructor(
     @BsonProperty("phone") val phone: String? = null,
     @BsonProperty("note") val note: String,
     @BsonProperty("searchGrams") val searchGrams: String? = null,
-    @BsonProperty("updatedAt") val updatedAt: Instant
+    @BsonProperty("updatedAt") val updatedAt: Instant,
+    @BsonProperty("deleted") val deleted: Boolean = false,
+    @BsonProperty("deletedAt") val deletedAt: Instant? = null
 ) : PanacheMongoEntityBase()

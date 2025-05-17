@@ -34,6 +34,10 @@ class CustomerController(
         )
     }
 
+    override fun deleteCustomer(customerId: String): Uni<Void> = uniWithScope {
+        customerService.deleteCustomer(CustomerId(customerId))
+    }.replaceWithVoid()
+
     @CacheInvalidate(cacheName = "customers")
     override fun updateCustomerById(
         @CacheKey customerId: String,
