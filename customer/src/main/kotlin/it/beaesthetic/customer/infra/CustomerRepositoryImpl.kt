@@ -17,8 +17,12 @@ import org.bson.conversions.Bson
 @ApplicationScoped class PanacheCustomerRepository : ReactivePanacheMongoRepository<CustomerEntity>
 
 @ApplicationScoped
+class PanacheDeletedCustomerRepository : ReactivePanacheMongoRepository<DeletedCustomerEntity>
+
+@ApplicationScoped
 class CustomerRepositoryImpl(
     private val panacheCustomerRepository: PanacheCustomerRepository,
+    private val panacheDeletedCustomerRepository: PanacheDeletedCustomerRepository,
     private val outboxRepository: OutboxRepository<CustomerEvent>
 ) : CustomerRepository, CustomerReadRepository {
 
@@ -60,15 +64,29 @@ class CustomerRepositoryImpl(
     }
 
     override suspend fun delete(customerId: CustomerId): Boolean {
-        return panacheCustomerRepository
-            .update(
-                "deleted = ?1, deletedAt = ?2 where id = ?3",
-                true,
-                Instant.now(),
-                customerId.value
-            )
-            .all()
-            .awaitSuspending() == 1L
+        var customer =
+            panacheCustomerRepository.find("_id", customerId.value).firstResult().awaitSuspending()
+
+        if (customer != null) {
+            panacheDeletedCustomerRepository
+                .persistOrUpdate(
+                    DeletedCustomerEntity(
+                        id = customer.id,
+                        name = customer.name,
+                        surname = customer.surname,
+                        email = customer.email,
+                        phone = customer.phone,
+                        note = customer.note,
+                        updatedAt = customer.updatedAt,
+                        searchGrams = customer.searchGrams,
+                        deletedAt = Instant.now()
+                    )
+                )
+                .awaitSuspending()
+            panacheCustomerRepository.delete(customer).awaitSuspending()
+            return true
+        }
+        return false
     }
 
     override suspend fun findNextPage(
