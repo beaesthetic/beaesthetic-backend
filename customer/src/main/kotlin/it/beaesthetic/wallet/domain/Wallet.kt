@@ -14,7 +14,7 @@ data class Wallet(
     val giftCards: List<GiftCard>,
     val createdAt: Instant = Instant.now(),
     val updatedAt: Instant = Instant.now(),
-    private val processorPolicy: GiftCardProcessorPolicy
+    private val processorPolicy: GiftCardProcessorPolicy,
 ) {
 
     companion object {
@@ -26,7 +26,7 @@ data class Wallet(
                 spentAmount = Money.Zero,
                 operations = listOf(),
                 giftCards = listOf(),
-                processorPolicy = GiftCardProcessorPolicy()
+                processorPolicy = GiftCardProcessorPolicy(),
             )
     }
 
@@ -42,14 +42,14 @@ data class Wallet(
             availableAmount = updatedWallet.availableAmount - amount,
             operations = listOf(MoneyCharge(now, amount)) + operations,
             spentAmount = updatedWallet.spentAmount + amount,
-            giftCards = giftCards
+            giftCards = giftCards,
         )
     }
 
     fun creditMoney(amount: Money, now: Instant = Instant.now()): Wallet {
         return copy(
             availableAmount = availableAmount + amount,
-            operations = listOf(MoneyCredited(now, amount)) + operations
+            operations = listOf(MoneyCredited(now, amount)) + operations,
         )
     }
 
@@ -65,10 +65,10 @@ data class Wallet(
                         at = now,
                         giftCardId = giftCard.id,
                         expiresAt = giftCard.expiresAt,
-                        amount = giftCard.availableAmount
+                        amount = giftCard.availableAmount,
                     )
                 ) + operations,
-            giftCards = listOf(giftCard) + giftCards
+            giftCards = listOf(giftCard) + giftCards,
         )
     }
 
@@ -79,7 +79,7 @@ data class Wallet(
                 availableAmount = availableAmount - expiredGiftCard.availableAmount,
                 operations =
                     listOf(GiftCardMoneyExpired(at = now, giftCardId = giftCard.id)) + operations,
-                giftCards = giftCards - expiredGiftCard
+                giftCards = giftCards - expiredGiftCard,
             )
         }
         return this

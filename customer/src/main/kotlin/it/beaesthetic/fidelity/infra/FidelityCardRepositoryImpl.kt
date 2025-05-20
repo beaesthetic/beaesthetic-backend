@@ -59,7 +59,7 @@ class FidelityCardRepositoryImpl(
                                     amount = null,
                                     type = "FreeVoucher",
                                     isUsed = it.isUsed,
-                                    createdAt = Instant.now()
+                                    createdAt = Instant.now(),
                                 )
                             },
                         createdAt = Instant.now(),
@@ -85,7 +85,7 @@ class FidelityCardRepositoryImpl(
                             treatment = it.treatment,
                         )
                     },
-                purchaseCounter = mapOf(FidelityTreatment.SOLARIUM.name to entity.solariumPurchases)
+                purchaseCounter = mapOf(FidelityTreatment.SOLARIUM.name to entity.solariumPurchases),
             )
     }
 }

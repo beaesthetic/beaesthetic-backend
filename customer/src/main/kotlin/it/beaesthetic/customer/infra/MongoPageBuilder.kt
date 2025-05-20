@@ -16,7 +16,7 @@ class MongoPageBuilder<K, T : Any>(
     private val pageSize: Int,
     private val sortFields: List<String>,
     private val direction: Sort.Direction,
-    private val idExtractor: (T) -> K
+    private val idExtractor: (T) -> K,
 ) {
 
     suspend fun paginate(pageToken: String?): Page<T> {
@@ -44,7 +44,7 @@ class MongoPageBuilder<K, T : Any>(
             items,
             lastItemToken =
                 if (items.size < pageSize) null
-                else getNextPageToken(idExtractor(items.last()), items.last())
+                else getNextPageToken(idExtractor(items.last()), items.last()),
         )
     }
 
@@ -84,8 +84,7 @@ class MongoPageBuilder<K, T : Any>(
                             .getDeclaredField(field)
                             .apply { isAccessible = true }
                             .get(item)
-                            ?.toString()
-                            ?: ""
+                            ?.toString() ?: ""
                 }
             }
         return encodePageToken(values)

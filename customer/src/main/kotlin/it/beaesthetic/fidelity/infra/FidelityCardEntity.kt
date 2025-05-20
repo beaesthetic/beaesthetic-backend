@@ -19,7 +19,7 @@ constructor(
     @BsonProperty("solariumPurchases") val solariumPurchases: Int,
     @BsonProperty("vouchers") val vouchers: List<VoucherItem>,
     @BsonProperty("createdAt") val createdAt: Instant,
-    @BsonProperty("updatedAt") val updatedAt: Instant
+    @BsonProperty("updatedAt") val updatedAt: Instant,
 ) : PanacheMongoEntityBase()
 
 @RegisterForReflection
@@ -31,5 +31,5 @@ constructor(
     @BsonProperty("treatment") val treatment: FidelityTreatment,
     @get:BsonProperty("_type") @param:BsonProperty("_type") val type: String,
     @get:BsonProperty("isUsed") @param:BsonProperty("isUsed") val isUsed: Boolean,
-    @BsonProperty("createdAt") val createdAt: Instant
+    @BsonProperty("createdAt") val createdAt: Instant,
 )

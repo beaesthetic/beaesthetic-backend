@@ -10,7 +10,7 @@ sealed interface Purchase {
 data class TreatmentPurchase(
     override val at: Instant,
     override val amount: Double,
-    val treatment: FidelityTreatment
+    val treatment: FidelityTreatment,
 ) : Purchase
 
 enum class FidelityTreatment {

@@ -9,7 +9,7 @@ import org.mapstruct.Mapping
 
 @Mapper(
     componentModel = "cdi",
-    uses = [WalletEventEntityMapper::class, MoneyMapper::class, GiftCardMapper::class]
+    uses = [WalletEventEntityMapper::class, MoneyMapper::class, GiftCardMapper::class],
 )
 interface WalletEntityMapper {
 
@@ -24,5 +24,6 @@ interface WalletEntityMapper {
 @Mapper(componentModel = "cdi")
 abstract class MoneyMapper {
     fun unwrapMoney(money: Money): Double = money.amount
+
     fun wrapMoney(money: Double): Money = Money(money)
 }

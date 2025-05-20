@@ -1,8 +1,6 @@
 package it.beaesthetic.wallet.domain
 
-data class Money(
-    val amount: Double,
-) : Comparable<Money> {
+data class Money(val amount: Double) : Comparable<Money> {
 
     companion object {
         val Zero = Money(0.0)

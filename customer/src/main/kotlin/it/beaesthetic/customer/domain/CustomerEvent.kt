@@ -6,12 +6,12 @@ data class CustomerCreated(
     val customerId: CustomerId,
     val name: String,
     val surname: String?,
-    val contacts: Contacts
+    val contacts: Contacts,
 ) : CustomerEvent
 
 data class CustomerChanged(
     val customerId: CustomerId,
     val name: String,
     val surname: String?,
-    val contacts: Contacts
+    val contacts: Contacts,
 ) : CustomerEvent

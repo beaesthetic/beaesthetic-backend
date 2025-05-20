@@ -8,11 +8,12 @@ interface CustomerReadRepository {
         pageToken: String?,
         limit: Int?,
         sortBy: List<String>,
-        sortDirection: Sort.Direction
+        sortDirection: Sort.Direction,
     ): CustomerPage
+
     data class CustomerPage(
         val customers: List<Customer>,
         val pageSize: Int,
-        val nextToken: String?
+        val nextToken: String?,
     )
 }

@@ -14,15 +14,10 @@ import java.time.Instant
 import java.util.*
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper
 
-@RegisterForReflection(
-    targets =
-        [
-            FidelityCardResponseDto::class,
-        ]
-)
+@RegisterForReflection(targets = [FidelityCardResponseDto::class])
 class FidelityCardResource(
     private val fidelityCardService: FidelityCardService,
-    private val fidelityCardRepository: FidelityCardRepository
+    private val fidelityCardRepository: FidelityCardRepository,
 ) : FidelityCardsApi {
 
     override suspend fun createFidelityCard(
@@ -49,13 +44,12 @@ class FidelityCardResource(
         return fidelityCardRepository
             .findByCustomerId(CustomerId(customerId.toString()))
             ?.toResource()
-            ?.let { listOf(it) }
-            ?: emptyList()
+            ?.let { listOf(it) } ?: emptyList()
     }
 
     override suspend fun notifyPurchase(
         cardId: UUID,
-        purchaseNofityRequestDto: PurchaseNofityRequestDto
+        purchaseNofityRequestDto: PurchaseNofityRequestDto,
     ) {
         val purchase =
             TreatmentPurchase(
@@ -65,7 +59,7 @@ class FidelityCardResource(
                     when (purchaseNofityRequestDto.treatment) {
                         SupportedVoucherTreatmentDto.SOLARIUM -> FidelityTreatment.SOLARIUM
                         else -> FidelityTreatment.SOLARIUM
-                    }
+                    },
             )
         return fidelityCardService.registerPurchase(cardId.toString(), purchase).map {}.getOrThrow()
     }

@@ -33,9 +33,7 @@ class DependencyConfiguration {
         OutboxRepository(mongoClient.getDatabase(databaseName), objectMapper, "outboxitems")
 
     @Produces
-    fun mongoInitializer(
-        panacheCustomerRepository: PanacheCustomerRepository,
-    ): MongoInitializer =
+    fun mongoInitializer(panacheCustomerRepository: PanacheCustomerRepository): MongoInitializer =
         object : MongoInitializer {
             override suspend fun initialize() {
                 panacheCustomerRepository
@@ -44,7 +42,7 @@ class DependencyConfiguration {
                         listOf(
                             IndexModel(Indexes.ascending("name")),
                             IndexModel(Indexes.ascending("surname")),
-                            IndexModel(Indexes.text("searchGrams"))
+                            IndexModel(Indexes.text("searchGrams")),
                         )
                     )
                     .awaitSuspending()

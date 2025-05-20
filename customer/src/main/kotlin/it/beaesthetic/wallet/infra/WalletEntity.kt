@@ -43,10 +43,8 @@ constructor(
 @BsonDiscriminator(key = "type", value = "MoneyCredited")
 data class MoneyCreditedEntity
 @BsonCreator
-constructor(
-    @BsonProperty("at") val at: Instant,
-    @BsonProperty("amount") val amount: Double,
-) : WalletEventEntity
+constructor(@BsonProperty("at") val at: Instant, @BsonProperty("amount") val amount: Double) :
+    WalletEventEntity
 
 @RegisterForReflection
 @BsonDiscriminator(key = "type", value = "GiftCardMoneyCredited")
@@ -72,7 +70,5 @@ constructor(
 @BsonDiscriminator(key = "type", value = "MoneyCharged")
 data class MoneyChargedEntity
 @BsonCreator
-constructor(
-    @BsonProperty("at") val at: Instant,
-    @BsonProperty("amount") val amount: Double,
-) : WalletEventEntity
+constructor(@BsonProperty("at") val at: Instant, @BsonProperty("amount") val amount: Double) :
+    WalletEventEntity

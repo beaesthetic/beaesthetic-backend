@@ -9,7 +9,7 @@ data class GiftCard(
     val availableAmount: Money,
     val createdAt: Instant,
     val expiresAt: Instant,
-    val amountSpent: Money
+    val amountSpent: Money,
 ) {
 
     companion object {
@@ -18,7 +18,7 @@ data class GiftCard(
             owner: String,
             amount: Money,
             createdAt: Instant,
-            expire: Duration
+            expire: Duration,
         ): GiftCard {
             return GiftCard(id, owner, amount, createdAt, createdAt + expire, Money.Zero)
         }

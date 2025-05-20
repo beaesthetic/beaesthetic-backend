@@ -8,7 +8,7 @@ class FidelityCard(
     val id: String,
     val customerId: CustomerId,
     private var vouchers: List<Voucher> = emptyList(),
-    private var purchaseCounter: Map<String, Int> = emptyMap()
+    private var purchaseCounter: Map<String, Int> = emptyMap(),
 ) {
 
     companion object {
@@ -56,7 +56,7 @@ class FidelityCard(
                         id = id,
                         customerId = customerId,
                         vouchers =
-                            listOf(foundVoucher.copy(isUsed = true)) + (vouchers - foundVoucher)
+                            listOf(foundVoucher.copy(isUsed = true)) + (vouchers - foundVoucher),
                     )
                 )
         }

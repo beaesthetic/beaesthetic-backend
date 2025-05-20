@@ -26,9 +26,7 @@ class DependencyConfiguration {
                 panacheWalletRepository
                     .mongoCollection()
                     .createIndexes(
-                        listOf(
-                            IndexModel(Indexes.ascending("owner"), IndexOptions().unique(true)),
-                        )
+                        listOf(IndexModel(Indexes.ascending("owner"), IndexOptions().unique(true)))
                     )
                     .awaitSuspending()
             }

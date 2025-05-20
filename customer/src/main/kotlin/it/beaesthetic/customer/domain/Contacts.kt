@@ -4,10 +4,7 @@ import java.util.regex.Pattern
 
 @JvmInline value class Email(val value: String)
 
-data class Contacts(
-    val email: Email?,
-    val phone: Phone?,
-)
+data class Contacts(val email: Email?, val phone: Phone?)
 
 data class Phone(val prefix: String, val number: String) {
     val fullNumber: String

@@ -23,7 +23,7 @@ object ResourceMapper {
                         treatment = SupportedVoucherTreatmentDto.valueOf(it.treatment.name),
                         isUsed = it.isUsed,
                     )
-                }
+                },
         )
 
     fun Voucher.toResource() =

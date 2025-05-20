@@ -10,14 +10,14 @@ import it.beaesthetic.fidelity.generated.api.model.FreeVoucherDto
     use = JsonTypeInfo.Id.NAME,
     property = "type",
     include = JsonTypeInfo.As.EXTERNAL_PROPERTY,
-    visible = true
+    visible = true,
 )
 @JsonSubTypes(
     value =
         [
             //            JsonSubTypes.Type(value = TreatmentDiscountVoucherDto::class, name =
             // "foods"),
-            JsonSubTypes.Type(value = FreeVoucherDto::class, name = "FreeVoucher"),
+            JsonSubTypes.Type(value = FreeVoucherDto::class, name = "FreeVoucher")
         ]
 )
 interface VoucherItemMixin
