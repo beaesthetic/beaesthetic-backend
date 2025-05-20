@@ -13,18 +13,18 @@ import it.beaesthetic.wallet.generated.api.model.MoneyCreditedEventDto
     use = JsonTypeInfo.Id.NAME,
     property = "type",
     include = JsonTypeInfo.As.EXTERNAL_PROPERTY,
-    visible = true
+    visible = true,
 )
 @JsonSubTypes(
     value =
         [
             JsonSubTypes.Type(
                 value = GiftCardMoneyExpiredEventDto::class,
-                name = "GiftCardMoneyExpired"
+                name = "GiftCardMoneyExpired",
             ),
             JsonSubTypes.Type(
                 value = GiftCardMoneyCreditedEventDto::class,
-                name = "GiftCardMoneyCredited"
+                name = "GiftCardMoneyCredited",
             ),
             JsonSubTypes.Type(value = MoneyCreditedEventDto::class, name = "MoneyCredited"),
             JsonSubTypes.Type(value = MoneyChargedEventDto::class, name = "MoneyCharged"),

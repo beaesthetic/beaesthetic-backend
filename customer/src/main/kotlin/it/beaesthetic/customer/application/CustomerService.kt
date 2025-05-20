@@ -13,14 +13,14 @@ class CustomerService(private val customerRepository: CustomerRepository) {
         val contacts =
             Contacts(
                 createRequest.email?.let { Email(it) },
-                createRequest.phone?.let { Phone.of(it) }
+                createRequest.phone?.let { Phone.of(it) },
             )
         val customer =
             Customer.create(
                 name = createRequest.name,
                 surname = createRequest.surname ?: "",
                 contacts = contacts,
-                note = createRequest.note ?: ""
+                note = createRequest.note ?: "",
             )
         return customerRepository.save(customer)
     }

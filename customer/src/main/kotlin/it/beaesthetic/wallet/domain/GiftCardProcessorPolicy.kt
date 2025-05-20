@@ -7,7 +7,7 @@ class GiftCardProcessorPolicy {
     fun charge(
         giftCards: List<GiftCard>,
         amount: Money,
-        now: Instant
+        now: Instant,
     ): Pair<Money, List<GiftCard>> {
         val availableCards =
             giftCards.filter { !it.isExpiredAt(now) }.filter { it.availableAmount > Money.Zero }
@@ -23,7 +23,7 @@ class GiftCardProcessorPolicy {
             return charge(
                 availableCards - pickedCard + updatedCard,
                 maxOf(Money.Zero, amount - pickedCardAvailableAmount),
-                now
+                now,
             )
         }
         return Money.Zero to giftCards

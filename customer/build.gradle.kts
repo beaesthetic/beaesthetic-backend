@@ -3,12 +3,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
-  kotlin("jvm") version "1.9.22"
-  kotlin("plugin.allopen") version "1.9.22"
+  kotlin("jvm") version "2.1.21"
+  kotlin("plugin.allopen") version "2.1.21"
   id("io.quarkus")
   id("org.openapi.generator") version "7.5.0"
-  id("com.diffplug.spotless") version "6.18.0"
-  kotlin("kapt") version "1.9.22"
+  id("com.diffplug.spotless") version "7.0.3"
+  kotlin("kapt") version "2.1.21"
 }
 
 repositories {
@@ -22,7 +22,7 @@ val quarkusPlatformVersion: String by project
 
 dependencies {
   // functional - fp
-  implementation("io.arrow-kt:arrow-core:1.1.2")
+  implementation("io.arrow-kt:arrow-core:2.1.2")
 
   // quarkus
   implementation(
@@ -30,8 +30,8 @@ dependencies {
       "${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"
     )
   )
-  implementation("io.quarkus:quarkus-resteasy-reactive")
-  implementation("io.quarkus:quarkus-resteasy-reactive-jackson")
+  implementation("io.quarkus:quarkus-rest")
+  implementation("io.quarkus:quarkus-rest-jackson")
   implementation("io.quarkus:quarkus-smallrye-health")
   implementation("io.quarkus:quarkus-mongodb-client")
   implementation("io.quarkus:quarkus-arc")
@@ -40,11 +40,11 @@ dependencies {
   implementation("io.quarkus:quarkus-kotlin")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("io.quarkus:quarkus-mongodb-panache-kotlin")
-  implementation("io.smallrye.reactive:mutiny-kotlin:2.6.0")
+  implementation("io.smallrye.reactive:mutiny-kotlin:2.9.0")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
   // vertx-lang-kotlin-coroutines
-  implementation("io.vertx:vertx-lang-kotlin-coroutines:4.5.7")
+  implementation("io.vertx:vertx-lang-kotlin-coroutines:5.0.0")
 
   // validation
   implementation("io.quarkus:quarkus-hibernate-validator")
@@ -145,7 +145,7 @@ tasks.register<GenerateTask>("customer-api") {
       "useBeanValidation" to "true",
       "dateLibrary" to "java8",
       "useJakartaEe" to "true",
-      "useTags" to "true"
+      "useTags" to "true",
     )
   )
 }
@@ -186,20 +186,14 @@ tasks.register<GenerateTask>("fidelity-card-api") {
       "useBeanValidation" to "true",
       "dateLibrary" to "java8",
       "useJakartaEe" to "true",
-      "useTags" to "true"
+      "useTags" to "true",
     )
   )
 
   importMappings.putAll(
-    mapOf(
-      "VoucherDto" to "it.beaesthetic.fidelity.rest.serialization.VoucherItemMixin",
-    )
+    mapOf("VoucherDto" to "it.beaesthetic.fidelity.rest.serialization.VoucherItemMixin")
   )
-  typeMappings.putAll(
-    mapOf(
-      "VoucherDto" to "VoucherItemMixin",
-    )
-  )
+  typeMappings.putAll(mapOf("VoucherDto" to "VoucherItemMixin"))
 }
 
 tasks.register<GenerateTask>("wallet-api") {
@@ -238,18 +232,12 @@ tasks.register<GenerateTask>("wallet-api") {
       "useBeanValidation" to "true",
       "dateLibrary" to "java8",
       "useJakartaEe" to "true",
-      "useTags" to "true"
+      "useTags" to "true",
     )
   )
 
   importMappings.putAll(
-    mapOf(
-      "WalletOperationDto" to "it.beaesthetic.wallet.rest.serialization.WalletEventDtoMixin",
-    )
+    mapOf("WalletOperationDto" to "it.beaesthetic.wallet.rest.serialization.WalletEventDtoMixin")
   )
-  typeMappings.putAll(
-    mapOf(
-      "WalletOperationDto" to "WalletEventDtoMixin",
-    )
-  )
+  typeMappings.putAll(mapOf("WalletOperationDto" to "WalletEventDtoMixin"))
 }

@@ -11,16 +11,10 @@ import java.time.ZoneOffset
 import java.util.*
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper
 
-@RegisterForReflection(
-    targets =
-        [
-            AddGiftCard200ResponseDto::class,
-            WalletDto::class,
-        ]
-)
+@RegisterForReflection(targets = [AddGiftCard200ResponseDto::class, WalletDto::class])
 class WalletResource(
     private val walletService: WalletService,
-    private val walletRepository: WalletRepository
+    private val walletRepository: WalletRepository,
 ) : WalletsApi {
 
     override suspend fun addGiftCard(
@@ -29,7 +23,7 @@ class WalletResource(
         return walletService
             .createWallet(
                 addGiftCardRequestDto.customerId.toString(),
-                Money(addGiftCardRequestDto.amount.toDouble())
+                Money(addGiftCardRequestDto.amount.toDouble()),
             )
             .map { AddGiftCard200ResponseDto(id = UUID.fromString(it.id)) }
             .getOrThrow()
@@ -37,7 +31,7 @@ class WalletResource(
 
     override suspend fun chargeWallet(
         walletId: UUID,
-        chargeWalletRequestDto: ChargeWalletRequestDto
+        chargeWalletRequestDto: ChargeWalletRequestDto,
     ): AddGiftCard200ResponseDto {
         return walletService
             .charge(WalletId(walletId.toString()), Money(chargeWalletRequestDto.amount.toDouble()))
@@ -76,7 +70,7 @@ class WalletResource(
             spent = spentAmount.amount.toBigDecimal(),
             history = operations.map { op -> op.toResource() },
             createdAt = createdAt.atOffset(ZoneOffset.UTC),
-            updatedAt = updatedAt.atOffset(ZoneOffset.UTC)
+            updatedAt = updatedAt.atOffset(ZoneOffset.UTC),
         )
 
     private fun WalletEvent.toResource() =
@@ -86,13 +80,13 @@ class WalletResource(
                     giftCardId = UUID.fromString(giftCardId),
                     at = at.atOffset(ZoneOffset.UTC),
                     amount = amount.amount.toBigDecimal(),
-                    expireAt = expiresAt.atOffset(ZoneOffset.UTC)
+                    expireAt = expiresAt.atOffset(ZoneOffset.UTC),
                 )
             is GiftCardMoneyExpired ->
                 GiftCardMoneyExpiredEventDto(
                     giftCardId = UUID.fromString(giftCardId),
                     at = at.atOffset(ZoneOffset.UTC),
-                    amount = 0.toBigDecimal()
+                    amount = 0.toBigDecimal(),
                 )
             is MoneyCharge ->
                 MoneyChargedEventDto(

@@ -9,7 +9,7 @@ data class Voucher(
     val id: VoucherId,
     val createdAt: Instant,
     val isUsed: Boolean,
-    val treatment: FidelityTreatment
+    val treatment: FidelityTreatment,
 ) {
 
     companion object {
@@ -18,7 +18,7 @@ data class Voucher(
                 id = VoucherId(UUID.randomUUID().toString()),
                 createdAt = Instant.now(),
                 isUsed = false,
-                treatment = treatment
+                treatment = treatment,
             )
     }
 }

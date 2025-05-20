@@ -18,7 +18,7 @@ data class Customer(
     val contacts: Contacts,
     val note: String,
     val domainEventRegistry: DomainEventRegistry<CustomerEvent>,
-    private val version: Int = 0
+    private val version: Int = 0,
 ) : DomainEventRegistry<CustomerEvent> by domainEventRegistry {
 
     companion object {
@@ -29,7 +29,7 @@ data class Customer(
                     surname = surname,
                     contacts = contacts,
                     note = note,
-                    domainEventRegistry = DomainEventRegistryDelegate()
+                    domainEventRegistry = DomainEventRegistryDelegate(),
                 )
                 .apply { addEvent("CustomerCreated", CustomerCreated(id, name, surname, contacts)) }
     }
@@ -37,7 +37,7 @@ data class Customer(
     fun changeContacts(contacts: Contacts): Customer {
         domainEventRegistry.addEvent(
             "CustomerChanged",
-            CustomerChanged(id, name, surname, contacts)
+            CustomerChanged(id, name, surname, contacts),
         )
         return copy(contacts = contacts)
     }

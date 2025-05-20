@@ -23,7 +23,7 @@ import java.math.BigDecimal
 class CustomerController(
     private val customerService: CustomerService,
     private val customerRepository: CustomerRepository,
-    private val customerReadRepository: CustomerReadRepository
+    private val customerReadRepository: CustomerReadRepository,
 ) : CustomersApi {
 
     override fun createCustomer(
@@ -41,12 +41,11 @@ class CustomerController(
     @CacheInvalidate(cacheName = "customers")
     override fun updateCustomerById(
         @CacheKey customerId: String,
-        customerUpdateDto: CustomerUpdateDto
+        customerUpdateDto: CustomerUpdateDto,
     ): Uni<CustomerResponseDto> = uniWithScope {
         customerService
             .updateCustomer(customerId = CustomerId(customerId), updateDto = customerUpdateDto)
-            ?.toResource()
-            ?: throw NotFoundException()
+            ?.toResource() ?: throw NotFoundException()
     }
 
     @CacheResult(cacheName = "customers")
@@ -60,12 +59,12 @@ class CustomerController(
         direction: String,
         pageToken: String?,
         limit: Int?,
-        sortBy: String?
+        sortBy: String?,
     ): Uni<CustomersPaginatedDto> = uniWithScope {
         if (direction == "prev") {
             throw WebApplicationException(
                 "Backward pagination not yet implemented",
-                Response.Status.NOT_IMPLEMENTED
+                Response.Status.NOT_IMPLEMENTED,
             )
         }
         var page =
@@ -73,21 +72,21 @@ class CustomerController(
                 pageToken,
                 limit,
                 if (sortBy != null) listOf(sortBy) else listOf("name", "surname"),
-                sortDirection = Sort.Direction.Ascending
+                sortDirection = Sort.Direction.Ascending,
             )
         return@uniWithScope CustomersPaginatedDto(
             BigDecimal(page.pageSize),
             page.customers.map { it.toResource() },
             nextCursor = page.nextToken,
             hasNextPage = page.nextToken != null,
-            hasPreviousPage = false
+            hasPreviousPage = false,
         )
     }
 
     @CacheResult(cacheName = "customers-search")
     override fun getAllCustomers(
         @CacheKey limit: Int?,
-        @CacheKey filter: String?
+        @CacheKey filter: String?,
     ): Uni<List<CustomerResponseDto>> = uniWithScope {
         when {
             filter?.trim().isNullOrBlank() -> customerRepository.findAll().map { it.toResource() }
@@ -98,7 +97,7 @@ class CustomerController(
     @CacheResult(cacheName = "customers-search")
     override fun searchCustomer(
         @CacheKey limit: Int?,
-        @CacheKey filter: String?
+        @CacheKey filter: String?,
     ): Uni<List<CustomerResponseDto>> = uniWithScope {
         customerRepository.findByKeyword(filter ?: "", limit ?: 10).map { it.toResource() }
     }
@@ -111,7 +110,7 @@ class CustomerController(
                 surname = this.surname,
                 phone = this.contacts.phone?.fullNumber,
                 email = this.contacts.email?.value,
-                note = this.note
+                note = this.note,
             )
     }
 }

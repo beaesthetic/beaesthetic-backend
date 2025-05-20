@@ -28,7 +28,7 @@ data class OutboxEvent<E>(val id: String, val eventType: String, val eventConten
 class OutboxRepository<E>(
     private val mongoDatabase: ReactiveMongoDatabase,
     private val objectMapper: ObjectMapper,
-    private val outboxCollectionName: String
+    private val outboxCollectionName: String,
 ) {
     private val collection by lazy { mongoDatabase.getCollection(outboxCollectionName) }
 
@@ -37,7 +37,7 @@ class OutboxRepository<E>(
             OutboxEvent(
                 id = UUID.randomUUID().toString(),
                 eventType = eventType,
-                eventContent = event
+                eventContent = event,
             )
         val rawEvent = objectMapper.writeValueAsString(decoratedOutboxEvent)
         return collection

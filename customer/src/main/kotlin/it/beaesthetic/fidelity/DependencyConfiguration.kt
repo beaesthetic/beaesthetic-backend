@@ -20,7 +20,7 @@ class DependencyConfiguration {
 
     @Produces
     fun mongoInitializer(
-        panacheFidelityCardRepository: PanacheFidelityCardRepository,
+        panacheFidelityCardRepository: PanacheFidelityCardRepository
     ): MongoInitializer =
         object : MongoInitializer {
             override suspend fun initialize() {

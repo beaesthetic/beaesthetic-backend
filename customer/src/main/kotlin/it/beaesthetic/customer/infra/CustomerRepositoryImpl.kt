@@ -23,7 +23,7 @@ class PanacheDeletedCustomerRepository : ReactivePanacheMongoRepository<DeletedC
 class CustomerRepositoryImpl(
     private val panacheCustomerRepository: PanacheCustomerRepository,
     private val panacheDeletedCustomerRepository: PanacheDeletedCustomerRepository,
-    private val outboxRepository: OutboxRepository<CustomerEvent>
+    private val outboxRepository: OutboxRepository<CustomerEvent>,
 ) : CustomerRepository, CustomerReadRepository {
 
     override suspend fun findById(id: CustomerId): Customer? {
@@ -55,7 +55,7 @@ class CustomerRepositoryImpl(
                     updatedAt = Instant.now(),
                     searchGrams =
                         SearchGram.Default.nGrams(text = searchTerms, minLength = 3)
-                            .joinToString(" ")
+                            .joinToString(" "),
                 )
             )
             .awaitSuspending()
@@ -79,7 +79,7 @@ class CustomerRepositoryImpl(
                         note = customer.note,
                         updatedAt = customer.updatedAt,
                         searchGrams = customer.searchGrams,
-                        deletedAt = Instant.now()
+                        deletedAt = Instant.now(),
                     )
                 )
                 .awaitSuspending()
@@ -93,14 +93,14 @@ class CustomerRepositoryImpl(
         pageToken: String?,
         limit: Int?,
         sortBy: List<String>,
-        sortDirection: Sort.Direction
+        sortDirection: Sort.Direction,
     ): CustomerReadRepository.CustomerPage {
         val pageBuilder =
             MongoPageBuilder(
                 panacheCustomerRepository,
                 limit ?: 50,
                 sortBy + "_id",
-                sortDirection
+                sortDirection,
             ) { i ->
                 i.id
             }
@@ -108,7 +108,7 @@ class CustomerRepositoryImpl(
         return CustomerReadRepository.CustomerPage(
             customerPage.items.map { toDomain(it) },
             customerPage.items.size,
-            nextToken = customerPage.lastItemToken
+            nextToken = customerPage.lastItemToken,
         )
     }
 
@@ -143,7 +143,7 @@ class CustomerRepositoryImpl(
                             entity.phone?.let { if (it.trim().isBlank()) null else Phone.of(it) },
                     ),
                 note = entity.note,
-                domainEventRegistry = DomainEventRegistryDelegate()
+                domainEventRegistry = DomainEventRegistryDelegate(),
             )
     }
 }
