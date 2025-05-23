@@ -1,12 +1,7 @@
 package it.beaesthetic.customer.rest
 
-import io.quarkus.cache.CacheInvalidate
-import io.quarkus.cache.CacheKey
-import io.quarkus.cache.CacheResult
 import io.quarkus.panache.common.Sort
-import io.smallrye.mutiny.Uni
-import io.smallrye.mutiny.coroutines.awaitSuspending
-import it.beaesthetic.common.uniWithScope
+import it.beaesthetic.common.SuspendableCache
 import it.beaesthetic.customer.application.CustomerReadRepository
 import it.beaesthetic.customer.application.CustomerService
 import it.beaesthetic.customer.domain.Customer
@@ -24,43 +19,49 @@ class CustomerController(
     private val customerService: CustomerService,
     private val customerRepository: CustomerRepository,
     private val customerReadRepository: CustomerReadRepository,
+    private val cache: SuspendableCache,
 ) : CustomersApi {
 
-    override fun createCustomer(
+    companion object {
+        private const val CACHE_CUSTOMERS = "customers"
+
+        private const val CACHE_CUSTOMERS_SEARCH = "customers-search"
+    }
+
+    override suspend fun createCustomer(
         customerCreateDto: CustomerCreateDto
-    ): Uni<CreateCustomer201ResponseDto> = uniWithScope {
+    ): CreateCustomer201ResponseDto =
         CreateCustomer201ResponseDto(
             id = customerService.createCustomer(customerCreateDto).id.value
         )
+
+    override suspend fun deleteCustomer(customerId: String) {
+        customerService.deleteCustomer(CustomerId(customerId))
+        cache.invalidateKey(CACHE_CUSTOMERS, customerId)
     }
 
-    @CacheInvalidate(cacheName = "customers")
-    override fun deleteCustomer(@CacheKey customerId: String): Uni<Void> =
-        uniWithScope { customerService.deleteCustomer(CustomerId(customerId)) }.replaceWithVoid()
-
-    @CacheInvalidate(cacheName = "customers")
-    override fun updateCustomerById(
-        @CacheKey customerId: String,
+    override suspend fun updateCustomerById(
+        customerId: String,
         customerUpdateDto: CustomerUpdateDto,
-    ): Uni<CustomerResponseDto> = uniWithScope {
-        customerService
-            .updateCustomer(customerId = CustomerId(customerId), updateDto = customerUpdateDto)
-            ?.toResource() ?: throw NotFoundException()
-    }
+    ): CustomerResponseDto =
+        cache.getOrLoad(CACHE_CUSTOMERS, customerId) {
+            customerService
+                .updateCustomer(customerId = CustomerId(customerId), updateDto = customerUpdateDto)
+                ?.toResource() ?: throw NotFoundException()
+        }
 
-    @CacheResult(cacheName = "customers")
-    override fun getCustomerById(@CacheKey customerId: String): Uni<CustomerResponseDto> =
-        uniWithScope {
+    override suspend fun getCustomerById(customerId: String): CustomerResponseDto =
+        cache.getOrLoad(CACHE_CUSTOMERS, customerId) {
             customerRepository.findById(CustomerId(customerId))?.toResource()
                 ?: throw NotFoundException()
         }
 
-    override fun getCustomerByPage(
+    override suspend fun getCustomerByPage(
         direction: String,
         pageToken: String?,
         limit: Int?,
         sortBy: String?,
-    ): Uni<CustomersPaginatedDto> = uniWithScope {
+    ): CustomersPaginatedDto {
         if (direction == "prev") {
             throw WebApplicationException(
                 "Backward pagination not yet implemented",
@@ -74,7 +75,7 @@ class CustomerController(
                 if (sortBy != null) listOf(sortBy) else listOf("name", "surname"),
                 sortDirection = Sort.Direction.Ascending,
             )
-        return@uniWithScope CustomersPaginatedDto(
+        return CustomersPaginatedDto(
             BigDecimal(page.pageSize),
             page.customers.map { it.toResource() },
             nextCursor = page.nextToken,
@@ -83,24 +84,19 @@ class CustomerController(
         )
     }
 
-    @CacheResult(cacheName = "customers-search")
-    override fun getAllCustomers(
-        @CacheKey limit: Int?,
-        @CacheKey filter: String?,
-    ): Uni<List<CustomerResponseDto>> = uniWithScope {
-        when {
-            filter?.trim().isNullOrBlank() -> customerRepository.findAll().map { it.toResource() }
-            else -> searchCustomer(limit, filter).awaitSuspending()
+    override suspend fun getAllCustomers(limit: Int?, filter: String?): List<CustomerResponseDto> =
+        cache.getOrLoad(CACHE_CUSTOMERS_SEARCH, limit, filter) {
+            when {
+                filter?.trim().isNullOrBlank() ->
+                    customerRepository.findAll().map { it.toResource() }
+                else -> searchCustomer(limit, filter)
+            }
         }
-    }
 
-    @CacheResult(cacheName = "customers-search")
-    override fun searchCustomer(
-        @CacheKey limit: Int?,
-        @CacheKey filter: String?,
-    ): Uni<List<CustomerResponseDto>> = uniWithScope {
-        customerRepository.findByKeyword(filter ?: "", limit ?: 10).map { it.toResource() }
-    }
+    override suspend fun searchCustomer(limit: Int?, filter: String?): List<CustomerResponseDto> =
+        cache.getOrLoad(CACHE_CUSTOMERS_SEARCH, limit, filter) {
+            customerRepository.findByKeyword(filter ?: "", limit ?: 10).map { it.toResource() }
+        }
 
     object ResourceMapper {
         fun Customer.toResource() =
