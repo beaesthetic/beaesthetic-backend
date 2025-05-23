@@ -1,5 +1,7 @@
 package it.beaesthetic.customer.rest
 
+import io.quarkus.cache.Cache
+import io.quarkus.cache.CacheName
 import io.quarkus.panache.common.Sort
 import it.beaesthetic.common.SuspendableCache
 import it.beaesthetic.customer.application.CustomerReadRepository
@@ -19,14 +21,10 @@ class CustomerController(
     private val customerService: CustomerService,
     private val customerRepository: CustomerRepository,
     private val customerReadRepository: CustomerReadRepository,
-    private val cache: SuspendableCache,
+    private val cacheWrapper: SuspendableCache,
+    @CacheName("customers") private val customerCache: Cache,
+    @CacheName("customers-search") private val customerSearchCache: Cache,
 ) : CustomersApi {
-
-    companion object {
-        private const val CACHE_CUSTOMERS = "customers"
-
-        private const val CACHE_CUSTOMERS_SEARCH = "customers-search"
-    }
 
     override suspend fun createCustomer(
         customerCreateDto: CustomerCreateDto
@@ -37,21 +35,21 @@ class CustomerController(
 
     override suspend fun deleteCustomer(customerId: String) {
         customerService.deleteCustomer(CustomerId(customerId))
-        cache.invalidateKey(CACHE_CUSTOMERS, customerId)
+        cacheWrapper.invalidateKey(customerCache, customerId)
     }
 
     override suspend fun updateCustomerById(
         customerId: String,
         customerUpdateDto: CustomerUpdateDto,
     ): CustomerResponseDto =
-        cache.getOrLoad(CACHE_CUSTOMERS, customerId) {
+        cacheWrapper.getOrLoad(customerCache, customerId) {
             customerService
                 .updateCustomer(customerId = CustomerId(customerId), updateDto = customerUpdateDto)
                 ?.toResource() ?: throw NotFoundException()
         }
 
     override suspend fun getCustomerById(customerId: String): CustomerResponseDto =
-        cache.getOrLoad(CACHE_CUSTOMERS, customerId) {
+        cacheWrapper.getOrLoad(customerCache, customerId) {
             customerRepository.findById(CustomerId(customerId))?.toResource()
                 ?: throw NotFoundException()
         }
@@ -68,7 +66,7 @@ class CustomerController(
                 Response.Status.NOT_IMPLEMENTED,
             )
         }
-        var page =
+        val page =
             customerReadRepository.findNextPage(
                 pageToken,
                 limit,
@@ -85,7 +83,7 @@ class CustomerController(
     }
 
     override suspend fun getAllCustomers(limit: Int?, filter: String?): List<CustomerResponseDto> =
-        cache.getOrLoad(CACHE_CUSTOMERS_SEARCH, limit, filter) {
+        cacheWrapper.getOrLoad(customerSearchCache, limit, filter) {
             when {
                 filter?.trim().isNullOrBlank() ->
                     customerRepository.findAll().map { it.toResource() }
@@ -94,7 +92,7 @@ class CustomerController(
         }
 
     override suspend fun searchCustomer(limit: Int?, filter: String?): List<CustomerResponseDto> =
-        cache.getOrLoad(CACHE_CUSTOMERS_SEARCH, limit, filter) {
+        cacheWrapper.getOrLoad(customerSearchCache, limit, filter) {
             customerRepository.findByKeyword(filter ?: "", limit ?: 10).map { it.toResource() }
         }
 
