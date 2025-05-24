@@ -1,6 +1,5 @@
 package it.beaesthetic.wallet.rest
 
-import io.quarkus.runtime.annotations.RegisterForReflection
 import it.beaesthetic.wallet.application.WalletService
 import it.beaesthetic.wallet.domain.*
 import it.beaesthetic.wallet.generated.api.WalletsApi
@@ -11,7 +10,6 @@ import java.time.ZoneOffset
 import java.util.*
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper
 
-@RegisterForReflection(targets = [AddGiftCard200ResponseDto::class, WalletDto::class])
 class WalletResource(
     private val walletService: WalletService,
     private val walletRepository: WalletRepository,

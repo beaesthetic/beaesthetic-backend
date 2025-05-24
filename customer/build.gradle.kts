@@ -129,6 +129,7 @@ tasks.register<GenerateTask>("customer-api") {
   modelNameSuffix.set("Dto")
   configOptions.set(
     mapOf(
+      "additionalModelTypeAnnotations" to "@io.quarkus.runtime.annotations.RegisterForReflection",
       "sourceFolder" to "src/main/java",
       "skipDefaultInterface" to "true",
       "openApiNullable" to "true",
@@ -170,6 +171,7 @@ tasks.register<GenerateTask>("fidelity-card-api") {
 
   configOptions.set(
     mapOf(
+      "additionalModelTypeAnnotations" to "@io.quarkus.runtime.annotations.RegisterForReflection",
       "sourceFolder" to "src/main/java",
       "skipDefaultInterface" to "true",
       "openApiNullable" to "true",
@@ -216,6 +218,7 @@ tasks.register<GenerateTask>("wallet-api") {
 
   configOptions.set(
     mapOf(
+      "additionalModelTypeAnnotations" to "@io.quarkus.runtime.annotations.RegisterForReflection",
       "sourceFolder" to "src/main/java",
       "skipDefaultInterface" to "true",
       "openApiNullable" to "true",
