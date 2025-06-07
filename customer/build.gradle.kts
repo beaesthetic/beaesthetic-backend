@@ -21,6 +21,10 @@ val quarkusPlatformArtifactId: String by project
 val quarkusPlatformVersion: String by project
 
 dependencies {
+  implementation(
+    platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.10.0")
+  )
+
   // functional - fp
   implementation("io.arrow-kt:arrow-core:2.1.2")
 
@@ -59,6 +63,7 @@ dependencies {
   // observability
   implementation("io.quarkus:quarkus-opentelemetry")
   implementation("io.quarkus:quarkus-micrometer")
+  implementation("io.opentelemetry.instrumentation:opentelemetry-mongo-3.1")
 
   implementation(kotlin("reflect"))
 
