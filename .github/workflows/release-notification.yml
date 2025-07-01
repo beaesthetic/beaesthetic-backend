@@ -15,7 +15,9 @@ env:
 
 jobs:
   build:
-    runs-on: gha-beaesthetic-scaler
+    runs-on: 
+      group: default
+      labels: gha-beaesthetic-scaler
     name: "Build Docker image"
     outputs:
       tag_deploy: ${{ steps.tag_deploy.outputs.tag }}
