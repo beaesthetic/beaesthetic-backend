@@ -1,9 +1,11 @@
 package it.beaesthetic.wallet.rest
 
 import it.beaesthetic.wallet.application.WalletService
+import it.beaesthetic.wallet.application.read.WalletReadModel
 import it.beaesthetic.wallet.domain.*
 import it.beaesthetic.wallet.generated.api.WalletsApi
 import it.beaesthetic.wallet.generated.api.model.*
+import it.beaesthetic.wallet.infra.*
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.core.Response
 import java.time.ZoneOffset
@@ -38,7 +40,7 @@ class WalletResource(
     }
 
     override suspend fun getWalletById(walletId: UUID): WalletDto {
-        return walletRepository.findById(WalletId(walletId.toString()))?.toResource()
+        return walletRepository.findByIdReadModel(WalletId(walletId.toString()))?.toResource()
             ?: throw NotFoundException("Wallet not found")
     }
 
@@ -60,40 +62,47 @@ class WalletResource(
         }
     }
 
-    private fun Wallet.toResource() =
+    private fun WalletReadModel.toResource() =
         WalletDto(
-            id = UUID.fromString(id),
-            customerId = UUID.fromString(owner),
-            availableAmount = availableAmount.amount.toBigDecimal(),
-            spent = spentAmount.amount.toBigDecimal(),
-            history = operations.map { op -> op.toResource() },
-            createdAt = createdAt.atOffset(ZoneOffset.UTC),
-            updatedAt = updatedAt.atOffset(ZoneOffset.UTC),
+            id = UUID.fromString(wallet.id),
+            customer =
+                CustomerDto(
+                    id = customer.id,
+                    name = customer.name ?: "",
+                    surname = customer.surname ?: "",
+                    phone = customer.phone,
+                    email = customer.email,
+                ),
+            availableAmount = wallet.availableAmount.toBigDecimal(),
+            spent = wallet.spentAmount.toBigDecimal(),
+            history = wallet.operations.map { op -> op.toResource() },
+            createdAt = wallet.createdAt.atOffset(ZoneOffset.UTC),
+            updatedAt = wallet.updatedAt.atOffset(ZoneOffset.UTC),
         )
 
-    private fun WalletEvent.toResource() =
+    private fun WalletEventEntity.toResource() =
         when (this) {
-            is GiftCardMoneyCredited ->
+            is GiftCardMoneyCreditedEntity ->
                 GiftCardMoneyCreditedEventDto(
                     giftCardId = UUID.fromString(giftCardId),
                     at = at.atOffset(ZoneOffset.UTC),
-                    amount = amount.amount.toBigDecimal(),
+                    amount = amount.toBigDecimal(),
                     expireAt = expiresAt.atOffset(ZoneOffset.UTC),
                 )
-            is GiftCardMoneyExpired ->
+            is GiftCardMoneyExpiredEntity ->
                 GiftCardMoneyExpiredEventDto(
                     giftCardId = UUID.fromString(giftCardId),
                     at = at.atOffset(ZoneOffset.UTC),
                     amount = 0.toBigDecimal(),
                 )
-            is MoneyCharge ->
+            is MoneyChargedEntity ->
                 MoneyChargedEventDto(
-                    amount = amount.amount.toBigDecimal(),
+                    amount = amount.toBigDecimal(),
                     at = at.atOffset(ZoneOffset.UTC),
                 )
-            is MoneyCredited ->
+            is MoneyCreditedEntity ->
                 MoneyCreditedEventDto(
-                    amount = amount.amount.toBigDecimal(),
+                    amount = amount.toBigDecimal(),
                     at = at.atOffset(ZoneOffset.UTC),
                 )
         }

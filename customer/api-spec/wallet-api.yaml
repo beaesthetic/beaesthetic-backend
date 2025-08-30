@@ -147,8 +147,8 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/WalletId'
-        customerId:
-          $ref: '#/components/schemas/CustomerId'
+        customer:
+          $ref: '#/components/schemas/Customer'
         availableAmount:
           type: number
         spent:
@@ -163,6 +163,22 @@ components:
         updatedAt:
           type: string
           format: date-time
+
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        surname:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+      required: [id, name, surname]
 
     WalletId:
       type: string
