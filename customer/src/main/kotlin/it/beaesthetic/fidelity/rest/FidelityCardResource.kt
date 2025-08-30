@@ -1,7 +1,11 @@
 package it.beaesthetic.fidelity.rest
 
+import it.beaesthetic.fidelity.application.FidelityCardReadService
 import it.beaesthetic.fidelity.application.FidelityCardService
-import it.beaesthetic.fidelity.domain.*
+import it.beaesthetic.fidelity.domain.CustomerId
+import it.beaesthetic.fidelity.domain.FidelityTreatment
+import it.beaesthetic.fidelity.domain.TreatmentPurchase
+import it.beaesthetic.fidelity.domain.VoucherId
 import it.beaesthetic.fidelity.generated.api.FidelityCardsApi
 import it.beaesthetic.fidelity.generated.api.model.CreateFidelityCardRequestDto
 import it.beaesthetic.fidelity.generated.api.model.FidelityCardResponseDto
@@ -13,9 +17,10 @@ import java.time.Instant
 import java.util.*
 import org.jboss.resteasy.reactive.server.ServerExceptionMapper
 
+// TODO: explore inline projections
 class FidelityCardResource(
     private val fidelityCardService: FidelityCardService,
-    private val fidelityCardRepository: FidelityCardRepository,
+    private val fidelityCardReadService: FidelityCardReadService,
 ) : FidelityCardsApi {
 
     override suspend fun createFidelityCard(
@@ -23,23 +28,24 @@ class FidelityCardResource(
     ): FidelityCardResponseDto {
         return fidelityCardService
             .createFidelityCard(CustomerId(createFidelityCardRequestDto.customerId.toString()))
-            .map { it.toResource() }
+            .map { fidelityCardReadService.findById(it.id) }
+            .map { it!!.toResource() }
             .getOrThrow()
     }
 
     override suspend fun getFidelityCardById(cardId: UUID): FidelityCardResponseDto {
-        return fidelityCardRepository.findById(cardId.toString())?.toResource()
+        return fidelityCardReadService.findById(cardId.toString())?.toResource()
             ?: throw IllegalArgumentException("Fidelity card not found")
     }
 
     override suspend fun getFidelityCards(): List<FidelityCardResponseDto> {
-        return fidelityCardRepository.findAll().map { it.toResource() }
+        return fidelityCardReadService.findAll().map { it.toResource() }
     }
 
     override suspend fun getFidelityCardsByCustomerId(
         customerId: UUID
     ): List<FidelityCardResponseDto> {
-        return fidelityCardRepository
+        return fidelityCardReadService
             .findByCustomerId(CustomerId(customerId.toString()))
             ?.toResource()
             ?.let { listOf(it) } ?: emptyList()
@@ -65,7 +71,8 @@ class FidelityCardResource(
     override suspend fun useVoucher(voucherId: UUID): FidelityCardResponseDto {
         return fidelityCardService
             .useVoucher(VoucherId(voucherId.toString()))
-            .map { it.toResource() }
+            .map { fidelityCardReadService.findById(it.id) }
+            .map { it!!.toResource() }
             .getOrThrow()
     }
 
