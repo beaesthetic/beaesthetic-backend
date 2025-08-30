@@ -162,6 +162,21 @@ paths:
 
 components:
   schemas:
+    Customer:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        surname:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+      required: [id, name, surname, email, phone]
     FidelityCardId:
       type: string
       format: uuid
@@ -173,8 +188,8 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/FidelityCardId"
-        customerId:
-          $ref: "#/components/schemas/CustomerId"
+        customer:
+          $ref: "#/components/schemas/Customer"
         solariumPurchases:
           type: integer
         vouchers:
