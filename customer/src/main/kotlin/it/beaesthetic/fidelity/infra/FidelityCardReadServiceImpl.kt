@@ -2,7 +2,6 @@ package it.beaesthetic.fidelity.infra
 
 import com.mongodb.client.model.Aggregates.*
 import com.mongodb.client.model.Filters.eq
-import io.quarkus.mongodb.reactive.ReactiveMongoDatabase
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.fidelity.application.FidelityCardReadService
 import it.beaesthetic.fidelity.application.data.FidelityCardReadModel
@@ -10,8 +9,11 @@ import it.beaesthetic.fidelity.domain.CustomerId
 import jakarta.enterprise.context.ApplicationScoped
 
 @ApplicationScoped
-class FidelityCardReadServiceImpl(private val mongoDatabase: ReactiveMongoDatabase) :
-    FidelityCardReadService {
+class FidelityCardReadServiceImpl(
+    private val panacheFidelityCardRepository: PanacheFidelityCardRepository
+) : FidelityCardReadService {
+
+    private val mongoCollection = panacheFidelityCardRepository.mongoCollection()
 
     private val joinCustomerPipeline =
         listOf(
@@ -21,7 +23,7 @@ class FidelityCardReadServiceImpl(private val mongoDatabase: ReactiveMongoDataba
         )
 
     override suspend fun findAll(): List<FidelityCardReadModel> {
-        return mongoDatabase
+        return mongoCollection
             .aggregate(joinCustomerPipeline, FidelityCardReadModel::class.java)
             .collect()
             .asList()
@@ -31,7 +33,7 @@ class FidelityCardReadServiceImpl(private val mongoDatabase: ReactiveMongoDataba
     override suspend fun findById(id: String): FidelityCardReadModel? {
         val pipeline = listOf(match(eq("_id", id))) + joinCustomerPipeline
 
-        return mongoDatabase
+        return mongoCollection
             .aggregate(pipeline, FidelityCardReadModel::class.java)
             .collect()
             .asList()
@@ -42,7 +44,7 @@ class FidelityCardReadServiceImpl(private val mongoDatabase: ReactiveMongoDataba
     override suspend fun findByCustomerId(customerId: CustomerId): FidelityCardReadModel? {
         val pipeline = listOf(match(eq("customerId", customerId.id))) + joinCustomerPipeline
 
-        return mongoDatabase
+        return mongoCollection
             .aggregate(pipeline, FidelityCardReadModel::class.java)
             .collect()
             .asList()

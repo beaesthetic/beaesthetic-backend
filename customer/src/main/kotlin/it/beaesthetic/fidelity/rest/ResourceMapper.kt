@@ -25,8 +25,8 @@ object ResourceMapper {
             customer =
                 CustomerDto(
                     id = customer.id,
-                    name = customer.name,
-                    surname = customer.surname,
+                    name = customer.name ?: "",
+                    surname = customer.surname ?: "",
                     phone = customer.phone,
                     email = customer.email,
                 ),
@@ -34,7 +34,7 @@ object ResourceMapper {
             vouchers =
                 vouchers.map {
                     FreeVoucherDto(
-                        id = UUID.fromString(it.id.value),
+                        id = UUID.fromString(it.id),
                         issuedAt = it.createdAt.atOffset(ZoneOffset.UTC),
                         treatment = SupportedVoucherTreatmentDto.valueOf(it.treatment.name),
                         isUsed = it.isUsed,
