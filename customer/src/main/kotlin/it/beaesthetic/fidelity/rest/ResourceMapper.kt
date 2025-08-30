@@ -20,7 +20,7 @@ object ResourceMapper {
         )
 
     fun FidelityCardReadModel.toResource(): FidelityCardResponseDto {
-        FidelityCardResponseDto(
+        return FidelityCardResponseDto(
             id = UUID.fromString(this.id),
             customer =
                 CustomerDto(
