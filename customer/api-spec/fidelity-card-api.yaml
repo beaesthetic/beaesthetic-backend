@@ -176,7 +176,7 @@ components:
           format: email
         phone:
           type: string
-      required: [id, name, surname, email, phone]
+      required: [id, name, surname]
     FidelityCardId:
       type: string
       format: uuid
