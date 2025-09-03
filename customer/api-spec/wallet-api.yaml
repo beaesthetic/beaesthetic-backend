@@ -29,10 +29,10 @@ servers:
   - url: https://agenda.beaesthetic.it/customer-service/
 paths:
 
-  /wallets/giftCard:
+  /admin/wallets/giftCard:
     post:
       tags:
-        - wallets
+        - wallets-admin
       operationId: addGiftCard
       requestBody:
         required: true
@@ -61,10 +61,10 @@ paths:
         '400':
           description: "Bad request"
 
-  /wallets/{walletId}/charge:
+  /admin/wallets/{walletId}/charge:
     put:
       tags:
-        - wallets
+        - wallets-admin
       operationId: chargeWallet
       parameters:
         - in: path
@@ -94,10 +94,10 @@ paths:
                   id:
                     $ref: '#/components/schemas/WalletId'
 
-  /wallets/{walletId}:
+  /admin/wallets/{walletId}:
     get:
       tags:
-        - wallets
+        - wallets-admin
       operationId: getWalletById
       parameters:
         - in: path
@@ -117,10 +117,10 @@ paths:
         '404':
           description: Not found
 
-  /wallets:
+  /admin/wallets:
     get:
       tags:
-        - wallets
+        - wallets-admin
       operationId: getWallets
       parameters:
         - in: query

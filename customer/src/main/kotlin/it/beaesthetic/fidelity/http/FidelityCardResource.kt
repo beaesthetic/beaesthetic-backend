@@ -1,4 +1,4 @@
-package it.beaesthetic.fidelity.rest
+package it.beaesthetic.fidelity.http
 
 import it.beaesthetic.fidelity.application.FidelityCardReadService
 import it.beaesthetic.fidelity.application.FidelityCardService
@@ -6,12 +6,12 @@ import it.beaesthetic.fidelity.domain.CustomerId
 import it.beaesthetic.fidelity.domain.FidelityTreatment
 import it.beaesthetic.fidelity.domain.TreatmentPurchase
 import it.beaesthetic.fidelity.domain.VoucherId
-import it.beaesthetic.fidelity.generated.api.FidelityCardsApi
+import it.beaesthetic.fidelity.generated.api.FidelityCardsAdminApi
 import it.beaesthetic.fidelity.generated.api.model.CreateFidelityCardRequestDto
 import it.beaesthetic.fidelity.generated.api.model.FidelityCardResponseDto
 import it.beaesthetic.fidelity.generated.api.model.PurchaseNofityRequestDto
 import it.beaesthetic.fidelity.generated.api.model.SupportedVoucherTreatmentDto
-import it.beaesthetic.fidelity.rest.ResourceMapper.toResource
+import it.beaesthetic.fidelity.http.ResourceMapper.toResource
 import jakarta.ws.rs.core.Response
 import java.time.Instant
 import java.util.*
@@ -21,7 +21,7 @@ import org.jboss.resteasy.reactive.server.ServerExceptionMapper
 class FidelityCardResource(
     private val fidelityCardService: FidelityCardService,
     private val fidelityCardReadService: FidelityCardReadService,
-) : FidelityCardsApi {
+) : FidelityCardsAdminApi {
 
     override suspend fun createFidelityCard(
         createFidelityCardRequestDto: CreateFidelityCardRequestDto

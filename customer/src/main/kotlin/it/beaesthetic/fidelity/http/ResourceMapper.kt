@@ -1,4 +1,4 @@
-package it.beaesthetic.fidelity.rest
+package it.beaesthetic.fidelity.http
 
 import it.beaesthetic.fidelity.application.data.FidelityCardReadModel
 import it.beaesthetic.fidelity.domain.Voucher

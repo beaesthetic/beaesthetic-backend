@@ -1,4 +1,4 @@
-package it.beaesthetic.customer.rest
+package it.beaesthetic.customer.http
 
 import io.quarkus.cache.Cache
 import io.quarkus.cache.CacheName
@@ -9,9 +9,9 @@ import it.beaesthetic.customer.application.CustomerService
 import it.beaesthetic.customer.domain.Customer
 import it.beaesthetic.customer.domain.CustomerId
 import it.beaesthetic.customer.domain.CustomerRepository
-import it.beaesthetic.customer.generated.api.CustomersApi
+import it.beaesthetic.customer.generated.api.CustomersAdminApi
 import it.beaesthetic.customer.generated.api.model.*
-import it.beaesthetic.customer.rest.CustomerController.ResourceMapper.toResource
+import it.beaesthetic.customer.http.CustomerController.ResourceMapper.toResource
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.Response
@@ -24,7 +24,7 @@ class CustomerController(
     private val cacheWrapper: SuspendableCache,
     @CacheName("customers") private val customerCache: Cache,
     @CacheName("customers-search") private val customerSearchCache: Cache,
-) : CustomersApi {
+) : CustomersAdminApi {
 
     override suspend fun createCustomer(
         customerCreateDto: CustomerCreateDto
