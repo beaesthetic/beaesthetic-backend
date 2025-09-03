@@ -28,12 +28,12 @@ info:
 servers:
   - url: https://agenda.beaesthetic.it/customer-service/
 paths:
-  /customers/page/{direction}:
+  /admin/customers/page/{direction}:
     get:
       summary: Get customers with pagination
       operationId: getCustomerByPage
       tags:
-        - Customers
+        - customers-admin
       parameters:
         - name: direction
           required: true
@@ -71,7 +71,7 @@ paths:
       summary: Search for customers
       operationId: searchCustomer
       tags:
-        - Customers
+        - customers-admin
       parameters:
         - name: limit
           in: query
@@ -92,12 +92,12 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/CustomerResponse'
-  /customers:
+  /admin/customers:
     get:
       summary: Get all customers
       operationId: getAllCustomers
       tags:
-        - Customers
+        - customers-admin
       parameters:
         - name: limit
           in: query
@@ -121,7 +121,7 @@ paths:
       summary: Create a new customer
       operationId: createCustomer
       tags:
-        - Customers
+        - customers-admin
       requestBody:
         required: true
         content:
@@ -138,12 +138,12 @@ paths:
                 properties:
                   id:
                     type: string
-  /customers/{customerId}:
+  /admin/customers/{customerId}:
     get:
       operationId: getCustomerById
       summary: Get customer by ID
       tags:
-        - Customers
+        - customers-admin
       parameters:
         - name: customerId
           in: path
@@ -162,7 +162,7 @@ paths:
       operationId: deleteCustomer
       summary: Delete customer by ID
       tags:
-        - Customers
+        - customers-admin
       parameters:
         - name: customerId
           in: path
@@ -177,7 +177,7 @@ paths:
       summary: Update customer by ID
       operationId: updateCustomerById
       tags:
-        - Customers
+        - customers-admin
       parameters:
         - name: customerId
           in: path

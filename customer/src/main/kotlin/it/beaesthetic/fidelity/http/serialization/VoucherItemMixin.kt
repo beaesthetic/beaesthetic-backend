@@ -1,4 +1,4 @@
-package it.beaesthetic.fidelity.rest.serialization
+package it.beaesthetic.fidelity.http.serialization
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonSubTypes

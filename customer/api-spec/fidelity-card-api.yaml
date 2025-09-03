@@ -28,10 +28,10 @@ info:
 servers:
   - url: https://agenda.beaesthetic.it/customer-service/
 paths:
-  /fidelity-cards/:
+  /admin/fidelity-cards/:
     post:
       tags:
-        - fidelity-cards
+        - fidelity-cards-admin
       operationId: createFidelityCard
       requestBody:
         required: true
@@ -55,7 +55,7 @@ paths:
           description: Bad request
     get:
       tags:
-        - fidelity-cards
+        - fidelity-cards-admin
       operationId: getFidelityCards
       responses:
         '200':
@@ -69,10 +69,10 @@ paths:
         '400':
           description: Bad request
 
-  /fidelity-cards/{cardId}:
+  /admin/fidelity-cards/{cardId}:
     get:
       tags:
-        - fidelity-cards
+        - fidelity-cards-admin
       operationId: getFidelityCardById
       parameters:
         - in: path
@@ -93,10 +93,10 @@ paths:
         '404':
           description: Not found
 
-  /fidelity-cards/customers/{customerId}:
+  /admin/fidelity-cards/customers/{customerId}:
     get:
       tags:
-        - fidelity-cards
+        - fidelity-cards-admin
       operationId: getFidelityCardsByCustomerId
       parameters:
         - in: path
@@ -117,10 +117,10 @@ paths:
         '400':
           description: Bad request
 
-  /fidelity-cards/{cardId}/purchase:
+  /admin/fidelity-cards/{cardId}/purchase:
     put:
       tags:
-        - fidelity-cards
+        - fidelity-cards-admin
       operationId: notifyPurchase
       parameters:
         - in: path
@@ -139,10 +139,10 @@ paths:
         '201':
           description: 'Purchase created'
 
-  /fidelity-cards/vouchers/{voucherId}:
+  /admin/fidelity-cards/vouchers/{voucherId}:
     delete:
       tags:
-        - fidelity-cards
+        - fidelity-cards-admin
       operationId: useVoucher
       parameters:
         - in: path

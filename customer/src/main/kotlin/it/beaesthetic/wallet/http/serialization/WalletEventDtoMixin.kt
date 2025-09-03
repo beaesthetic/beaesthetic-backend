@@ -1,4 +1,4 @@
-package it.beaesthetic.wallet.rest.serialization
+package it.beaesthetic.wallet.http.serialization
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonSubTypes

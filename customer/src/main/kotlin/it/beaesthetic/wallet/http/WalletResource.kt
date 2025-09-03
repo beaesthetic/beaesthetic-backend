@@ -1,9 +1,9 @@
-package it.beaesthetic.wallet.rest
+package it.beaesthetic.wallet.http
 
 import it.beaesthetic.wallet.application.WalletService
 import it.beaesthetic.wallet.application.read.WalletReadModel
 import it.beaesthetic.wallet.domain.*
-import it.beaesthetic.wallet.generated.api.WalletsApi
+import it.beaesthetic.wallet.generated.api.WalletsAdminApi
 import it.beaesthetic.wallet.generated.api.model.*
 import it.beaesthetic.wallet.infra.*
 import jakarta.ws.rs.NotFoundException
@@ -15,7 +15,7 @@ import org.jboss.resteasy.reactive.server.ServerExceptionMapper
 class WalletResource(
     private val walletService: WalletService,
     private val walletRepository: WalletRepository,
-) : WalletsApi {
+) : WalletsAdminApi {
 
     override suspend fun addGiftCard(
         addGiftCardRequestDto: AddGiftCardRequestDto
