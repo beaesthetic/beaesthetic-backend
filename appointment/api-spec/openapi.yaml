@@ -22,7 +22,7 @@ tags:
   - name: Insight
     description: Insights api group.
 paths:
-  /activities:
+  /admin/activities:
     post:
       tags:
         - activities
@@ -90,7 +90,7 @@ paths:
               example:
                 error: Invalid parameters
 
-  /activities/{activityId}:
+  /admin/activities/{activityId}:
     put:
       operationId: updateActivity
       summary: Update an activity
@@ -124,7 +124,7 @@ paths:
       summary: Delete an activity
       operationId: deleteActivity
       tags:
-        - activities
+        - activities-admin
       parameters:
         - name: activityId
           in: path
@@ -240,12 +240,12 @@ paths:
         '200':
           $ref: '#/components/responses/StatisticsResponseBody'
 
-  /services:
+  /admin/services:
     post:
       summary: Create a new service
       operationId: createService
       tags:
-        - Services
+        - services-admin
       requestBody:
         $ref: '#/components/requestBodies/CreateServiceRequestBody'
       responses:
@@ -262,12 +262,12 @@ paths:
               example:
                 error: Invalid data or missing fields
 
-  /services/{serviceId}:
+  /admin/services/{serviceId}:
     patch:
       summary: Patch an existing service
       operationId: updateService
       tags:
-        - Services
+        - services-admin
       parameters:
         - in: path
           name: serviceId
@@ -290,12 +290,12 @@ paths:
               example:
                 error: Invalid data or missing fields
 
-  /services/search:
+  /admin/services/search:
     get:
       summary: Search for services
       operationId: searchService
       tags:
-        - Services
+        - services-admin
       parameters:
         - name: text
           in: query
@@ -320,12 +320,12 @@ paths:
                 items:
                   $ref: '#/components/schemas/Service'
 
-  /services/all:
+  /admin/services/all:
     get:
       summary: Get all service
       operationId: getAllServices
       tags:
-        - Services
+        - services-admin
       responses:
         '200':
           description: OK

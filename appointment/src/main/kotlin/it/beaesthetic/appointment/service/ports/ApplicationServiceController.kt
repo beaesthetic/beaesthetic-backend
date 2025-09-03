@@ -5,7 +5,7 @@ import io.quarkus.cache.CacheKey
 import io.quarkus.cache.CacheResult
 import io.quarkus.runtime.annotations.RegisterForReflection
 import io.smallrye.mutiny.Uni
-import it.beaesthetic.appointment.agenda.generated.api.ServicesApi
+import it.beaesthetic.appointment.agenda.generated.api.ServicesAdminApi
 import it.beaesthetic.appointment.agenda.generated.api.model.CreateServiceRequestDto
 import it.beaesthetic.appointment.agenda.generated.api.model.ServiceDto
 import it.beaesthetic.appointment.agenda.generated.api.model.UpdateServiceRequestDto
@@ -19,7 +19,7 @@ import kotlin.NoSuchElementException
 @RegisterForReflection(targets = [ServiceDto::class], registerFullHierarchy = true)
 class ApplicationServiceController(
     private val applicationServiceRepository: AppointmentServiceRepository
-) : ServicesApi {
+) : ServicesAdminApi {
 
     override fun createService(createServiceRequestDto: CreateServiceRequestDto): Uni<ServiceDto> =
         uniWithScope {
