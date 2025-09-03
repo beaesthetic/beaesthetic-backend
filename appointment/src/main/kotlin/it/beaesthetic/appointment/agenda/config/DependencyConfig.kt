@@ -19,7 +19,7 @@ import it.beaesthetic.appointment.agenda.infra.NotificationServiceImpl
 import it.beaesthetic.appointment.agenda.infra.RemoteCustomerRegistry
 import it.beaesthetic.appointment.agenda.infra.RemoteScheduler
 import it.beaesthetic.appointment.agenda.infra.mongo.CancelReasonCodecProvider
-import it.beaesthetic.generated.customer.client.api.CustomersApi
+import it.beaesthetic.generated.customer.client.api.CustomersAdminApi
 import it.beaesthetic.generated.notification.client.api.NotificationsApi
 import it.beaesthetic.generated.scheduler.client.api.SchedulesApi
 import jakarta.enterprise.context.Dependent
@@ -47,7 +47,7 @@ class DependencyConfig {
 
     @Produces
     fun notificationProvider(
-        @RestClient customersApi: CustomersApi,
+        @RestClient customersApi: CustomersAdminApi,
     ): CustomerRegistry {
         return RemoteCustomerRegistry(customersApi)
     }

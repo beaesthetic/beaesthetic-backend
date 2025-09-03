@@ -5,7 +5,7 @@ import io.smallrye.mutiny.Uni
 import it.beaesthetic.appointment.agenda.application.events.*
 import it.beaesthetic.appointment.agenda.config.ReminderConfiguration
 import it.beaesthetic.appointment.agenda.domain.event.*
-import it.beaesthetic.appointment.agenda.generated.api.ActivitiesAdminApi
+import it.beaesthetic.appointment.agenda.generated.api.AdminActivitiesApi
 import it.beaesthetic.appointment.agenda.generated.api.model.*
 import it.beaesthetic.appointment.service.common.uniWithScope
 import java.time.OffsetDateTime
@@ -26,7 +26,7 @@ class AgendaController(
     private val deleteAgendaScheduleHandler: DeleteAgendaScheduleHandler,
     private val queryHandler: AgendaQueryHandler,
     private val reminderConfiguration: ReminderConfiguration
-) : ActivitiesAdminApi {
+) : AdminActivitiesApi {
 
     override fun createAgendaActivity(
         createAgendaActivityMixin: CreateAgendaActivityMixin

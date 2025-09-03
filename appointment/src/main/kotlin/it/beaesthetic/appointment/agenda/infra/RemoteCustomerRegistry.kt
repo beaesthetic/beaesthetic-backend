@@ -3,9 +3,9 @@ package it.beaesthetic.appointment.agenda.infra
 import io.smallrye.mutiny.coroutines.awaitSuspending
 import it.beaesthetic.appointment.agenda.domain.event.Customer
 import it.beaesthetic.appointment.agenda.domain.event.CustomerRegistry
-import it.beaesthetic.generated.customer.client.api.CustomersApi
+import it.beaesthetic.generated.customer.client.api.CustomersAdminApi
 
-class RemoteCustomerRegistry(private val customersApi: CustomersApi) : CustomerRegistry {
+class RemoteCustomerRegistry(private val customersApi: CustomersAdminApi) : CustomerRegistry {
     override suspend fun findByCustomerId(customerId: String): Customer? {
         return customersApi
             .getCustomerById(customerId)
