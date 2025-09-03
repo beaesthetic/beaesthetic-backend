@@ -25,7 +25,7 @@ paths:
   /admin/activities:
     post:
       tags:
-        - activities
+        - admin-activities
       summary: Create a new agenda event
       operationId: createAgendaActivity
       requestBody:
@@ -57,7 +57,7 @@ paths:
       summary: Get appointments by time range and customer ID
       operationId: getAppointmentsByTimeRangeOrCustomer
       tags:
-        - activities
+        - admin-activities
       parameters:
         - name: start
           in: query
@@ -95,7 +95,7 @@ paths:
       operationId: updateActivity
       summary: Update an activity
       tags:
-        - activities
+        - admin-activities
       parameters:
         - name: activityId
           in: path
@@ -124,7 +124,7 @@ paths:
       summary: Delete an activity
       operationId: deleteActivity
       tags:
-        - activities-admin
+        - admin-activities
       parameters:
         - name: activityId
           in: path
@@ -160,7 +160,7 @@ paths:
       summary: Get an activity by ID
       operationId: getActivityById
       tags:
-        - activities
+        - admin-activities
       parameters:
         - name: activityId
           in: path
