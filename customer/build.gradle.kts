@@ -198,7 +198,7 @@ tasks.register<GenerateTask>("fidelity-card-api") {
   )
 
   importMappings.putAll(
-    mapOf("VoucherDto" to "it.beaesthetic.fidelity.rest.serialization.VoucherItemMixin")
+    mapOf("VoucherDto" to "it.beaesthetic.fidelity.http.serialization.VoucherItemMixin")
   )
   typeMappings.putAll(mapOf("VoucherDto" to "VoucherItemMixin"))
 }
@@ -245,7 +245,7 @@ tasks.register<GenerateTask>("wallet-api") {
   )
 
   importMappings.putAll(
-    mapOf("WalletOperationDto" to "it.beaesthetic.wallet.rest.serialization.WalletEventDtoMixin")
+    mapOf("WalletOperationDto" to "it.beaesthetic.wallet.http.serialization.WalletEventDtoMixin")
   )
   typeMappings.putAll(mapOf("WalletOperationDto" to "WalletEventDtoMixin"))
 }

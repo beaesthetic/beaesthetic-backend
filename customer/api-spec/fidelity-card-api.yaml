@@ -209,7 +209,7 @@ components:
           treatmentDiscount: "#/components/schemas/TreatmentDiscountVoucher"
 
     FreeVoucher:
-      x-implements: "it.beaesthetic.fidelity.rest.serialization.VoucherItemMixin"
+      x-implements: "it.beaesthetic.fidelity.http.serialization.VoucherItemMixin"
       type: object
       properties:
         id:
@@ -222,7 +222,7 @@ components:
         treatment:
           $ref: "#/components/schemas/SupportedVoucherTreatment"
     DiscountVoucher:
-      x-implements: "it.beaesthetic.fidelity.rest.serialization.VoucherItemMixin"
+      x-implements: "it.beaesthetic.fidelity.http.serialization.VoucherItemMixin"
       type: object
       properties:
         id:
@@ -235,7 +235,7 @@ components:
         amount:
           type: number
     TreatmentDiscountVoucher:
-      x-implements: "it.beaesthetic.fidelity.rest.serialization.VoucherItemMixin"
+      x-implements: "it.beaesthetic.fidelity.http.serialization.VoucherItemMixin"
       type: object
       properties:
         id:
