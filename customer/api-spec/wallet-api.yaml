@@ -198,7 +198,7 @@ components:
         - $ref: '#/components/schemas/GiftCardMoneyExpiredEvent'
 
     MoneyCreditedEvent:
-      x-implements: it.beaesthetic.wallet.rest.serialization.WalletEventDtoMixin
+      x-implements: it.beaesthetic.wallet.http.serialization.WalletEventDtoMixin
       type: object
       properties:
         amount:
@@ -208,7 +208,7 @@ components:
           format: date-time
 
     GiftCardMoneyCreditedEvent:
-      x-implements: it.beaesthetic.wallet.rest.serialization.WalletEventDtoMixin
+      x-implements: it.beaesthetic.wallet.http.serialization.WalletEventDtoMixin
       type: object
       properties:
         giftCardId:
@@ -223,7 +223,7 @@ components:
           format: date-time
 
     GiftCardMoneyExpiredEvent:
-      x-implements: it.beaesthetic.wallet.rest.serialization.WalletEventDtoMixin
+      x-implements: it.beaesthetic.wallet.http.serialization.WalletEventDtoMixin
       type: object
       properties:
         giftCardId:
@@ -235,7 +235,7 @@ components:
           type: number
 
     MoneyChargedEvent:
-      x-implements: it.beaesthetic.wallet.rest.serialization.WalletEventDtoMixin
+      x-implements: it.beaesthetic.wallet.http.serialization.WalletEventDtoMixin
       type: object
       properties:
         amount:
