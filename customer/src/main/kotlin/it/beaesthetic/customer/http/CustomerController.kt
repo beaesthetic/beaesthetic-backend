@@ -12,6 +12,7 @@ import it.beaesthetic.customer.domain.CustomerRepository
 import it.beaesthetic.customer.generated.api.CustomersAdminApi
 import it.beaesthetic.customer.generated.api.model.*
 import it.beaesthetic.customer.http.CustomerController.ResourceMapper.toResource
+import jakarta.ws.rs.ClientErrorException
 import jakarta.ws.rs.NotFoundException
 import jakarta.ws.rs.WebApplicationException
 import jakarta.ws.rs.core.Response
@@ -95,6 +96,14 @@ class CustomerController(
         cacheWrapper.getOrLoad(customerSearchCache, limit, filter) {
             customerRepository.findByKeyword(filter ?: "", limit ?: 10).map { it.toResource() }
         }
+
+    override suspend fun searchCustomerByPhone(
+        searchCustomerByPhoneRequestDto: SearchCustomerByPhoneRequestDto
+    ): CustomerResponseDto {
+        return customerReadRepository
+            .findByPhoneNumber(searchCustomerByPhoneRequestDto.phone)
+            ?.toResource() ?: throw ClientErrorException(Response.Status.NOT_FOUND)
+    }
 
     object ResourceMapper {
         fun Customer.toResource() =
