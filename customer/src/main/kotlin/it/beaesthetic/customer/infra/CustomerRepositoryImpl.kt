@@ -1,5 +1,6 @@
 package it.beaesthetic.customer.infra
 
+import com.mongodb.client.model.Filters
 import io.quarkus.mongodb.FindOptions
 import io.quarkus.mongodb.panache.kotlin.reactive.ReactivePanacheMongoRepository
 import io.quarkus.panache.common.Sort
@@ -87,6 +88,14 @@ class CustomerRepositoryImpl(
             return true
         }
         return false
+    }
+
+    override suspend fun findByPhoneNumber(phoneNumber: String): Customer? {
+        return panacheCustomerRepository
+            .find(Filters.eq("phone", phoneNumber))
+            .firstResult()
+            .map { entity -> entity?.let { toDomain(entity) } }
+            .awaitSuspending()
     }
 
     override suspend fun findNextPage(

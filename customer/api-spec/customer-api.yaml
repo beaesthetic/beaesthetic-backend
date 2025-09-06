@@ -66,6 +66,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CustomersPaginated'
+
+  /customers/search:byPhone:
+    post:
+      summary: Search by phone number
+      operationId: searchCustomerByPhone
+      tags:
+        - customers-admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone:
+                  type: string
+              required: [phone]
+      responses:
+        "200":
+          description: "Better customer match for given phone number"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        "404":
+          description: "No customer matching found"
+
   /customers/search:
     get:
       summary: Search for customers

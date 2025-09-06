@@ -4,6 +4,9 @@ import io.quarkus.panache.common.Sort
 import it.beaesthetic.customer.domain.Customer
 
 interface CustomerReadRepository {
+
+    suspend fun findByPhoneNumber(phoneNumber: String): Customer?
+
     suspend fun findNextPage(
         pageToken: String?,
         limit: Int?,
