@@ -42,12 +42,13 @@ class CustomerController(
     override suspend fun updateCustomerById(
         customerId: String,
         customerUpdateDto: CustomerUpdateDto,
-    ): CustomerResponseDto =
-        cacheWrapper.getOrLoad(customerCache, customerId) {
+    ): CustomerResponseDto {
+        return cacheWrapper.loadAndInvalidate(customerCache, customerId) {
             customerService
                 .updateCustomer(customerId = CustomerId(customerId), updateDto = customerUpdateDto)
                 ?.toResource() ?: throw NotFoundException()
         }
+    }
 
     override suspend fun getCustomerById(customerId: String): CustomerResponseDto =
         cacheWrapper.getOrLoad(customerCache, customerId) {
