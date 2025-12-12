@@ -3,12 +3,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
-  kotlin("jvm") version "2.1.21"
-  kotlin("plugin.allopen") version "2.1.21"
+  kotlin("jvm") version "2.2.21"
+  kotlin("plugin.allopen") version "2.2.21"
   id("io.quarkus")
-  id("org.openapi.generator") version "7.5.0"
-  id("com.diffplug.spotless") version "7.0.3"
-  kotlin("kapt") version "2.1.21"
+  id("org.openapi.generator") version "7.17.0"
+  id("com.diffplug.spotless") version "7.2.1"
+  kotlin("kapt") version "2.2.21"
 }
 
 repositories {
@@ -22,11 +22,11 @@ val quarkusPlatformVersion: String by project
 
 dependencies {
   implementation(
-    platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.10.0")
+    platform("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom:2.22.0")
   )
 
   // functional - fp
-  implementation("io.arrow-kt:arrow-core:2.1.2")
+  implementation("io.arrow-kt:arrow-core:2.2.0")
 
   // quarkus
   implementation(
@@ -44,11 +44,11 @@ dependencies {
   implementation("io.quarkus:quarkus-kotlin")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("io.quarkus:quarkus-mongodb-panache-kotlin")
-  implementation("io.smallrye.reactive:mutiny-kotlin:2.9.0")
+  implementation("io.smallrye.reactive:mutiny-kotlin:2.9.5")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
   // vertx-lang-kotlin-coroutines
-  implementation("io.vertx:vertx-lang-kotlin-coroutines:5.0.0")
+  implementation("io.vertx:vertx-lang-kotlin-coroutines:5.0.5")
 
   // validation
   implementation("io.quarkus:quarkus-hibernate-validator")
@@ -68,8 +68,8 @@ dependencies {
   implementation(kotlin("reflect"))
 
   // mapstruct
-  implementation("org.mapstruct:mapstruct:1.5.5.Final")
-  kapt("org.mapstruct:mapstruct-processor:1.5.5.Final")
+  implementation("org.mapstruct:mapstruct:1.6.3")
+  kapt("org.mapstruct:mapstruct-processor:1.6.3")
 
   testImplementation("io.quarkus:quarkus-junit5")
 }
