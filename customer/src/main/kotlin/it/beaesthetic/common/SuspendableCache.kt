@@ -23,6 +23,11 @@ class SuspendableCache(private val vertx: Vertx) {
         return cache.getAsync(cacheKey) { uni(coroutineScope, loader) }.awaitSuspending()
     }
 
+    suspend fun <V> loadAndInvalidate(cache: Cache, vararg keys: Any?, loader: suspend () -> V): V {
+        val cacheKey = keys.filterNotNull().joinToString(":")
+        return loader.invoke().also { cache.invalidate(cacheKey) }
+    }
+
     suspend fun invalidateAll(cache: Cache) {
         cache.invalidateAll().awaitSuspending()
     }
