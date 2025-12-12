@@ -10,7 +10,7 @@ WORKDIR /code
 RUN ./gradlew :build -Dquarkus.package.type=native -DskipTests
 
 # also a distroless is available https://quarkus.io/guides/building-native-image#using-a-distroless-base-image
-FROM quay.io/quarkus/quarkus-micro-image:3.0 AS runtime
+FROM quay.io/quarkus/quarkus-micro-image:2.0 AS runtime
 WORKDIR /work/
 RUN chown 1001 /work \
     && chmod "g+rwX" /work \
