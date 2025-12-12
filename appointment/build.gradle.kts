@@ -3,12 +3,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
-  kotlin("jvm") version "2.0.21"
-  kotlin("plugin.allopen") version "2.0.21"
+  kotlin("jvm") version "2.2.21"
+  kotlin("plugin.allopen") version "2.2.21"
   id("io.quarkus")
-  id("org.openapi.generator") version "7.5.0"
-  id("com.diffplug.spotless") version "6.18.0"
-  kotlin("kapt") version "2.0.21"
+  id("org.openapi.generator") version "7.17.0"
+  id("com.diffplug.spotless") version "6.25.0"
+  kotlin("kapt") version "2.2.21"
 }
 
 repositories {
@@ -22,7 +22,7 @@ val quarkusPlatformVersion: String by project
 
 dependencies {
   // functional - fp
-  implementation("io.arrow-kt:arrow-core:1.1.2")
+  implementation("io.arrow-kt:arrow-core:1.2.4")
 
   // quarkus
   implementation(
@@ -40,12 +40,12 @@ dependencies {
   implementation("io.quarkus:quarkus-kotlin")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("io.quarkus:quarkus-mongodb-panache-kotlin")
-  implementation("io.smallrye.reactive:mutiny-kotlin:2.8.0")
+  implementation("io.smallrye.reactive:mutiny-kotlin:2.9.5")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
   // vertx-lang-kotlin-coroutines
   implementation("io.quarkus:quarkus-vertx")
-  implementation("io.vertx:vertx-lang-kotlin-coroutines:4.5.7")
+  implementation("io.vertx:vertx-lang-kotlin-coroutines:4.5.22")
 
   // redis
   implementation("io.quarkus:quarkus-redis-client")
@@ -69,7 +69,7 @@ dependencies {
   implementation("io.quarkus:quarkus-scheduler")
 
   // rest client generator
-  implementation("io.quarkiverse.openapi.generator:quarkus-openapi-generator:2.8.0")
+  implementation("io.quarkiverse.openapi.generator:quarkus-openapi-generator:2.13.0-lts")
   implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
 
   implementation(kotlin("reflect"))
