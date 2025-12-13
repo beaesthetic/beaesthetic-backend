@@ -83,10 +83,9 @@ group = "it.beaesthetic.appointment"
 
 version = "${properties["version"]}"
 
-java {
-  sourceCompatibility = JavaVersion.VERSION_17
-  targetCompatibility = JavaVersion.VERSION_17
-}
+java { toolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
+
+kotlin { jvmToolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
 
 tasks.withType<Test> {
   systemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager")
@@ -102,15 +101,14 @@ allOpen {
 sourceSets {
   main {
     java {
-      srcDirs("$buildDir/generated/src/main/java")
-      srcDirs("$buildDir/classes/java/quarkus-generated-sources/open-api-yaml")
+      srcDirs("${layout.buildDirectory.get()}/generated/src/main/java")
+      srcDirs("${layout.buildDirectory.get()}/classes/java/quarkus-generated-sources/open-api-yaml")
     }
   }
 }
 
 tasks.withType<KotlinCompile> {
   dependsOn("appointment-api")
-  kotlinOptions { jvmTarget = "17" }
 }
 
 configure<com.diffplug.gradle.spotless.SpotlessExtension> {
@@ -134,7 +132,7 @@ tasks.register<GenerateTask>("appointment-api") {
   group = "openapi-generation"
   generatorName.set("kotlin-server")
   inputSpec.set("$rootDir/api-spec/openapi.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.beaesthetic.appointment.agenda.generated.api")
   modelPackage.set("it.beaesthetic.appointment.agenda.generated.api.model")
   generateApiTests.set(false)
