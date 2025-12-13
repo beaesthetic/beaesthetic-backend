@@ -8,16 +8,16 @@
       "extra-files": [
         {
           "type": "generic",
-          "path": "appointment/gradle.properties",
+          "path": "gradle.properties",
           "glob": false
         },
         {
           "type": "yaml",
-          "path": "appointment/helm/Chart.yaml",
+          "path": "helm/Chart.yaml",
           "jsonpath": "$.appVersion"
         }
       ],
-      "changelog-path": "appointment/CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md"
     },
     "customer": {
       "release-type": "simple",
@@ -27,16 +27,16 @@
       "extra-files": [
         {
           "type": "generic",
-          "path": "customer/gradle.properties",
+          "path": "gradle.properties",
           "glob": false
         },
         {
           "type": "yaml",
-          "path": "customer/helm/Chart.yaml",
+          "path": "helm/Chart.yaml",
           "jsonpath": "$.appVersion"
         }
       ],
-      "changelog-path": "customer/CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md"
     },
     "gateway": {
       "release-type": "simple",
@@ -46,16 +46,16 @@
       "extra-files": [
         {
           "type": "generic",
-          "path": "gateway/gradle.properties",
+          "path": "gradle.properties",
           "glob": false
         },
         {
           "type": "yaml",
-          "path": "gateway/helm/Chart.yaml",
+          "path": "helm/Chart.yaml",
           "jsonpath": "$.appVersion"
         }
       ],
-      "changelog-path": "gateway/CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md"
     },
     "notification": {
       "release-type": "simple",
@@ -65,16 +65,16 @@
       "extra-files": [
         {
           "type": "generic",
-          "path": "notification/gradle.properties",
+          "path": "gradle.properties",
           "glob": false
         },
         {
           "type": "yaml",
-          "path": "notification/helm/Chart.yaml",
+          "path": "helm/Chart.yaml",
           "jsonpath": "$.appVersion"
         }
       ],
-      "changelog-path": "notification/CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md"
     },
     "scheduler": {
       "release-type": "simple",
@@ -84,16 +84,16 @@
       "extra-files": [
         {
           "type": "generic",
-          "path": "scheduler/gradle.properties",
+          "path": "gradle.properties",
           "glob": false
         },
         {
           "type": "yaml",
-          "path": "scheduler/helm/Chart.yaml",
+          "path": "helm/Chart.yaml",
           "jsonpath": "$.appVersion"
         }
       ],
-      "changelog-path": "scheduler/CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md"
     },
     "insights": {
       "release-type": "simple",
@@ -103,16 +103,16 @@
       "extra-files": [
         {
           "type": "generic",
-          "path": "insights/gradle.properties",
+          "path": "gradle.properties",
           "glob": false
         },
         {
           "type": "yaml",
-          "path": "insights/helm/Chart.yaml",
+          "path": "helm/Chart.yaml",
           "jsonpath": "$.appVersion"
         }
       ],
-      "changelog-path": "insights/CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md"
     }
   },
   "changelog-sections": [
