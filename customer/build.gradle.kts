@@ -93,7 +93,7 @@ allOpen {
   annotation("io.quarkus.test.junit.QuarkusTest")
 }
 
-sourceSets { main { java { srcDirs("$buildDir/generated/src/main/java") } } }
+sourceSets { main { java { srcDirs("${layout.buildDirectory.get()}/generated/src/main/java") } } }
 
 tasks.withType<KotlinCompile> {
   dependsOn("wallet-api", "customer-api", "fidelity-card-api")
@@ -121,7 +121,7 @@ tasks.register<GenerateTask>("customer-api") {
   group = "openapi-generation"
   generatorName.set("kotlin-server")
   inputSpec.set("$rootDir/api-spec/customer-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.beaesthetic.customer.generated.api")
   modelPackage.set("it.beaesthetic.customer.generated.api.model")
   generateApiTests.set(false)
@@ -161,7 +161,7 @@ tasks.register<GenerateTask>("fidelity-card-api") {
   group = "openapi-generation"
   generatorName.set("kotlin-server")
   inputSpec.set("$rootDir/api-spec/fidelity-card-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.beaesthetic.fidelity.generated.api")
   modelPackage.set("it.beaesthetic.fidelity.generated.api.model")
   generateApiTests.set(false)
@@ -208,7 +208,7 @@ tasks.register<GenerateTask>("wallet-api") {
   group = "openapi-generation"
   generatorName.set("kotlin-server")
   inputSpec.set("$rootDir/api-spec/wallet-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.beaesthetic.wallet.generated.api")
   modelPackage.set("it.beaesthetic.wallet.generated.api.model")
   generateApiTests.set(false)
