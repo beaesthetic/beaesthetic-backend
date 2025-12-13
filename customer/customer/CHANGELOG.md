@@ -1,0 +1,56 @@
+# Changelog
+
+## [1.10.0](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-1.9.2...customer-service-v1.10.0) (2025-12-13)
+
+
+### Features
+
+* added api under admin path ([3582cfe](https://github.com/beaesthetic/beaesthetic-backend/commit/3582cfed42b612a9840756b0a2363b9dbd856830))
+* added customer pagination ([#8](https://github.com/beaesthetic/beaesthetic-backend/issues/8)) ([03e3a19](https://github.com/beaesthetic/beaesthetic-backend/commit/03e3a1967332fb1b23f5c6057557f77eb8dcd252))
+* added fidelity card read model ([a9d5e1d](https://github.com/beaesthetic/beaesthetic-backend/commit/a9d5e1dc816f2b2d89dd673c5a93892e13afaed5))
+* added fidelity card read model ([bf963c6](https://github.com/beaesthetic/beaesthetic-backend/commit/bf963c62227d608b17805d5817845bea03c8102e))
+* allow customer search by phone number ([2c7ef27](https://github.com/beaesthetic/beaesthetic-backend/commit/2c7ef277996f2620f5559c91d2f86798a8593ff8))
+* **customer:** add naive outbox ([e9e27b6](https://github.com/beaesthetic/beaesthetic-backend/commit/e9e27b6803f0c22423a966e7f1715f2857db6325))
+* **customer:** allows to change max redis pool waiting connection ([ea24f0d](https://github.com/beaesthetic/beaesthetic-backend/commit/ea24f0d4b73cbf8dd6a15a4cbce78628be7b2aa9))
+* **customer:** fix rest and outbox wrapper ([3ad07d4](https://github.com/beaesthetic/beaesthetic-backend/commit/3ad07d4c21eaf79019c8c9bdb7ace60dabe271ad))
+* read model wallet customer ([db9f75d](https://github.com/beaesthetic/beaesthetic-backend/commit/db9f75dda41f66fdf3cd71d098b53922198c889d))
+* stable pagination customer ([aa88e3d](https://github.com/beaesthetic/beaesthetic-backend/commit/aa88e3d9527a9d750f86efac930244ae0c0730c8))
+
+
+### Bug Fixes
+
+* add customer pagination ([35643d1](https://github.com/beaesthetic/beaesthetic-backend/commit/35643d17eed1d3b9b6faa0b093f39450d8862946))
+* **appointment:** remove composite kotlin build + refactor docker ([d5ae28a](https://github.com/beaesthetic/beaesthetic-backend/commit/d5ae28ae18e07e68cab1e3570ae95be7ab9a78e6))
+* base docker image customers ([b61be17](https://github.com/beaesthetic/beaesthetic-backend/commit/b61be17dfd5990c1d851b033a1c8d8c89c3353ef))
+* customer code style ([6f6e3c4](https://github.com/beaesthetic/beaesthetic-backend/commit/6f6e3c4e63e406e9dcb89ed77fa7df08db485c8e))
+* customer delete ([36b4983](https://github.com/beaesthetic/beaesthetic-backend/commit/36b49833e405c53e90e92ab1476c4b90345247a3))
+* customer docker build ([30d3706](https://github.com/beaesthetic/beaesthetic-backend/commit/30d37060ba38c74788e5f75eee76500125d83c08))
+* **customer:** add failure supervisor job + fix event name ([afb9f0c](https://github.com/beaesthetic/beaesthetic-backend/commit/afb9f0ce1ecd620297bd8c36182a692df9c0a783))
+* **customer:** add get /wallets ([077b3b0](https://github.com/beaesthetic/beaesthetic-backend/commit/077b3b0d260721cec51bc8cd724eb7f8b7377373))
+* **customer:** added phone with prefix and number ([a84aecf](https://github.com/beaesthetic/beaesthetic-backend/commit/a84aecf4e2210e9c6a52a35a4e07b880355894d4))
+* **customer:** added updated at to wallet response ([4513e2e](https://github.com/beaesthetic/beaesthetic-backend/commit/4513e2ed53f129d07b5724b126188be7ec29a4a4))
+* **customer:** enabled opentelemetry ([0ad0269](https://github.com/beaesthetic/beaesthetic-backend/commit/0ad02695b354abfc168d0aa46be2938853eef5fb))
+* **customer:** fix outbox serialization ([97e9e23](https://github.com/beaesthetic/beaesthetic-backend/commit/97e9e23708e31e9f521e46f6079b82db9a904dad))
+* **customer:** fix outbox trigger ([8871736](https://github.com/beaesthetic/beaesthetic-backend/commit/88717367a39a9c3d1f46dfaa9899f70b05ff2f7a))
+* **customer:** free voucher dto enum ([fbdd88b](https://github.com/beaesthetic/beaesthetic-backend/commit/fbdd88b2591423693183b58b4191fb8ce6647b30))
+* **customer:** indexing activegiftcards id ([115d424](https://github.com/beaesthetic/beaesthetic-backend/commit/115d424c076e9371501dc22b934c52c27626fe77))
+* **customer:** map struct as cdi quarkus ([cadacd7](https://github.com/beaesthetic/beaesthetic-backend/commit/cadacd7a7ec4244fdd973ab1d0fdc2da6a74dd46))
+* **customer:** map struct as cdi quarkus ([f266b5d](https://github.com/beaesthetic/beaesthetic-backend/commit/f266b5d1285cde626d4d4a41c31d137bf42b4491))
+* **customer:** missing fidelity card save ([b114dbb](https://github.com/beaesthetic/beaesthetic-backend/commit/b114dbb02925a73216f2282942dad7b3db767951))
+* **customer:** missing reflection responses ([99eb9f7](https://github.com/beaesthetic/beaesthetic-backend/commit/99eb9f7166910a101ea7f76eb5e2a2f6147d687b))
+* **customer:** nullable customer surname ([ca6584d](https://github.com/beaesthetic/beaesthetic-backend/commit/ca6584d26313c88b7ef21fe12fbbfc53530cb144))
+* **customer:** ordering operaiton on wallet ([7b968dc](https://github.com/beaesthetic/beaesthetic-backend/commit/7b968dcfe8a400b33bc261b7175b8a963cef165f))
+* **customer:** spotless ([14798a7](https://github.com/beaesthetic/beaesthetic-backend/commit/14798a70ddb3cff5184c23adb2d45560b03afd15))
+* **customer:** switch to new customer service + fix fidelity find ([c17c0b3](https://github.com/beaesthetic/beaesthetic-backend/commit/c17c0b365af93f5d2b57e4fb91d7cb736f16c3a6))
+* **deps:** update customer service ([#23](https://github.com/beaesthetic/beaesthetic-backend/issues/23)) ([2a04b56](https://github.com/beaesthetic/beaesthetic-backend/commit/2a04b56a4471dd7782d186fae13a59f76dabf215))
+* gradle build files ([ee676de](https://github.com/beaesthetic/beaesthetic-backend/commit/ee676dec868ade97259d8704c2f604cc5e04fc7f))
+* handle null field customer page token ([6a48812](https://github.com/beaesthetic/beaesthetic-backend/commit/6a48812c198f467fea58e59f5d64df6ff15dddf4))
+* http mixin ([21b3776](https://github.com/beaesthetic/beaesthetic-backend/commit/21b3776aeea48b954870005147d9ae417e3e2c79))
+* implemented customer delete ([c836504](https://github.com/beaesthetic/beaesthetic-backend/commit/c8365043affba05b9e5c936137ad127a5d6eb527))
+* inject named cache ([2e1e027](https://github.com/beaesthetic/beaesthetic-backend/commit/2e1e02792188493c840f3f1c251c6fee6c668e46))
+* join ([3374435](https://github.com/beaesthetic/beaesthetic-backend/commit/33744357e00e91f6a563412e93f40ad3fecdd910))
+* mongo instrumentation customers ([9b01c43](https://github.com/beaesthetic/beaesthetic-backend/commit/9b01c4376880ffbc2547cad288c854bdfdec8715))
+* register reflection payloads ([f6cb719](https://github.com/beaesthetic/beaesthetic-backend/commit/f6cb719b65f674bc604638042026ebe04e910141))
+* update customer data ([62b0478](https://github.com/beaesthetic/beaesthetic-backend/commit/62b0478079fd1c5979dd5058c50783dfa6d6ed63))
+* update customer service to quarkus 3.22 ([4a50ee0](https://github.com/beaesthetic/beaesthetic-backend/commit/4a50ee0eaa5591822adabca8a9a29039f100ad14))
+* using corouting for cache control ([7be8cbf](https://github.com/beaesthetic/beaesthetic-backend/commit/7be8cbf7866ca9c40a56ea06dbd0733a4f79801d))
