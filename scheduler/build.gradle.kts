@@ -3,15 +3,15 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
-  kotlin("jvm") version "1.9.22"
-  kotlin("plugin.spring") version "1.9.22"
-  kotlin("plugin.allopen") version "1.9.22"
-  id("org.springframework.boot") version "3.3.2"
-  id("io.spring.dependency-management") version "1.1.6"
-  id("org.graalvm.buildtools.native") version "0.10.2"
-  id("org.openapi.generator") version "7.5.0"
-  id("com.diffplug.spotless") version "6.18.0"
-  kotlin("kapt") version "1.7.0"
+  kotlin("jvm") version "1.9.25"
+  kotlin("plugin.spring") version "1.9.25"
+  kotlin("plugin.allopen") version "1.9.25"
+  id("org.springframework.boot") version "3.5.8"
+  id("io.spring.dependency-management") version "1.1.7"
+  id("org.graalvm.buildtools.native") version "0.11.3"
+  id("org.openapi.generator") version "7.17.0"
+  id("com.diffplug.spotless") version "6.25.0"
+  kotlin("kapt") version "1.9.25"
 }
 
 repositories {
@@ -29,7 +29,7 @@ configurations {
 
 dependencies {
   // functional - fp
-  implementation("io.arrow-kt:arrow-core:1.1.2")
+  implementation("io.arrow-kt:arrow-core:1.2.4")
 
   // kotlin
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -52,9 +52,9 @@ dependencies {
   implementation("jakarta.xml.bind:jakarta.xml.bind-api")
 
   // openapi
-  implementation("org.openapitools:openapi-generator-gradle-plugin:6.5.0")
-  implementation("org.openapitools:jackson-databind-nullable:0.2.6")
-  implementation("io.swagger.core.v3:swagger-annotations:2.2.22")
+  implementation("org.openapitools:openapi-generator-gradle-plugin:6.6.0")
+  implementation("org.openapitools:jackson-databind-nullable:0.2.8")
+  implementation("io.swagger.core.v3:swagger-annotations:2.2.41")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("org.springframework.amqp:spring-rabbit-test")
