@@ -6,11 +6,7 @@
       "include-component-in-tag": true,
       "component": "appointment-service",
       "extra-files": [
-        {
-          "type": "generic",
-          "path": "gradle.properties",
-          "glob": false
-        },
+        "gradle.properties",
         {
           "type": "yaml",
           "path": "helm/Chart.yaml",
@@ -25,11 +21,7 @@
       "include-component-in-tag": true,
       "component": "customer-service",
       "extra-files": [
-        {
-          "type": "generic",
-          "path": "gradle.properties",
-          "glob": false
-        },
+        "gradle.properties",
         {
           "type": "yaml",
           "path": "helm/Chart.yaml",
@@ -44,11 +36,7 @@
       "include-component-in-tag": true,
       "component": "gateway",
       "extra-files": [
-        {
-          "type": "generic",
-          "path": "gradle.properties",
-          "glob": false
-        },
+        "gradle.properties",
         {
           "type": "yaml",
           "path": "helm/Chart.yaml",
@@ -63,11 +51,7 @@
       "include-component-in-tag": true,
       "component": "notification-service",
       "extra-files": [
-        {
-          "type": "generic",
-          "path": "gradle.properties",
-          "glob": false
-        },
+        "gradle.properties",
         {
           "type": "yaml",
           "path": "helm/Chart.yaml",
@@ -82,11 +66,7 @@
       "include-component-in-tag": true,
       "component": "scheduler-service",
       "extra-files": [
-        {
-          "type": "generic",
-          "path": "gradle.properties",
-          "glob": false
-        },
+        "gradle.properties",
         {
           "type": "yaml",
           "path": "helm/Chart.yaml",
@@ -101,11 +81,7 @@
       "include-component-in-tag": true,
       "component": "insights",
       "extra-files": [
-        {
-          "type": "generic",
-          "path": "gradle.properties",
-          "glob": false
-        },
+        "gradle.properties",
         {
           "type": "yaml",
           "path": "helm/Chart.yaml",
