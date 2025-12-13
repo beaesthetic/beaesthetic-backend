@@ -6,8 +6,16 @@
       "include-component-in-tag": true,
       "component": "appointment-service",
       "extra-files": [
-        "appointment/gradle.properties",
-        "appointment/helm/Chart.yaml"
+        {
+          "type": "generic",
+          "path": "appointment/gradle.properties",
+          "glob": false
+        },
+        {
+          "type": "yaml",
+          "path": "appointment/helm/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
       ],
       "changelog-path": "appointment/CHANGELOG.md"
     },
@@ -17,8 +25,16 @@
       "include-component-in-tag": true,
       "component": "customer-service",
       "extra-files": [
-        "customer/gradle.properties",
-        "customer/helm/Chart.yaml"
+        {
+          "type": "generic",
+          "path": "customer/gradle.properties",
+          "glob": false
+        },
+        {
+          "type": "yaml",
+          "path": "customer/helm/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
       ],
       "changelog-path": "customer/CHANGELOG.md"
     },
@@ -28,8 +44,16 @@
       "include-component-in-tag": true,
       "component": "gateway",
       "extra-files": [
-        "gateway/gradle.properties",
-        "gateway/helm/Chart.yaml"
+        {
+          "type": "generic",
+          "path": "gateway/gradle.properties",
+          "glob": false
+        },
+        {
+          "type": "yaml",
+          "path": "gateway/helm/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
       ],
       "changelog-path": "gateway/CHANGELOG.md"
     },
@@ -39,8 +63,16 @@
       "include-component-in-tag": true,
       "component": "notification-service",
       "extra-files": [
-        "notification/gradle.properties",
-        "notification/helm/Chart.yaml"
+        {
+          "type": "generic",
+          "path": "notification/gradle.properties",
+          "glob": false
+        },
+        {
+          "type": "yaml",
+          "path": "notification/helm/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
       ],
       "changelog-path": "notification/CHANGELOG.md"
     },
@@ -50,8 +82,16 @@
       "include-component-in-tag": true,
       "component": "scheduler-service",
       "extra-files": [
-        "scheduler/gradle.properties",
-        "scheduler/helm/Chart.yaml"
+        {
+          "type": "generic",
+          "path": "scheduler/gradle.properties",
+          "glob": false
+        },
+        {
+          "type": "yaml",
+          "path": "scheduler/helm/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
       ],
       "changelog-path": "scheduler/CHANGELOG.md"
     },
@@ -61,13 +101,20 @@
       "include-component-in-tag": true,
       "component": "insights",
       "extra-files": [
-        "insights/gradle.properties",
-        "insights/helm/Chart.yaml"
+        {
+          "type": "generic",
+          "path": "insights/gradle.properties",
+          "glob": false
+        },
+        {
+          "type": "yaml",
+          "path": "insights/helm/Chart.yaml",
+          "jsonpath": "$.appVersion"
+        }
       ],
       "changelog-path": "insights/CHANGELOG.md"
     }
   },
-  "bootstrap-sha": "1082de9c8f5e8f8e8f8e8f8e8f8e8f8e8f8e8f8e",
   "changelog-sections": [
     {"type": "feat", "section": "Features"},
     {"type": "feature", "section": "Features"},
