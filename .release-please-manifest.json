@@ -1,0 +1,8 @@
+{
+  "appointment": "1.8.0",
+  "customer": "1.9.2",
+  "gateway": "1.3.0",
+  "notification": "1.0.7",
+  "scheduler": "1.1.2",
+  "insights": "1.1.0"
+}

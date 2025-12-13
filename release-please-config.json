@@ -1,0 +1,85 @@
+{
+  "packages": {
+    "appointment": {
+      "release-type": "simple",
+      "package-name": "appointment-service",
+      "include-component-in-tag": true,
+      "component": "appointment-service",
+      "extra-files": [
+        "appointment/gradle.properties",
+        "appointment/helm/Chart.yaml"
+      ],
+      "changelog-path": "appointment/CHANGELOG.md"
+    },
+    "customer": {
+      "release-type": "simple",
+      "package-name": "customer-service",
+      "include-component-in-tag": true,
+      "component": "customer-service",
+      "extra-files": [
+        "customer/gradle.properties",
+        "customer/helm/Chart.yaml"
+      ],
+      "changelog-path": "customer/CHANGELOG.md"
+    },
+    "gateway": {
+      "release-type": "simple",
+      "package-name": "gateway",
+      "include-component-in-tag": true,
+      "component": "gateway",
+      "extra-files": [
+        "gateway/gradle.properties",
+        "gateway/helm/Chart.yaml"
+      ],
+      "changelog-path": "gateway/CHANGELOG.md"
+    },
+    "notification": {
+      "release-type": "simple",
+      "package-name": "notification-service",
+      "include-component-in-tag": true,
+      "component": "notification-service",
+      "extra-files": [
+        "notification/gradle.properties",
+        "notification/helm/Chart.yaml"
+      ],
+      "changelog-path": "notification/CHANGELOG.md"
+    },
+    "scheduler": {
+      "release-type": "simple",
+      "package-name": "scheduler-service",
+      "include-component-in-tag": true,
+      "component": "scheduler-service",
+      "extra-files": [
+        "scheduler/gradle.properties",
+        "scheduler/helm/Chart.yaml"
+      ],
+      "changelog-path": "scheduler/CHANGELOG.md"
+    },
+    "insights": {
+      "release-type": "simple",
+      "package-name": "insights",
+      "include-component-in-tag": true,
+      "component": "insights",
+      "extra-files": [
+        "insights/gradle.properties",
+        "insights/helm/Chart.yaml"
+      ],
+      "changelog-path": "insights/CHANGELOG.md"
+    }
+  },
+  "bootstrap-sha": "1082de9c8f5e8f8e8f8e8f8e8f8e8f8e8f8e8f8e",
+  "changelog-sections": [
+    {"type": "feat", "section": "Features"},
+    {"type": "feature", "section": "Features"},
+    {"type": "fix", "section": "Bug Fixes"},
+    {"type": "perf", "section": "Performance Improvements"},
+    {"type": "revert", "section": "Reverts"},
+    {"type": "docs", "section": "Documentation"},
+    {"type": "style", "section": "Styles", "hidden": true},
+    {"type": "chore", "section": "Miscellaneous Chores", "hidden": true},
+    {"type": "refactor", "section": "Code Refactoring"},
+    {"type": "test", "section": "Tests", "hidden": true},
+    {"type": "build", "section": "Build System"},
+    {"type": "ci", "section": "Continuous Integration", "hidden": true}
+  ]
+}
