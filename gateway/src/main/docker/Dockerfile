@@ -7,7 +7,7 @@ COPY ./gateway .
 RUN chmod +x ./gradlew
 RUN ./gradlew :nativeCompile -Pnative
 
-FROM ubuntu:lunar-20230128
+FROM ubuntu:24.04
 
 EXPOSE 8080
 
