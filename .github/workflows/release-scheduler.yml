@@ -1,9 +1,8 @@
 name: Build and Push Scheduler Service
 
 on:
-  push:
-    tags:
-      - 'scheduler-service-v*'
+  release:
+    types: [published]
   workflow_dispatch:
 
 env:
@@ -14,17 +13,26 @@ jobs:
   build:
     runs-on: ubuntu-24.04-arm
     name: "Build and Push Docker image"
+    # Only run if this is a manual dispatch OR if the release tag matches this service
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'scheduler-service-v')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract version from tag
+      - name: Extract version from release
         id: version
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             VERSION=$(cat scheduler/gradle.properties | grep "^version=" | cut -d'=' -f2)
           else
-            VERSION=${GITHUB_REF#refs/tags/scheduler-service-v}
+            # Extract version from release tag (e.g., scheduler-service-v1.1.3 -> 1.1.3)
+            TAG_NAME="${{ github.event.release.tag_name }}"
+            if [[ "$TAG_NAME" =~ scheduler-service-v(.*) ]]; then
+              VERSION="${BASH_REMATCH[1]}"
+            else
+              echo "Error: Tag name doesn't match expected pattern"
+              exit 1
+            fi
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"

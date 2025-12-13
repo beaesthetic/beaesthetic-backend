@@ -1,9 +1,8 @@
 name: Build and Push Customer Service
 
 on:
-  push:
-    tags:
-      - 'customer-service-v*'
+  release:
+    types: [published]
   workflow_dispatch:
 
 env:
@@ -14,17 +13,26 @@ jobs:
   build:
     runs-on: "gha-beaesthetic-scaler"
     name: "Build and Push Docker image"
+    # Only run if this is a manual dispatch OR if the release tag matches this service
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'customer-service-v')
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract version from tag
+      - name: Extract version from release
         id: version
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             VERSION=$(cat customer/gradle.properties | grep "^version=" | cut -d'=' -f2)
           else
-            VERSION=${GITHUB_REF#refs/tags/customer-service-v}
+            # Extract version from release tag (e.g., customer-service-v1.10.0 -> 1.10.0)
+            TAG_NAME="${{ github.event.release.tag_name }}"
+            if [[ "$TAG_NAME" =~ customer-service-v(.*) ]]; then
+              VERSION="${BASH_REMATCH[1]}"
+            else
+              echo "Error: Tag name doesn't match expected pattern"
+              exit 1
+            fi
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
