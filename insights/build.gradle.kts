@@ -32,7 +32,7 @@ dependencies {
     implementation("io.quarkus:quarkus-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("io.quarkus:quarkus-mongodb-panache-kotlin")
-    implementation("io.smallrye.reactive:mutiny-kotlin:2.6.0")
+    implementation("io.smallrye.reactive:mutiny-kotlin:2.9.5")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // vertx-lang-kotlin-coroutines
