@@ -1,4 +1,4 @@
-FROM ghcr.io/graalvm/native-image-community:17.0.8 AS builder
+FROM ghcr.io/graalvm/native-image-community:17.0.9 AS builder
 WORKDIR /code
 
 RUN microdnf install -y findutils
