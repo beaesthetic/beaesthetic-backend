@@ -12,6 +12,7 @@ on:
 
 env:
   TARGET_PLATFORMS: linux/arm64
+  DOCKER_API_VERSION: 1.43
 
 jobs:
   build:
