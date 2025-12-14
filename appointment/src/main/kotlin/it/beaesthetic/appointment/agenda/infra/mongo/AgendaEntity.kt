@@ -27,7 +27,7 @@ constructor(
     @get:BsonProperty("isCancelled") @param:BsonProperty("isCancelled") val isCancelled: Boolean,
     @BsonProperty("version") val version: Long,
     @BsonProperty("createdAt") val createdAt: Instant,
-    @BsonProperty("updatedAt") val updatedAt: Instant
+    @BsonProperty("updatedAt") val updatedAt: Instant,
 ) : PanacheMongoEntityBase()
 
 @RegisterForReflection
@@ -35,7 +35,7 @@ data class AttendeeEntity
 @BsonCreator
 constructor(
     @get:BsonProperty("id") @param:BsonProperty("id") val id: String,
-    @BsonProperty("displayName") val displayName: String
+    @BsonProperty("displayName") val displayName: String,
 )
 
 @RegisterForReflection @BsonDiscriminator(key = "type") sealed interface AgendaScheduleData
@@ -44,9 +44,7 @@ constructor(
 @BsonDiscriminator(key = "type", value = "appointment")
 data class AgendaAppointmentData
 @BsonCreator
-constructor(
-    @BsonProperty("services") val services: List<String>,
-) : AgendaScheduleData
+constructor(@BsonProperty("services") val services: List<String>) : AgendaScheduleData
 
 @RegisterForReflection
 @BsonDiscriminator(key = "type", value = "event")

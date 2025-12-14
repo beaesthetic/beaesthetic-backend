@@ -6,6 +6,8 @@ import java.time.Duration
 @ConfigMapping(prefix = "reminder")
 interface ReminderConfiguration {
     fun triggerBefore(): Duration
+
     fun noSendThreshold(): Duration
+
     fun immediateSendThreshold(): Duration
 }

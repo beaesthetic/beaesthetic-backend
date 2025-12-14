@@ -29,7 +29,7 @@ class ApplicationServiceController(
                     name = createServiceRequestDto.name,
                     price = createServiceRequestDto.price.toDouble(),
                     tags = createServiceRequestDto.tags?.toSet() ?: emptySet(),
-                    color = createServiceRequestDto.color?.let { Color(it) }
+                    color = createServiceRequestDto.color?.let { Color(it) },
                 )
 
             applicationServiceRepository
@@ -40,7 +40,7 @@ class ApplicationServiceController(
                         name = it.name,
                         price = it.price.toBigDecimal(),
                         tags = it.tags.toList(),
-                        color = it.color?.hex
+                        color = it.color?.hex,
                     )
                 }
                 .getOrThrow()
@@ -54,7 +54,7 @@ class ApplicationServiceController(
                 name = it.name,
                 price = it.price.toBigDecimal(),
                 tags = it.tags.toList(),
-                color = it.color?.hex
+                color = it.color?.hex,
             )
         }
     }
@@ -62,7 +62,7 @@ class ApplicationServiceController(
     @CacheResult(cacheName = "services-search")
     override fun searchService(
         @CacheKey text: String?,
-        @CacheKey limit: Int
+        @CacheKey limit: Int,
     ): Uni<List<ServiceDto>> = uniWithScope {
         applicationServiceRepository.searchByName(text ?: "", limit).map {
             ServiceDto(
@@ -70,7 +70,7 @@ class ApplicationServiceController(
                 name = it.name,
                 price = it.price.toBigDecimal(),
                 tags = it.tags.toList(),
-                color = it.color?.hex
+                color = it.color?.hex,
             )
         }
     }
@@ -79,17 +79,16 @@ class ApplicationServiceController(
     @CacheInvalidateAll(cacheName = "all-services")
     override fun updateService(
         serviceId: String,
-        updateServiceRequestDto: UpdateServiceRequestDto
+        updateServiceRequestDto: UpdateServiceRequestDto,
     ): Uni<ServiceDto> = uniWithScope {
         val appointmentService =
             applicationServiceRepository.findById(serviceId)?.let {
                 it.copy(
                     price = updateServiceRequestDto.price?.toDouble() ?: it.price,
                     tags = updateServiceRequestDto.tags?.toSet() ?: it.tags,
-                    color = updateServiceRequestDto.color?.let { c -> Color(c) } ?: it.color
+                    color = updateServiceRequestDto.color?.let { c -> Color(c) } ?: it.color,
                 )
-            }
-                ?: throw NoSuchElementException("Service with id $serviceId not found")
+            } ?: throw NoSuchElementException("Service with id $serviceId not found")
         applicationServiceRepository
             .save(appointmentService)
             .map {
@@ -98,7 +97,7 @@ class ApplicationServiceController(
                     name = it.name,
                     price = it.price.toBigDecimal(),
                     tags = it.tags.toList(),
-                    color = it.color?.hex
+                    color = it.color?.hex,
                 )
             }
             .getOrThrow()

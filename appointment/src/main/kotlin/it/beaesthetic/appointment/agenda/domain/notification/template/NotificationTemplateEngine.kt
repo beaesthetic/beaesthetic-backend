@@ -4,7 +4,7 @@ import it.beaesthetic.appointment.agenda.domain.notification.Notification
 
 class NotificationTemplateEngine(
     private val templates: List<NotificationTemplate>,
-    private val fallbackTemplate: NotificationTemplate?
+    private val fallbackTemplate: NotificationTemplate?,
 ) {
 
     fun process(event: Notification): Result<String> {
@@ -18,11 +18,13 @@ class NotificationTemplateEngine(
 
     companion object {
         fun builder() = Builder()
+
         data class Builder(
             private var templates: List<NotificationTemplate> = emptyList(),
-            private var fallbackTemplate: NotificationTemplate? = null
+            private var fallbackTemplate: NotificationTemplate? = null,
         ) {
             fun add(template: NotificationTemplate) = copy(templates = templates + template)
+
             fun fallback(template: NotificationTemplate) = copy(fallbackTemplate = template)
 
             fun build(): NotificationTemplateEngine {

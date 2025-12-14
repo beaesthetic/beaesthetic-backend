@@ -112,7 +112,7 @@ class MongoAppointmentServiceRepository(
                 name = entity.name,
                 price = entity.price,
                 tags = entity.tags.toSet(),
-                color = entity.colorHex?.let { Color(it) }
+                color = entity.colorHex?.let { Color(it) },
             )
 
         fun toEntity(service: AppointmentService): AppointmentServiceEntity =
@@ -121,7 +121,7 @@ class MongoAppointmentServiceRepository(
                 name = service.name,
                 price = service.price,
                 tags = service.tags.toList(),
-                colorHex = service.color?.hex
+                colorHex = service.color?.hex,
             )
     }
 }

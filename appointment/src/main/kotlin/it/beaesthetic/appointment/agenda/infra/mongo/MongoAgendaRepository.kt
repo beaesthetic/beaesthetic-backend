@@ -59,7 +59,7 @@ class MongoAgendaRepository(
 
     override suspend fun saveEvent(
         schedule: AgendaEvent,
-        expectedVersion: Long
+        expectedVersion: Long,
     ): Result<AgendaEvent> =
         kotlin
             .runCatching {
@@ -70,7 +70,7 @@ class MongoAgendaRepository(
                 val filter =
                     Filters.and(
                         Filters.eq("_id", schedule.id.value),
-                        Filters.eq("version", expectedVersion)
+                        Filters.eq("version", expectedVersion),
                     )
                 when (expectedVersion) {
                     0.toLong() ->
@@ -103,7 +103,7 @@ class MongoAgendaRepository(
             org.bson
                 .Document(
                     "start",
-                    org.bson.Document("\$gte", timeSpan.start).append("\$lte", timeSpan.end)
+                    org.bson.Document("\$gte", timeSpan.start).append("\$lte", timeSpan.end),
                 )
                 .append("isCancelled", false)
         val schedules = panacheAgendaRepository.find(query)
@@ -133,7 +133,7 @@ class MongoAgendaRepository(
             .find(
                 "reminderStatus = ?1",
                 reminderStatus.name,
-                Sort.by("start", Sort.Direction.Ascending)
+                Sort.by("start", Sort.Direction.Ascending),
             )
             .stream()
             .map { EntityMapper.toDomain(it) }

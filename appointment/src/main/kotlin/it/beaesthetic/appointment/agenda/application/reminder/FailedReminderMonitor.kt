@@ -16,7 +16,7 @@ import org.jboss.logging.Logger
 @ApplicationScoped
 class FailedReminderMonitor(
     private val panacheAgendaRepository: PanacheAgendaRepository,
-    private val reminderTracker: ReminderTracker
+    private val reminderTracker: ReminderTracker,
 ) {
     private val log = Logger.getLogger(FailedReminderMonitor::class.java)
 
@@ -45,7 +45,7 @@ class FailedReminderMonitor(
         val tomorrowSameTime =
             LocalDateTime.of(
                     LocalDate.ofInstant(now, zoneId).plusDays(1),
-                    LocalDateTime.ofInstant(now, zoneId).toLocalTime()
+                    LocalDateTime.ofInstant(now, zoneId).toLocalTime(),
                 )
                 .atZone(zoneId)
                 .toInstant()

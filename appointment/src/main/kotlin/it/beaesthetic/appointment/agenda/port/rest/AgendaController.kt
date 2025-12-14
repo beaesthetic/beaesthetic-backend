@@ -13,19 +13,15 @@ import java.util.*
 import kotlin.IllegalArgumentException as IllegalArgumentException1
 
 @RegisterForReflection(
-    targets =
-        [
-            CreateAgendaActivity201ResponseDto::class,
-            ActivityResponseDto::class,
-        ],
-    registerFullHierarchy = true
+    targets = [CreateAgendaActivity201ResponseDto::class, ActivityResponseDto::class],
+    registerFullHierarchy = true,
 )
 class AgendaController(
     private val createAgendaScheduleHandler: CreateAgendaScheduleHandler,
     private val editAgendaScheduleHandler: EditAgendaScheduleHandler,
     private val deleteAgendaScheduleHandler: DeleteAgendaScheduleHandler,
     private val queryHandler: AgendaQueryHandler,
-    private val reminderConfiguration: ReminderConfiguration
+    private val reminderConfiguration: ReminderConfiguration,
 ) : AdminActivitiesApi {
 
     override fun createAgendaActivity(
@@ -38,22 +34,22 @@ class AgendaController(
                         timeSpan =
                             TimeSpan.fromOffsetDateTime(
                                 createAgendaActivityMixin.start,
-                                createAgendaActivityMixin.end
+                                createAgendaActivityMixin.end,
                             ),
                         attendeeId = createAgendaActivityMixin.attendeeId.toString(),
                         triggerBefore = reminderConfiguration.triggerBefore(),
                         data =
                             BasicEventData(
                                 title = createAgendaActivityMixin.title,
-                                description = createAgendaActivityMixin.description
-                            )
+                                description = createAgendaActivityMixin.description,
+                            ),
                     )
                 is AppointmentEventDto ->
                     CreateAgendaSchedule(
                         timeSpan =
                             TimeSpan.fromOffsetDateTime(
                                 createAgendaActivityMixin.start,
-                                createAgendaActivityMixin.end
+                                createAgendaActivityMixin.end,
                             ),
                         attendeeId = createAgendaActivityMixin.attendeeId.toString(),
                         triggerBefore = reminderConfiguration.triggerBefore(),
@@ -62,9 +58,8 @@ class AgendaController(
                                 services =
                                     createAgendaActivityMixin.appointment.services?.map {
                                         AppointmentService(it)
-                                    }
-                                        ?: emptyList()
-                            )
+                                    } ?: emptyList()
+                            ),
                     )
                 else ->
                     throw IllegalArgumentException1(
@@ -80,7 +75,7 @@ class AgendaController(
 
     override fun updateActivity(
         activityId: UUID,
-        updateActivityRequestDto: UpdateActivityRequestDto
+        updateActivityRequestDto: UpdateActivityRequestDto,
     ): Uni<ActivityResponseDto> = uniWithScope {
         val command =
             EditAgendaSchedule(
@@ -94,7 +89,7 @@ class AgendaController(
                         updateActivityRequestDto.end?.let { end ->
                             TimeSpan.fromOffsetDateTime(start, end)
                         }
-                    }
+                    },
             )
 
         editAgendaScheduleHandler
@@ -120,7 +115,7 @@ class AgendaController(
                                 "customer_cancel" -> CustomerCancel
                                 "deleted" -> NoReason
                                 else -> NoReason
-                            }
+                            },
                         )
                     )
                     .getOrThrow()
@@ -130,7 +125,7 @@ class AgendaController(
     override fun getAppointmentsByTimeRangeOrCustomer(
         start: OffsetDateTime?,
         end: OffsetDateTime?,
-        attendeeId: String?
+        attendeeId: String?,
     ): Uni<ActivityResponseDto> = uniWithScope {
         val timeSpan =
             start?.let {

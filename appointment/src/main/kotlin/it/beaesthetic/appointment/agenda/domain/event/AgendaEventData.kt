@@ -6,6 +6,4 @@ data class BasicEventData(val title: String, val description: String?) : AgendaE
 
 data class AppointmentService(val name: String)
 
-data class AppointmentEventData(
-    val services: List<AppointmentService>,
-) : AgendaEventData
+data class AppointmentEventData(val services: List<AppointmentService>) : AgendaEventData

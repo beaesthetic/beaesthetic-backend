@@ -9,7 +9,7 @@ import java.util.*
 
 @RegisterForReflection(
     targets = [EventResponseDto::class, AppointmentEventResponseDto::class],
-    registerFullHierarchy = true
+    registerFullHierarchy = true,
 )
 object AgendaScheduleMapper {
 
@@ -22,7 +22,7 @@ object AgendaScheduleMapper {
 
     private fun mapAppointmentScheduleResource(
         schedule: AgendaEvent,
-        scheduleData: AppointmentEventData
+        scheduleData: AppointmentEventData,
     ): AppointmentEventResponseDto {
         return AppointmentEventResponseDto(
             type = AppointmentEventResponseDto.Type.APPOINTMENT,
@@ -36,17 +36,17 @@ object AgendaScheduleMapper {
                 AppointmentEventResponseReminderDto(
                     status = mapReminderStatusResource(schedule.reminder.status),
                     reminderMinutes = schedule.remindBefore.toMinutes().toInt(),
-                    timeSent = schedule.reminder.sentAt?.atOffset(ZoneOffset.UTC)
+                    timeSent = schedule.reminder.sentAt?.atOffset(ZoneOffset.UTC),
                 ),
             appointment =
                 AppointmentEventAppointmentDto(services = scheduleData.services.map { it.name }),
-            cancelReason = schedule.cancelReason?.let { mapCancelReasonResource(it) }
+            cancelReason = schedule.cancelReason?.let { mapCancelReasonResource(it) },
         )
     }
 
     private fun mapBasicScheduleResource(
         schedule: AgendaEvent,
-        scheduleData: BasicEventData
+        scheduleData: BasicEventData,
     ): EventResponseDto {
         return EventResponseDto(
             type = EventResponseDto.Type.EVENT,
@@ -62,9 +62,9 @@ object AgendaScheduleMapper {
                 AppointmentEventResponseReminderDto(
                     status = mapReminderStatusResource(schedule.reminder.status),
                     reminderMinutes = schedule.remindBefore.toMinutes().toInt(),
-                    timeSent = schedule.reminder.sentAt?.atOffset(ZoneOffset.UTC)
+                    timeSent = schedule.reminder.sentAt?.atOffset(ZoneOffset.UTC),
                 ),
-            cancelReason = schedule.cancelReason?.let { mapCancelReasonResource(it) }
+            cancelReason = schedule.cancelReason?.let { mapCancelReasonResource(it) },
         )
     }
 

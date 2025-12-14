@@ -19,9 +19,9 @@ import jakarta.inject.Singleton
             AgendaEventId::class,
             NotificationType::class,
             NotificationType.Reminder::class,
-            NotificationType.Confirmation::class
+            NotificationType.Confirmation::class,
         ],
-    registerFullHierarchy = true
+    registerFullHierarchy = true,
 )
 class RegisterCustomJackson : ObjectMapperCustomizer {
     override fun customize(objectMapper: ObjectMapper) {

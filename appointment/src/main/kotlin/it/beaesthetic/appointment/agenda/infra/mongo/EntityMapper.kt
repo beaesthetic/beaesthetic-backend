@@ -14,7 +14,7 @@ object EntityMapper {
             attendee =
                 AttendeeEntity(
                     id = scheduleAgenda.attendee.id,
-                    displayName = scheduleAgenda.attendee.displayName
+                    displayName = scheduleAgenda.attendee.displayName,
                 ),
             start = scheduleAgenda.timeSpan.start,
             end = scheduleAgenda.timeSpan.end,
@@ -30,7 +30,7 @@ object EntityMapper {
                     is BasicEventData ->
                         AgendaBasicData(
                             title = scheduleAgenda.data.title,
-                            description = scheduleAgenda.data.description ?: ""
+                            description = scheduleAgenda.data.description ?: "",
                         )
                 },
             version = version,
@@ -41,9 +41,7 @@ object EntityMapper {
         )
     }
 
-    fun toDomain(
-        scheduleAgendaEntity: AgendaEntity,
-    ): AgendaEvent {
+    fun toDomain(scheduleAgendaEntity: AgendaEntity): AgendaEvent {
         return AgendaEvent(
             id = AgendaEventId(scheduleAgendaEntity.id),
             timeSpan = TimeSpan(scheduleAgendaEntity.start, scheduleAgendaEntity.end),
@@ -74,7 +72,7 @@ object EntityMapper {
                     sentAt = scheduleAgendaEntity.reminderSentAt,
                 ),
             remindBefore = Duration.ofSeconds(scheduleAgendaEntity.remindBeforeSeconds.toLong()),
-            domainEventRegistry = DomainEventRegistry.delegate()
+            domainEventRegistry = DomainEventRegistry.delegate(),
         )
     }
 }

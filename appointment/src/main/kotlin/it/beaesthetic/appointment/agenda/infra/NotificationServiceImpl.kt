@@ -27,11 +27,12 @@ class NotificationServiceImpl(
     private val notificationsApi: NotificationsApi,
     private val templateEngine: NotificationTemplateEngine,
     private val eventNotificationMap: ReactiveValueCommands<String, PendingNotification>,
-    private val defaultEventNotificationMapTTL: Duration
+    private val defaultEventNotificationMapTTL: Duration,
 ) : NotificationService {
 
     companion object {
         private const val REDIS_PREFIX = "pending-notification"
+
         private fun formatRedisKey(notificationId: NotificationId): String {
             return "${REDIS_PREFIX}:${notificationId.value}"
         }
@@ -39,7 +40,7 @@ class NotificationServiceImpl(
 
     override suspend fun trackAndSendNotification(
         notification: Notification,
-        phoneNumber: String
+        phoneNumber: String,
     ): Result<PendingNotification> {
         return templateEngine
             .process(notification)
@@ -61,7 +62,7 @@ class NotificationServiceImpl(
                             PendingNotification(
                                 NotificationId(it.notificationId.toString()),
                                 notification.event.id,
-                                notification.type
+                                notification.type,
                             )
                         }
                         .flatMap { pendingNotification ->
@@ -69,7 +70,7 @@ class NotificationServiceImpl(
                                 .set(
                                     formatRedisKey(pendingNotification.notificationId),
                                     pendingNotification,
-                                    SetArgs().px(defaultEventNotificationMapTTL)
+                                    SetArgs().px(defaultEventNotificationMapTTL),
                                 )
                                 .map { pendingNotification }
                         }

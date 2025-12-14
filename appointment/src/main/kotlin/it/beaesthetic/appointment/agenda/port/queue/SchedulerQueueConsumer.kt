@@ -15,7 +15,7 @@ import org.jboss.logging.Logger
 @ApplicationScoped
 @RegisterForReflection(
     targets = [ReminderTimesUp::class, JsonObject::class, Message::class],
-    registerFullHierarchy = true
+    registerFullHierarchy = true,
 )
 class SchedulerQueueConsumer(
     private val sendAgendaScheduleReminderHandler: SendAgendaScheduleReminderHandler

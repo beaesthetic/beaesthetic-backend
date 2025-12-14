@@ -13,7 +13,7 @@ data class SendNotificationCommand(val notification: Notification)
 @ApplicationScoped
 class SendNotificationHandler(
     private val customerRegistry: CustomerRegistry,
-    private val notificationService: NotificationService
+    private val notificationService: NotificationService,
 ) {
     private val log = Logger.getLogger(SendNotificationHandler::class.java)
 

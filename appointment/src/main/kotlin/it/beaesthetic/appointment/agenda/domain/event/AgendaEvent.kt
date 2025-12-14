@@ -20,7 +20,7 @@ data class AgendaEvent(
     val reminder: Reminder,
     val remindBefore: Duration,
     val createdAt: Instant,
-    private val domainEventRegistry: DomainEventRegistry<AgendaLifecycleEvent>
+    private val domainEventRegistry: DomainEventRegistry<AgendaLifecycleEvent>,
 ) : DomainEventRegistry<AgendaLifecycleEvent> by domainEventRegistry {
 
     companion object {
@@ -41,7 +41,7 @@ data class AgendaEvent(
                     Reminder(id, ReminderStatus.PENDING, null),
                     reminderBefore,
                     Instant.now(),
-                    DomainEventRegistry.delegate()
+                    DomainEventRegistry.delegate(),
                 )
             return agendaEvent.also { it.addEvent(AgendaEventScheduled(it)) }
         }

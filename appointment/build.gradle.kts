@@ -7,8 +7,7 @@ plugins {
   kotlin("plugin.allopen") version "2.2.21"
   id("io.quarkus")
   id("org.openapi.generator") version "7.17.0"
-  id("com.diffplug.spotless") version "6.25.0"
-  kotlin("kapt") version "2.2.21"
+  id("com.diffplug.spotless") version "8.1.0"
 }
 
 repositories {
@@ -22,7 +21,7 @@ val quarkusPlatformVersion: String by project
 
 dependencies {
   // functional - fp
-  implementation("io.arrow-kt:arrow-core:1.2.4")
+  implementation("io.arrow-kt:arrow-core:2.2.0")
 
   // quarkus
   implementation(
@@ -30,22 +29,22 @@ dependencies {
       "${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"
     )
   )
-  implementation("io.quarkus:quarkus-resteasy-reactive")
-  implementation("io.quarkus:quarkus-resteasy-reactive-jackson")
+  implementation("io.quarkus:quarkus-rest")
+  implementation("io.quarkus:quarkus-rest-jackson")
   implementation("io.quarkus:quarkus-smallrye-health")
   implementation("io.quarkus:quarkus-mongodb-client")
   implementation("io.quarkus:quarkus-arc")
 
   // quarkus & kotlin
   implementation("io.quarkus:quarkus-kotlin")
-  implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+  implementation(kotlin("stdlib-jdk8"))
   implementation("io.quarkus:quarkus-mongodb-panache-kotlin")
-  implementation("io.smallrye.reactive:mutiny-kotlin:2.9.5")
+  implementation("io.smallrye.reactive:mutiny-kotlin:3.1.0")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
   // vertx-lang-kotlin-coroutines
   implementation("io.quarkus:quarkus-vertx")
-  implementation("io.vertx:vertx-lang-kotlin-coroutines:4.5.22")
+  implementation("io.vertx:vertx-lang-kotlin-coroutines:5.0.5")
 
   // redis
   implementation("io.quarkus:quarkus-redis-client")
@@ -70,25 +69,37 @@ dependencies {
 
   // rest client generator
   implementation("io.quarkiverse.openapi.generator:quarkus-openapi-generator:2.13.0-lts")
-  implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
+  implementation("io.quarkus:quarkus-rest-client-jackson")
 
   implementation(kotlin("reflect"))
 
-  testImplementation("io.quarkus:quarkus-junit5")
   testImplementation(kotlin("test"))
-  testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+  testImplementation("io.quarkus:quarkus-junit5")
+  testImplementation("io.rest-assured:rest-assured")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
 }
 
 group = "it.beaesthetic.appointment"
 
 version = "${properties["version"]}"
 
-java { toolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
+java {
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
+  toolchain { languageVersion.set(JavaLanguageVersion.of(21)) }
+}
 
-kotlin { jvmToolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
+kotlin {
+  compilerOptions {
+    jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+    javaParameters = true
+  }
+  jvmToolchain { languageVersion.set(JavaLanguageVersion.of(21)) }
+}
 
 tasks.withType<Test> {
   systemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager")
+  jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
 }
 
 allOpen {
@@ -98,20 +109,19 @@ allOpen {
   annotation("io.quarkus.test.junit.QuarkusTest")
 }
 
-sourceSets {
-  main {
-    java {
-      srcDirs("${layout.buildDirectory.get()}/generated/src/main/java")
-      srcDirs("${layout.buildDirectory.get()}/classes/java/quarkus-generated-sources/open-api-yaml")
-    }
-  }
-}
+// sourceSets {
+//  main {
+//    java {
+//      srcDirs("${layout.buildDirectory.get()}/generated/src/main/java")
+//
+// srcDirs("${layout.buildDirectory.get()}/classes/java/quarkus-generated-sources/open-api-yaml")
+//    }
+//  }
+// }
 
-tasks.withType<KotlinCompile> {
-  dependsOn("appointment-api")
-}
+tasks.withType<KotlinCompile> { dependsOn("appointment-api") }
 
-configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+spotless {
   lineEndings = LineEnding.UNIX
   kotlin {
     toggleOffOn()
@@ -127,11 +137,20 @@ configure<com.diffplug.gradle.spotless.SpotlessExtension> {
   }
 }
 
+sourceSets {
+  main {
+    kotlin {
+      srcDirs("${layout.buildDirectory.get()}/generated/src/main/java")
+      srcDirs("${layout.buildDirectory.get()}/classes/java/quarkus-generated-sources/open-api")
+    }
+  }
+}
+
 tasks.register<GenerateTask>("appointment-api") {
   description = "Generate REST API interface for customer"
   group = "openapi-generation"
   generatorName.set("kotlin-server")
-  inputSpec.set("$rootDir/api-spec/openapi.yaml")
+  inputSpec.set("${rootDir}/api-spec/openapi.yaml")
   outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.beaesthetic.appointment.agenda.generated.api")
   modelPackage.set("it.beaesthetic.appointment.agenda.generated.api.model")
@@ -147,6 +166,7 @@ tasks.register<GenerateTask>("appointment-api") {
 
   configOptions.set(
     mapOf(
+      "gradleBuildFile" to "false",
       "sourceFolder" to "src/main/java",
       "skipDefaultInterface" to "true",
       "openApiNullable" to "true",
@@ -164,14 +184,10 @@ tasks.register<GenerateTask>("appointment-api") {
       "dateLibrary" to "java8",
       "useJakartaEe" to "true",
       "useTags" to "true",
-      "returnResponse" to "false"
+      "returnResponse" to "false",
     )
   )
-  typeMappings.putAll(
-    mapOf(
-      "CreateAgendaActivityRequestDto" to "CreateAgendaActivityMixin",
-    )
-  )
+  typeMappings.putAll(mapOf("CreateAgendaActivityRequestDto" to "CreateAgendaActivityMixin"))
   schemaMappings.putAll(mapOf("CreateAgendaActivityRequest" to "CreateAgendaActivityMixin"))
 
   importMappings.putAll(
@@ -179,7 +195,7 @@ tasks.register<GenerateTask>("appointment-api") {
       "CreateAgendaActivityRequestDto" to
         "it.beaesthetic.appointment.agenda.port.rest.CreateAgendaActivityMixin",
       "CreateAgendaActivityMixin" to
-        "it.beaesthetic.appointment.agenda.port.rest.CreateAgendaActivityMixin"
+        "it.beaesthetic.appointment.agenda.port.rest.CreateAgendaActivityMixin",
     )
   )
 }

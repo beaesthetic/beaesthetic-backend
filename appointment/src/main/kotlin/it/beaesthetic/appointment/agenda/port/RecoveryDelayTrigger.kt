@@ -18,7 +18,7 @@ import org.jboss.logging.Logger
 class RecoveryDelayTrigger(
     private val agendaRepository: AgendaRepository,
     private val scheduleReminderHandler: ScheduleReminderHandler,
-    @ConfigProperty(name = "recovery.enabled") private val isRecoveryEnabled: Boolean
+    @ConfigProperty(name = "recovery.enabled") private val isRecoveryEnabled: Boolean,
 ) {
 
     private val log = Logger.getLogger(RecoveryDelayTrigger::class.java)
@@ -34,7 +34,7 @@ class RecoveryDelayTrigger(
                 .schedule(
                     { runBlocking { recoverStuckAgendaReminder() } },
                     RECOVER_DELAY.toSeconds(),
-                    TimeUnit.SECONDS
+                    TimeUnit.SECONDS,
                 )
         } else {
             log.warn("Initial agenda event recovery is disabled")

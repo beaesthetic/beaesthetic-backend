@@ -9,6 +9,7 @@ import it.beaesthetic.appointment.agenda.domain.event.AgendaEvent
 
 sealed interface NotificationType {
     data object Reminder : NotificationType
+
     data class Confirmation(val isRescheduled: Boolean = false) : NotificationType
 }
 

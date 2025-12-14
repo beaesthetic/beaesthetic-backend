@@ -7,5 +7,5 @@ enum class ReminderStatus {
     SENT,
     FAIL_TO_SEND,
     UNPROCESSABLE,
-    DELETED
+    DELETED,
 }

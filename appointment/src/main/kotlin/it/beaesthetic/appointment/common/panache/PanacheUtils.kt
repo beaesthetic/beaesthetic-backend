@@ -13,7 +13,7 @@ object PanacheUtils {
 
     fun <T : Any> ReactivePanacheMongoRepository<T>.updateOne(
         filter: Bson,
-        entity: T
+        entity: T,
     ): Uni<UpdateResult> {
         val bsonDocument = BsonDocument()
         val codec = mongoCollection().codecRegistry.get(entity.javaClass)

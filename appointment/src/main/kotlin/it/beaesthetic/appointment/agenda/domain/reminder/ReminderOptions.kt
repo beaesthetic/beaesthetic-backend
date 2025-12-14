@@ -5,5 +5,5 @@ import java.time.Duration
 data class ReminderOptions(
     val sendBefore: Duration,
     val noSendThreshold: Duration,
-    val immediateSendThreshold: Duration
+    val immediateSendThreshold: Duration,
 )

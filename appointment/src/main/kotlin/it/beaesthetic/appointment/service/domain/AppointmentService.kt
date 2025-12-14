@@ -7,5 +7,5 @@ data class AppointmentService(
     val name: String,
     val price: Double,
     val tags: Set<String>,
-    val color: Color?
+    val color: Color?,
 )

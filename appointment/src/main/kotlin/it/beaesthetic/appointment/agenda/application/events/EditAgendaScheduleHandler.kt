@@ -10,7 +10,7 @@ data class EditAgendaSchedule(
     val timeSpan: TimeSpan?,
     val services: Set<AppointmentService>?,
     val title: String?,
-    val description: String?
+    val description: String?,
 )
 
 @ApplicationScoped
@@ -28,7 +28,7 @@ class EditAgendaScheduleHandler(private val agendaRepository: AgendaRepository) 
                         is BasicEventData ->
                             data.copy(
                                 title = command.title ?: data.title,
-                                description = command.description ?: data.description
+                                description = command.description ?: data.description,
                             )
                         is AppointmentEventData ->
                             data.copy(services = command.services?.toList() ?: data.services)

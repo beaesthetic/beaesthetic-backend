@@ -16,7 +16,7 @@ import org.jboss.logging.Logger
 @ApplicationScoped
 class NotificationConfirmQueueConsumer(
     private val notificationService: NotificationService,
-    private val confirmReminderSentHandler: ConfirmReminderSentHandler
+    private val confirmReminderSentHandler: ConfirmReminderSentHandler,
 ) {
 
     private val log = Logger.getLogger(NotificationConfirmQueueConsumer::class.java)
@@ -41,7 +41,7 @@ class NotificationConfirmQueueConsumer(
                                 .onFailure {
                                     log.error(
                                         "Failed to confirm reminder for ${pendingNotification.agendaEventId}",
-                                        it
+                                        it,
                                     )
                                 }
                         else -> Result.success(Unit)

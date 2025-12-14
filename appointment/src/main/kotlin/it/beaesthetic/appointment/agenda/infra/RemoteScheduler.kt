@@ -15,7 +15,7 @@ import java.util.*
 class RemoteScheduler(
     private val schedulesApi: SchedulesApi,
     private val schedulerRoute: String,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
 ) : ReminderScheduler {
 
     override suspend fun scheduleReminder(reminder: Reminder, sendAt: Instant): Reminder {

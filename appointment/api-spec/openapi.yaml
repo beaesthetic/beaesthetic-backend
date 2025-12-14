@@ -343,6 +343,8 @@ components:
       x-implements: "it.beaesthetic.appointment.agenda.port.rest.CreateAgendaActivityMixin"
       type: object
       properties:
+        eventType:
+          type: string
         start:
           type: string
           format: date-time
@@ -385,6 +387,8 @@ components:
       x-implements: "it.beaesthetic.appointment.agenda.port.rest.CreateAgendaActivityMixin"
       type: object
       properties:
+        eventType:
+          type: string
         start:
           type: string
           format: date-time

@@ -13,7 +13,7 @@ data class ScheduleReminder(val eventId: AgendaEventId)
 @ApplicationScoped
 class ScheduleReminderHandler(
     private val agendaRepository: AgendaRepository,
-    private val reminderService: ReminderService
+    private val reminderService: ReminderService,
 ) {
 
     private val log = Logger.getLogger(ScheduleReminderHandler::class.java)

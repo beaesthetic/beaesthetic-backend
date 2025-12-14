@@ -27,7 +27,7 @@ class ReminderService(
                 event.timeSpan.start,
                 event.remindBefore,
                 reminderOptions.noSendThreshold,
-                reminderOptions.immediateSendThreshold
+                reminderOptions.immediateSendThreshold,
             )
         log.info("Reminder for ${event.id}, start ${event.timeSpan.start}, scheduled at $sendAt")
         val updatedReminder =
@@ -63,7 +63,7 @@ class ReminderService(
                         event.timeSpan.start,
                         event.remindBefore,
                         reminderOptions.noSendThreshold,
-                        reminderOptions.immediateSendThreshold
+                        reminderOptions.immediateSendThreshold,
                     )
                 val updatedReminder =
                     if (sendAt == null && event.cancelReason == null) {
@@ -72,7 +72,7 @@ class ReminderService(
                         runCatching {
                                 notificationService.trackAndSendNotification(
                                     Notification(NotificationType.Reminder, event),
-                                    phoneNumber
+                                    phoneNumber,
                                 )
                             }
                             .fold(
@@ -81,7 +81,7 @@ class ReminderService(
                                 },
                                 onFailure = { e ->
                                     event.reminder.copy(status = ReminderStatus.FAIL_TO_SEND)
-                                }
+                                },
                             )
                     }
                 event.updateReminder(updatedReminder)
@@ -95,7 +95,7 @@ class ReminderService(
         eventAt: Instant,
         sendBefore: Duration,
         noSendThreshold: Duration,
-        immediateSendThreshold: Duration
+        immediateSendThreshold: Duration,
     ): Instant? {
         val now = clock.now()
         val potentialRemindDate = eventAt - sendBefore

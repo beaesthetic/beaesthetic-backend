@@ -12,7 +12,7 @@ data class ConfirmReminderSent(val eventId: AgendaEventId)
 @ApplicationScoped
 class ConfirmReminderSentHandler(
     private val agendaRepository: AgendaRepository,
-    private val reminderTracker: ReminderTracker
+    private val reminderTracker: ReminderTracker,
 ) {
 
     private val log = Logger.getLogger(SendAgendaScheduleReminderHandler::class.java)

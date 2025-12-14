@@ -15,7 +15,7 @@ class CancelReasonCodec : Codec<CancelReason> {
     override fun encode(
         writer: BsonWriter?,
         cancelReason: CancelReason?,
-        encoder: EncoderContext?
+        encoder: EncoderContext?,
     ) {
         if (cancelReason != null) {
             writer?.writeString(

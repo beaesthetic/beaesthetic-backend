@@ -46,9 +46,7 @@ class DependencyConfig {
     }
 
     @Produces
-    fun notificationProvider(
-        @RestClient customersApi: CustomersAdminApi,
-    ): CustomerRegistry {
+    fun notificationProvider(@RestClient customersApi: CustomersAdminApi): CustomerRegistry {
         return RemoteCustomerRegistry(customersApi)
     }
 
@@ -81,7 +79,7 @@ class DependencyConfig {
             notificationsApi,
             notificationTemplateEngine,
             notificationEventMap,
-            notificationEventMapExpire
+            notificationEventMapExpire,
         )
     }
 
@@ -91,7 +89,7 @@ class DependencyConfig {
         reminderConfiguration: ReminderConfiguration,
         notificationService: NotificationService,
         reminderScheduler: ReminderScheduler,
-        reminderTracker: ReminderTracker
+        reminderTracker: ReminderTracker,
     ): ReminderService {
         return ReminderService(
             reminderScheduler = reminderScheduler,
@@ -100,10 +98,10 @@ class DependencyConfig {
                 ReminderOptions(
                     reminderConfiguration.triggerBefore(),
                     reminderConfiguration.noSendThreshold(),
-                    reminderConfiguration.immediateSendThreshold()
+                    reminderConfiguration.immediateSendThreshold(),
                 ),
             clock = Clock.default(),
-            reminderTracker = reminderTracker
+            reminderTracker = reminderTracker,
         )
     }
 }

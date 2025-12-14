@@ -13,7 +13,7 @@ class RemoteCustomerRegistry(private val customersApi: CustomersAdminApi) : Cust
                 Customer(
                     customerId = it.id,
                     displayName = listOf(it.name, it.surname).joinToString(" "),
-                    phoneNumber = it.phone
+                    phoneNumber = it.phone,
                 )
             }
             .onFailure()

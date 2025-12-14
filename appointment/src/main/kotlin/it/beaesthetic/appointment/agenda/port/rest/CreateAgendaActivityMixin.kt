@@ -11,7 +11,7 @@ import it.beaesthetic.appointment.agenda.generated.api.model.GenericEventDto
     use = JsonTypeInfo.Id.NAME,
     property = "eventType",
     include = JsonTypeInfo.As.EXTERNAL_PROPERTY,
-    visible = true
+    visible = true,
 )
 @JsonSubTypes(
     value =

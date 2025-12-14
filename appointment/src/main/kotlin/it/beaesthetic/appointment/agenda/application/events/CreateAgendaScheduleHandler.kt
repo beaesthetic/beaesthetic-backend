@@ -10,13 +10,13 @@ data class CreateAgendaSchedule(
     val timeSpan: TimeSpan,
     val data: AgendaEventData,
     val attendeeId: String,
-    val triggerBefore: Duration
+    val triggerBefore: Duration,
 )
 
 @ApplicationScoped
 class CreateAgendaScheduleHandler(
     private val agendaRepository: AgendaRepository,
-    private val customerRegistry: CustomerRegistry
+    private val customerRegistry: CustomerRegistry,
 ) {
 
     suspend fun handle(command: CreateAgendaSchedule): Result<AgendaEvent> =
@@ -29,8 +29,7 @@ class CreateAgendaScheduleHandler(
                                 Attendee(it.customerId, it.displayName)
                             }
                         else -> Attendee(command.attendeeId, "self")
-                    }
-                        ?: throw IllegalArgumentException("Unknown attendee ${command.attendeeId}")
+                    } ?: throw IllegalArgumentException("Unknown attendee ${command.attendeeId}")
 
                 AgendaEvent.create(
                     id = AgendaEventId(UUID.randomUUID().toString()),
