@@ -3,12 +3,12 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
+  kotlin("kapt") version "2.2.21"
   kotlin("jvm") version "2.2.21"
   kotlin("plugin.allopen") version "2.2.21"
   id("io.quarkus")
   id("org.openapi.generator") version "7.17.0"
-  id("com.diffplug.spotless") version "7.2.1"
-  kotlin("kapt") version "2.2.21"
+  id("com.diffplug.spotless") version "8.1.0"
 }
 
 repositories {
@@ -44,7 +44,7 @@ dependencies {
   implementation("io.quarkus:quarkus-kotlin")
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation("io.quarkus:quarkus-mongodb-panache-kotlin")
-  implementation("io.smallrye.reactive:mutiny-kotlin:2.9.5")
+  implementation("io.smallrye.reactive:mutiny-kotlin:3.1.0")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
   // vertx-lang-kotlin-coroutines
@@ -71,19 +71,34 @@ dependencies {
   implementation("org.mapstruct:mapstruct:1.6.3")
   kapt("org.mapstruct:mapstruct-processor:1.6.3")
 
+  // tests
+  testImplementation(kotlin("test"))
   testImplementation("io.quarkus:quarkus-junit5")
+  testImplementation("io.rest-assured:rest-assured")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
 }
 
 group = "it.beaesthetic.customer"
 
 version = "${properties["version"]}"
 
-java { toolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
+java {
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
+  toolchain { languageVersion.set(JavaLanguageVersion.of(21)) }
+}
 
-kotlin { jvmToolchain { languageVersion.set(JavaLanguageVersion.of(21)) } }
+kotlin {
+  compilerOptions {
+    jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+    javaParameters = true
+  }
+  jvmToolchain { languageVersion.set(JavaLanguageVersion.of(21)) }
+}
 
 tasks.withType<Test> {
   systemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager")
+  jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
 }
 
 allOpen {
@@ -95,12 +110,9 @@ allOpen {
 
 sourceSets { main { java { srcDirs("${layout.buildDirectory.get()}/generated/src/main/java") } } }
 
-tasks.withType<KotlinCompile> {
-  dependsOn("wallet-api", "customer-api", "fidelity-card-api")
-  //  kotlinOptions { jvmTarget = "21" }
-}
+tasks.withType<KotlinCompile> { dependsOn("wallet-api", "customer-api", "fidelity-card-api") }
 
-configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+spotless {
   lineEndings = LineEnding.UNIX
   kotlin {
     toggleOffOn()
