@@ -37,7 +37,7 @@ data class Wallet(
         }
         val updatedWallet = removeExpiredGiftCard(now)
         val (residual, giftCards) = processorPolicy.charge(updatedWallet.giftCards, amount, now)
-        require(residual == Money.Zero) { "Cannot redeem $amount from gift cards" }
+        require(residual >= Money.Zero) { "Cannot redeem $amount from gift cards" }
         return copy(
             availableAmount = updatedWallet.availableAmount - amount,
             operations = listOf(MoneyCharge(now, amount)) + operations,

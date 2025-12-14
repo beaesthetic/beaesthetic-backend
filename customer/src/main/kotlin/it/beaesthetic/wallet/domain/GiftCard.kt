@@ -38,7 +38,8 @@ data class GiftCard(
     }
 
     private fun assertMoneyAndExpire(money: Money, now: Instant?) {
-        require(availableAmount <= money) { "Amount must be greater than zero" }
+        require(money > Money.Zero) { "Amount must be greater than zero" }
+        require(availableAmount >= money) { "Not enough amount" }
         require(!isExpiredAt(now ?: Instant.now())) { "GiftCard is expired" }
     }
 }
