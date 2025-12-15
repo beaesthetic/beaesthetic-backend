@@ -11,7 +11,8 @@ env:
 
 jobs:
   build:
-    runs-on: "gha-beaesthetic-scaler"
+#    runs-on: "gha-beaesthetic-scaler"
+    runs-on: ubuntu-24.04-arm
     name: "Build and Push Docker image"
     # Only run if this is a manual dispatch OR if the release tag matches this service
     if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'customer-service-v')
