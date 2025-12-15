@@ -18,19 +18,19 @@ class ScheduleController(private val scheduler: Scheduler) : SchedulesApi {
 
     override suspend fun addSchedule(
         scheduleId: UUID,
-        createScheduleDto: CreateScheduleDto
+        createScheduleDto: CreateScheduleDto,
     ): ResponseEntity<AddSchedule202ResponseDto> {
         log.info(
             "Adding schedule {} at {} will delivered on {}",
             scheduleId,
             createScheduleDto.scheduleAt,
-            createScheduleDto.route
+            createScheduleDto.route,
         )
         return scheduler
             .schedule(
                 scheduleId.toString(),
                 createScheduleDto.scheduleAt.toInstant(),
-                ScheduleMeta(createScheduleDto.route, createScheduleDto.data)
+                ScheduleMeta(createScheduleDto.route, createScheduleDto.data),
             )
             .map { AddSchedule202ResponseDto(UUID.fromString(it.id.id)) }
             .map { ResponseEntity.accepted().body(it) }

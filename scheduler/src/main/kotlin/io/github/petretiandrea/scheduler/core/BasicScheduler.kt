@@ -5,7 +5,7 @@ import java.util.*
 
 class BasicScheduler(
     override val name: String,
-    private val scheduleJobRepository: ScheduleJobRepository
+    private val scheduleJobRepository: ScheduleJobRepository,
 ) : Scheduler {
 
     override suspend fun schedule(scheduleAt: Instant, meta: ScheduleMeta): Result<ScheduleJob> {
@@ -15,7 +15,7 @@ class BasicScheduler(
     override suspend fun schedule(
         scheduleId: String,
         scheduleAt: Instant,
-        meta: ScheduleMeta
+        meta: ScheduleMeta,
     ): Result<ScheduleJob> {
         val schedule =
             ScheduleJob(id = ScheduleId(scheduleId), meta = meta, scheduleAt = scheduleAt)

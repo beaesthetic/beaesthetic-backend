@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 
 abstract class AbstractRuntime(
     private val jobRepository: ScheduleJobRepository,
-    private val consumerStrategy: ConsumerStrategy
+    private val consumerStrategy: ConsumerStrategy,
 ) : SchedulerRuntime {
 
     private var consumers = emptyList<JobConsumer>()

@@ -10,7 +10,7 @@ interface Scheduler {
     suspend fun schedule(
         scheduleId: String,
         scheduleAt: Instant,
-        meta: ScheduleMeta
+        meta: ScheduleMeta,
     ): Result<ScheduleJob>
 
     suspend fun delete(id: ScheduleId): Result<Unit>

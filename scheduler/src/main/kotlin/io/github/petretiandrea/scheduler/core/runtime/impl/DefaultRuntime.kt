@@ -11,7 +11,7 @@ class DefaultRuntime(
     private val coroutineScope: CoroutineScope,
     private val pollingInterval: Duration,
     jobRepository: ScheduleJobRepository,
-    consumerStrategy: ConsumerStrategy
+    consumerStrategy: ConsumerStrategy,
 ) : AbstractRuntime(jobRepository, consumerStrategy) {
 
     private var job: Job? = null

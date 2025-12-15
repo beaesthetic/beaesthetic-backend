@@ -8,5 +8,5 @@ data class SchedulerConfig(
     val name: String,
     val pollingInterval: Duration,
     val peekLeaseTtl: Duration,
-    val peekBatchSize: Int
+    val peekBatchSize: Int,
 )

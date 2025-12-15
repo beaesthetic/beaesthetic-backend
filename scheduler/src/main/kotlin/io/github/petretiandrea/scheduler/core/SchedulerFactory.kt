@@ -12,32 +12,28 @@ class SchedulerFactory(
     private val schedulerName: String,
     private val jobRepository: ScheduleJobRepository,
     private val pollingInterval: Duration,
-    private val strategy: ConsumerStrategy
+    private val strategy: ConsumerStrategy,
 ) {
 
     fun createScheduler(): Scheduler {
         return BasicScheduler(schedulerName, jobRepository)
     }
 
-    fun createDefaultRuntime(
-        coroutineScope: CoroutineScope,
-    ): SchedulerRuntime {
+    fun createDefaultRuntime(coroutineScope: CoroutineScope): SchedulerRuntime {
         return DefaultRuntime(
             coroutineScope = coroutineScope,
             pollingInterval = pollingInterval,
             jobRepository = jobRepository,
-            consumerStrategy = strategy
+            consumerStrategy = strategy,
         )
     }
 
-    fun createSpringRuntime(
-        taskScheduler: TaskScheduler,
-    ): SchedulerRuntime {
+    fun createSpringRuntime(taskScheduler: TaskScheduler): SchedulerRuntime {
         return SpringSchedulerRuntime(
             jobRepository = jobRepository,
             consumerStrategy = strategy,
             taskScheduler = taskScheduler,
-            pollingInterval = pollingInterval
+            pollingInterval = pollingInterval,
         )
     }
 
@@ -71,7 +67,7 @@ class SchedulerFactory(
                 name,
                 jobRepository,
                 pollingInterval ?: DEFAULT_POLLING_INTERVAL,
-                strategy ?: DEFAULT_CONSUMER_STRATEGY
+                strategy ?: DEFAULT_CONSUMER_STRATEGY,
             )
         }
     }

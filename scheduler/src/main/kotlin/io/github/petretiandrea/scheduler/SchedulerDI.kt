@@ -58,8 +58,8 @@ class SchedulerDI {
                     sortedSetName = "${schedulerConfig.name}-clock",
                     taskSetName = "${schedulerConfig.name}-tasks",
                     peekBatchSize = schedulerConfig.peekBatchSize,
-                    peekLeaseTTL = schedulerConfig.peekLeaseTtl
-                )
+                    peekLeaseTTL = schedulerConfig.peekLeaseTtl,
+                ),
         )
     }
 }

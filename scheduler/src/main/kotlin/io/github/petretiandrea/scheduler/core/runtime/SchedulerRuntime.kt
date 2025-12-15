@@ -6,8 +6,12 @@ import kotlin.time.Duration
 
 interface SchedulerRuntime {
     fun addConsumer(jobConsumer: JobConsumer)
+
     fun removeConsumer(jobConsumer: JobConsumer)
+
     suspend fun start()
+
     suspend fun stop()
+
     suspend fun tick(tick: Instant, delta: Duration)
 }

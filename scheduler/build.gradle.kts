@@ -3,15 +3,15 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
-  kotlin("jvm") version "1.9.25"
-  kotlin("plugin.spring") version "1.9.25"
-  kotlin("plugin.allopen") version "1.9.25"
-  id("org.springframework.boot") version "3.5.8"
+  kotlin("jvm") version "2.2.21"
+  kotlin("plugin.spring") version "2.2.21"
+  kotlin("plugin.allopen") version "2.2.21"
+  id("org.springframework.boot") version "4.0.0"
   id("io.spring.dependency-management") version "1.1.7"
   id("org.graalvm.buildtools.native") version "0.11.3"
   id("org.openapi.generator") version "7.17.0"
-  id("com.diffplug.spotless") version "6.25.0"
-  kotlin("kapt") version "1.9.25"
+  id("com.diffplug.spotless") version "8.1.0"
+  kotlin("kapt") version "2.2.21"
 }
 
 repositories {
@@ -29,10 +29,10 @@ configurations {
 
 dependencies {
   // functional - fp
-  implementation("io.arrow-kt:arrow-core:1.2.4")
+  implementation("io.arrow-kt:arrow-core:2.2.0")
 
   // kotlin
-  implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+  implementation(kotlin("stdlib-jdk8"))
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
   // spring boot
@@ -52,15 +52,17 @@ dependencies {
   implementation("jakarta.xml.bind:jakarta.xml.bind-api")
 
   // openapi
-  implementation("org.openapitools:openapi-generator-gradle-plugin:6.6.0")
+  implementation("org.openapitools:openapi-generator-gradle-plugin:7.14.0")
   implementation("org.openapitools:jackson-databind-nullable:0.2.8")
   implementation("io.swagger.core.v3:swagger-annotations:2.2.41")
 
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testImplementation("org.springframework.amqp:spring-rabbit-test")
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
-  testImplementation("io.projectreactor:reactor-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-actuator-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-amqp-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-data-redis-reactive-test")
+  testImplementation("org.springframework.boot:spring-boot-starter-webflux-test")
   testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
+  testImplementation("io.projectreactor:reactor-test")
+  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test")
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -68,27 +70,36 @@ group = "io.github.petretiandrea.scheduler"
 
 version = "${properties["version"]}"
 
-java { toolchain { languageVersion = JavaLanguageVersion.of(17) } }
+java {
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
+  toolchain { languageVersion.set(JavaLanguageVersion.of(21)) }
+}
 
 allOpen {}
 
 sourceSets {
   main {
-    java {
-      kotlin { srcDirs("src/main/kotlin", "$buildDir/generated/src/main/kotlin") }
-      java { srcDirs("$buildDir/generated/src/main/java") }
+    kotlin {
+      srcDirs("${layout.buildDirectory.get()}/generated/src/main/kotlin")
+      // srcDirs("${layout.buildDirectory.get()}/classes/java/quarkus-generated-sources/open-api")
     }
+    java { srcDirs("${layout.buildDirectory.get()}/generated/src/main/java") }
   }
 }
 
-kotlin { compilerOptions { freeCompilerArgs.addAll("-Xjsr305=strict") } }
-
-tasks.withType<KotlinCompile> {
-  dependsOn("scheduler-api")
-  kotlinOptions { jvmTarget = "17" }
+kotlin {
+  compilerOptions {
+    jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+    javaParameters = true
+    freeCompilerArgs.addAll("-Xjsr305=strict")
+  }
+  jvmToolchain { languageVersion.set(JavaLanguageVersion.of(21)) }
 }
 
-configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+tasks.withType<KotlinCompile> { dependsOn("scheduler-api") }
+
+spotless {
   lineEndings = LineEnding.UNIX
   kotlin {
     toggleOffOn()
@@ -110,7 +121,7 @@ tasks.register<GenerateTask>("scheduler-api") {
 
   generatorName.set("kotlin-spring")
   inputSpec.set("$rootDir/api-spec/openapi.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("io.github.petretiandrea.scheduler.api")
   modelPackage.set("io.github.petretiandrea.scheduler.model")
   generateApiTests.set(false)
@@ -130,7 +141,7 @@ tasks.register<GenerateTask>("scheduler-api") {
       "enumPropertyNaming" to "UPPERCASE",
       "useJakartaEe" to "false",
       "reactive" to "true",
-      "exceptionHandler" to "false"
+      "exceptionHandler" to "false",
     )
   )
 }

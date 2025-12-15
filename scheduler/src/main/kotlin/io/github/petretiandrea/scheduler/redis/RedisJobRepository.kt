@@ -28,7 +28,7 @@ class RedisJobRepository(
     private val reactiveRedisTemplate: ReactiveRedisTemplate<String, String>,
     private val redisTemplate: RedisTemplate<String, String>,
     private val scheduleJobRedisOptions: ScheduleJobRedisOptions,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
 ) : ScheduleJobRepository {
 
     private val sortedSetExtension = SortedSetExtension(reactiveRedisTemplate)
@@ -37,12 +37,12 @@ class RedisJobRepository(
         withContext(Dispatchers.IO) {
             runCatching {
                     redisTemplate.execute(
-                        object : SessionCallback<String> {
-                            private fun a(operations: RedisOperations<String, String>): String? {
+                        object : SessionCallback<List<Any>> {
+                            private fun a(operations: RedisOperations<String, String>): List<Any> {
                                 operations.watch(
                                     listOf(
                                         scheduleJobRedisOptions.taskSetName,
-                                        scheduleJobRedisOptions.sortedSetName
+                                        scheduleJobRedisOptions.sortedSetName,
                                     )
                                 )
                                 operations.multi()
@@ -51,18 +51,17 @@ class RedisJobRepository(
                                     .add(
                                         scheduleJobRedisOptions.sortedSetName,
                                         job.id.id,
-                                        job.scheduleAt.toEpochMilli().toDouble()
+                                        job.scheduleAt.toEpochMilli().toDouble(),
                                     )
                                 operations
                                     .opsForValue()
                                     .set(job.id.id, objectMapper.writeValueAsString(job))
-                                operations.exec()
-                                return null
+                                return operations.exec()
                             }
 
-                            override fun <K : Any?, V : Any?> execute(
+                            override fun <K : Any, V : Any> execute(
                                 operations: RedisOperations<K, V>
-                            ): String? {
+                            ): List<Any> {
                                 return a(operations as RedisOperations<String, String>)
                             }
                         }
@@ -82,26 +81,25 @@ class RedisJobRepository(
                 sortedSetName = scheduleJobRedisOptions.sortedSetName,
                 peekTime = tick,
                 peekBatchSize = scheduleJobRedisOptions.peekBatchSize,
-                peekUntil = ttl
+                peekUntil = ttl,
             )
             .flatMap { taskId -> reactiveRedisTemplate.opsForValue().get(taskId) }
             .map { objectMapper.readValue(it, ScheduleJob::class.java) }
             .map { task -> RedisJobImpl(task, redisTemplate, scheduleJobRedisOptions) }
             .collectList()
-            .awaitFirstOrNull()
-            ?: emptyList()
+            .awaitFirstOrNull() ?: emptyList()
     }
 
     override suspend fun remove(scheduleId: ScheduleId): Result<Unit> =
         withContext(Dispatchers.IO) {
             runCatching {
                     redisTemplate.execute(
-                        object : SessionCallback<String> {
-                            private fun a(operations: RedisOperations<String, String>): String? {
+                        object : SessionCallback<List<Any>> {
+                            private fun a(operations: RedisOperations<String, String>): List<Any> {
                                 operations.watch(
                                     listOf(
                                         scheduleJobRedisOptions.taskSetName,
-                                        scheduleJobRedisOptions.sortedSetName
+                                        scheduleJobRedisOptions.sortedSetName,
                                     )
                                 )
                                 operations.multi()
@@ -109,12 +107,12 @@ class RedisJobRepository(
                                     .opsForZSet()
                                     .remove(scheduleJobRedisOptions.sortedSetName, scheduleId.id)
                                 operations.delete(scheduleId.id)
-                                operations.exec()
-                                return null
+                                return operations.exec()
                             }
-                            override fun <K : Any?, V : Any?> execute(
+
+                            override fun <K : Any, V : Any> execute(
                                 operations: RedisOperations<K, V>
-                            ): String? {
+                            ): List<Any> {
                                 return a(operations as RedisOperations<String, String>)
                             }
                         }
@@ -126,24 +124,24 @@ class RedisJobRepository(
     private class RedisJobImpl(
         override val scheduleJob: ScheduleJob,
         private val redisTemplate: RedisTemplate<String, String>,
-        private val scheduleJobRedisOptions: ScheduleJobRedisOptions
+        private val scheduleJobRedisOptions: ScheduleJobRedisOptions,
     ) : Job {
         override suspend fun ack() =
             withContext(Dispatchers.IO) {
                 redisTemplate.execute(
-                    object : SessionCallback<String> {
-                        private fun a(operations: RedisOperations<String, String>): String? {
+                    object : SessionCallback<List<Any>> {
+                        private fun a(operations: RedisOperations<String, String>): List<Any> {
                             operations.multi()
                             operations
                                 .opsForZSet()
                                 .remove(scheduleJobRedisOptions.sortedSetName, scheduleJob.id.id)
                             operations.delete(scheduleJob.id.id)
-                            operations.exec()
-                            return null
+                            return operations.exec()
                         }
-                        override fun <K : Any?, V : Any?> execute(
+
+                        override fun <K : Any, V : Any> execute(
                             operations: RedisOperations<K, V>
-                        ): String? {
+                        ): List<Any> {
                             return a(operations as RedisOperations<String, String>)
                         }
                     }

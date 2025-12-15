@@ -10,7 +10,7 @@ class SortedSetExtension(private val reactiveRedisTemplate: ReactiveRedisTemplat
         sortedSetName: String,
         peekTime: Instant,
         peekBatchSize: Int,
-        peekUntil: Instant
+        peekUntil: Instant,
     ): Flux<String> {
         val script by lazy {
             val scriptSource =
@@ -22,7 +22,7 @@ class SortedSetExtension(private val reactiveRedisTemplate: ReactiveRedisTemplat
                     end;
                 end;
                 return items;
-            """
+                """
                     .trimIndent()
             RedisScript.of(scriptSource, List::class.java)
         }
@@ -31,7 +31,7 @@ class SortedSetExtension(private val reactiveRedisTemplate: ReactiveRedisTemplat
                 Long.MIN_VALUE.toString(),
                 peekTime.toEpochMilli().toString(),
                 peekBatchSize.toString(),
-                peekUntil.toEpochMilli().toString()
+                peekUntil.toEpochMilli().toString(),
             )
         return reactiveRedisTemplate.execute(script, listOf(sortedSetName), args).flatMap {
             Flux.fromIterable(it as List<String>)

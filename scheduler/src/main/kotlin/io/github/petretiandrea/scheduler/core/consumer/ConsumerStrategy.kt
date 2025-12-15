@@ -7,6 +7,7 @@ interface ConsumerStrategy {
 
     companion object {
         fun atMostOnce(): ConsumerStrategy = AtMostOnceStrategy()
+
         fun atLeastOnce(): ConsumerStrategy = AtLeastOnceStrategy()
     }
 }
