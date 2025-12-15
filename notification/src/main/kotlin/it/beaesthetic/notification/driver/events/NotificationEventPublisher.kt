@@ -14,7 +14,7 @@ class NotificationEventPublisher(
     @Channel("notifications-out")
     private val queueNotificationEventEmitter: Emitter<NotificationEvent>,
     @Channel("notifications-confirmed-out")
-    private val queueNotificationConfirmedEventEmitter: Emitter<NotificationEvent>
+    private val queueNotificationConfirmedEventEmitter: Emitter<NotificationEvent>,
 ) {
 
     private val log = Logger.getLogger(NotificationEventPublisher::class.java)

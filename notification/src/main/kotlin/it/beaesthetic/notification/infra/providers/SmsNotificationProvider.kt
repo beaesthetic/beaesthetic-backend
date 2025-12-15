@@ -32,7 +32,7 @@ class SmsNotificationProvider(private val smsApi: SmsApi, private val fromNumber
                                 .to(channel.phone)
                                 .from(fromNumber)
                                 .content(notification.content)
-                                .putMetadataItem(NOTIFICATION_ID_METADATA, notification.id)
+                                .putMetadataItem(NOTIFICATION_ID_METADATA, notification.id),
                         )
                         .awaitSuspending()
 

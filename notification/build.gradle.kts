@@ -3,12 +3,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
 plugins {
-  kotlin("jvm") version "1.9.25"
-  kotlin("plugin.allopen") version "1.9.25"
+  kotlin("jvm") version "2.2.21"
+  kotlin("plugin.allopen") version "2.2.21"
   id("io.quarkus")
   id("org.openapi.generator") version "7.17.0"
-  id("com.diffplug.spotless") version "6.25.0"
-  kotlin("kapt") version "1.9.25"
+  id("com.diffplug.spotless") version "8.1.0"
 }
 
 repositories {
@@ -22,7 +21,7 @@ val quarkusPlatformVersion: String by project
 
 dependencies {
   // functional - fp
-  implementation("io.arrow-kt:arrow-core:1.2.4")
+  implementation("io.arrow-kt:arrow-core:2.2.0")
 
   // quarkus
   implementation(
@@ -30,22 +29,22 @@ dependencies {
       "${quarkusPlatformGroupId}:${quarkusPlatformArtifactId}:${quarkusPlatformVersion}"
     )
   )
-  implementation("io.quarkus:quarkus-resteasy-reactive")
-  implementation("io.quarkus:quarkus-resteasy-reactive-jackson")
+  implementation("io.quarkus:quarkus-rest")
+  implementation("io.quarkus:quarkus-rest-jackson")
   implementation("io.quarkus:quarkus-smallrye-health")
   implementation("io.quarkus:quarkus-mongodb-client")
   implementation("io.quarkus:quarkus-arc")
 
   // quarkus & kotlin
   implementation("io.quarkus:quarkus-kotlin")
-  implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+  implementation(kotlin("stdlib-jdk8"))
   implementation("io.quarkus:quarkus-mongodb-panache-kotlin")
-  implementation("io.smallrye.reactive:mutiny-kotlin:2.9.5")
+  implementation("io.smallrye.reactive:mutiny-kotlin:3.1.0")
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
   // vertx-lang-kotlin-coroutines
   implementation("io.quarkus:quarkus-vertx")
-  implementation("io.vertx:vertx-lang-kotlin-coroutines:4.5.22")
+  implementation("io.vertx:vertx-lang-kotlin-coroutines:5.0.5")
 
   // rabbitmq
   implementation("io.quarkus:quarkus-messaging-rabbitmq")
@@ -64,22 +63,35 @@ dependencies {
 
   // rest client generator
   implementation("io.quarkiverse.openapi.generator:quarkus-openapi-generator:2.13.0-lts")
-  implementation("io.quarkus:quarkus-rest-client-reactive-jackson")
+  implementation("io.quarkus:quarkus-rest-client-jackson")
 
+  testImplementation(kotlin("test"))
   testImplementation("io.quarkus:quarkus-junit5")
+  testImplementation("io.rest-assured:rest-assured")
+  testImplementation("org.mockito.kotlin:mockito-kotlin:6.1.0")
 }
 
-group = "it.beaesthetic.customer"
+group = "it.beaesthetic.notification"
 
 version = "${properties["version"]}"
 
 java {
-  sourceCompatibility = JavaVersion.VERSION_17
-  targetCompatibility = JavaVersion.VERSION_17
+  sourceCompatibility = JavaVersion.VERSION_21
+  targetCompatibility = JavaVersion.VERSION_21
+  toolchain { languageVersion.set(JavaLanguageVersion.of(21)) }
+}
+
+kotlin {
+  compilerOptions {
+    jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+    javaParameters = true
+  }
+  jvmToolchain { languageVersion.set(JavaLanguageVersion.of(21)) }
 }
 
 tasks.withType<Test> {
   systemProperty("java.util.logging.manager", "org.jboss.logmanager.LogManager")
+  jvmArgs("--add-opens", "java.base/java.lang=ALL-UNNAMED")
 }
 
 allOpen {
@@ -91,19 +103,17 @@ allOpen {
 
 sourceSets {
   main {
-    java {
-      srcDirs("$buildDir/generated/src/main/java")
-      srcDirs("$buildDir/classes/java/quarkus-generated-sources/open-api-yaml")
+    kotlin {
+      srcDirs("${layout.buildDirectory.get()}/generated/src/main/java")
+      //
+      // srcDirs("${layout.buildDirectory.get()}/classes/java/quarkus-generated-sources/open-api")
     }
   }
 }
 
-tasks.withType<KotlinCompile> {
-  dependsOn("notification-api", "sms-gateway-webhook-api")
-  kotlinOptions { jvmTarget = "17" }
-}
+tasks.withType<KotlinCompile> { dependsOn("notification-api", "sms-gateway-webhook-api") }
 
-configure<com.diffplug.gradle.spotless.SpotlessExtension> {
+spotless {
   lineEndings = LineEnding.UNIX
   kotlin {
     toggleOffOn()
@@ -124,7 +134,7 @@ tasks.register<GenerateTask>("notification-api") {
   group = "openapi-generation"
   generatorName.set("kotlin-server")
   inputSpec.set("$rootDir/api-spec/notification-api.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.beaesthetic.notification.generated.api")
   modelPackage.set("it.beaesthetic.notification.generated.api.model")
   generateApiTests.set(false)
@@ -155,20 +165,14 @@ tasks.register<GenerateTask>("notification-api") {
       "useBeanValidation" to "true",
       "dateLibrary" to "java8",
       "useJakartaEe" to "true",
-      "useTags" to "true"
+      "useTags" to "true",
     )
   )
 
   importMappings.putAll(
-    mapOf(
-      "NotificationChannelDto" to "it.beaesthetic.notification.driver.rest.dto.ChannelMixin",
-    )
+    mapOf("NotificationChannelDto" to "it.beaesthetic.notification.driver.rest.dto.ChannelMixin")
   )
-  typeMappings.putAll(
-    mapOf(
-      "NotificationChannelDto" to "ChannelMixin",
-    )
-  )
+  typeMappings.putAll(mapOf("NotificationChannelDto" to "ChannelMixin"))
 }
 
 tasks.register<GenerateTask>("sms-gateway-webhook-api") {
@@ -176,7 +180,7 @@ tasks.register<GenerateTask>("sms-gateway-webhook-api") {
   group = "openapi-generation"
   generatorName.set("kotlin-server")
   inputSpec.set("$rootDir/api-spec/sms-gateway-webhook.yaml")
-  outputDir.set("$buildDir/generated")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
   apiPackage.set("it.beaesthetic.notification.sms.generated.api")
   modelPackage.set("it.beaesthetic.notification.sms.generated.api.model")
   generateApiTests.set(false)
@@ -207,7 +211,7 @@ tasks.register<GenerateTask>("sms-gateway-webhook-api") {
       "useBeanValidation" to "true",
       "dateLibrary" to "java8",
       "useJakartaEe" to "true",
-      "useTags" to "true"
+      "useTags" to "true",
     )
   )
 }

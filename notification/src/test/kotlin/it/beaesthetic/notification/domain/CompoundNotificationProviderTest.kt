@@ -1,11 +1,11 @@
 package it.beaesthetic.notification.domain
 
-import kotlinx.coroutines.runBlocking
-import org.mockito.kotlin.*
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import kotlinx.coroutines.runBlocking
+import org.mockito.kotlin.*
 
 class CompoundNotificationProviderTest {
 
@@ -145,30 +145,31 @@ class CompoundNotificationProviderTest {
     }
 
     @Test
-    fun `should use first provider when multiple providers support same channel`(): Unit = runBlocking {
-        // Given
-        val smsProvider1: NotificationProvider = mock()
-        val smsProvider2: NotificationProvider = mock()
-        val providers = listOf(smsProvider1, smsProvider2)
-        val compound = CompoundNotificationProvider(providers)
-        val notification = Notification.of("notif-1", title, content, Sms("+393331234567"))
-        val metadata = ChannelMetadata("provider1-msg-123")
+    fun `should use first provider when multiple providers support same channel`(): Unit =
+        runBlocking {
+            // Given
+            val smsProvider1: NotificationProvider = mock()
+            val smsProvider2: NotificationProvider = mock()
+            val providers = listOf(smsProvider1, smsProvider2)
+            val compound = CompoundNotificationProvider(providers)
+            val notification = Notification.of("notif-1", title, content, Sms("+393331234567"))
+            val metadata = ChannelMetadata("provider1-msg-123")
 
-        whenever(smsProvider1.isSupported(notification)).thenReturn(true)
-        whenever(smsProvider1.send(notification)).thenReturn(Result.success(metadata))
+            whenever(smsProvider1.isSupported(notification)).thenReturn(true)
+            whenever(smsProvider1.send(notification)).thenReturn(Result.success(metadata))
 
-        // When
-        val result = compound.send(notification)
+            // When
+            val result = compound.send(notification)
 
-        // Then
-        assertTrue(result.isSuccess)
-        assertEquals(metadata, result.getOrThrow())
+            // Then
+            assertTrue(result.isSuccess)
+            assertEquals(metadata, result.getOrThrow())
 
-        verify(smsProvider1).isSupported(notification)
-        verify(smsProvider1).send(notification)
-        verify(smsProvider2, never()).isSupported(any())
-        verify(smsProvider2, never()).send(any())
-    }
+            verify(smsProvider1).isSupported(notification)
+            verify(smsProvider1).send(notification)
+            verify(smsProvider2, never()).isSupported(any())
+            verify(smsProvider2, never()).send(any())
+        }
 
     @Test
     fun `should handle empty provider list`(): Unit = runBlocking {

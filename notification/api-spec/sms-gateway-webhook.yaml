@@ -119,9 +119,11 @@ components:
         reason:
           type: string
           description: "Reason of failure attempt"
+      required: [type]
     SuccessfulAttempt:
       type: object
       properties:
         type:
           type: string
           pattern: "success"
+      required: [type]

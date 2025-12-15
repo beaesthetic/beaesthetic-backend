@@ -14,7 +14,7 @@ class SmsWebhookResource(private val notificationService: NotificationService) :
 
     override suspend fun smsGatewayNotify(eventNotificationDtoDto: EventNotificationDtoDto) {
         when (eventNotificationDtoDto.eventType) {
-            EventNotificationTypeDto.SUCCEEDED -> {
+            EventNotificationTypeDto.MESSAGE_PERIOD_DELIVER_PERIOD_SUCCEEDED -> {
                 log.info(
                     "Received SMS delivery success event for ${eventNotificationDtoDto.data?.id}"
                 )
@@ -31,7 +31,7 @@ class SmsWebhookResource(private val notificationService: NotificationService) :
 
                 notificationService.confirmNotificationSent(notificationId).getOrThrow()
             }
-            EventNotificationTypeDto.FAILED -> {
+            EventNotificationTypeDto.MESSAGE_PERIOD_DELIVER_PERIOD_FAILED -> {
                 log.info(
                     "Received SMS delivery failure event for ${eventNotificationDtoDto.data?.id}. Doing nothing"
                 )

@@ -25,5 +25,5 @@ constructor(
     @BsonProperty("channel") val channel: Channel,
     @BsonProperty("channelData") val channelData: ChannelMetadata? = null,
     @BsonProperty("createdAt") val createdAt: Instant,
-    @BsonProperty("updatedAt") val updatedAt: Instant
+    @BsonProperty("updatedAt") val updatedAt: Instant,
 ) : PanacheMongoEntityBase()

@@ -2,6 +2,7 @@ package it.beaesthetic.notification.domain
 
 interface NotificationProvider {
     suspend fun isSupported(notification: Notification): Boolean
+
     suspend fun send(notification: Notification): Result<ChannelMetadata>
 }
 

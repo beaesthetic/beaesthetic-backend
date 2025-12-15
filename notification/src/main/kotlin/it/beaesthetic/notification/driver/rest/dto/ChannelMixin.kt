@@ -12,7 +12,7 @@ import it.beaesthetic.notification.generated.api.model.WhatsappChannelDto
     use = JsonTypeInfo.Id.NAME,
     property = "type",
     include = JsonTypeInfo.As.EXTERNAL_PROPERTY,
-    visible = true
+    visible = true,
 )
 @JsonSubTypes(
     value =

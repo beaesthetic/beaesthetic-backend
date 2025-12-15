@@ -9,20 +9,20 @@ import java.util.UUID
 
 class NotificationService(
     private val notificationRepository: NotificationRepository,
-    private val notificationProvider: NotificationProvider
+    private val notificationProvider: NotificationProvider,
 ) {
 
     suspend fun createNotification(
         title: String,
         content: String,
-        channel: Channel
+        channel: Channel,
     ): Result<Notification> {
         val notification =
             Notification.of(
                 id = UUID.randomUUID().toString(),
                 title = title,
                 content = content,
-                channel = channel
+                channel = channel,
             )
         return notificationRepository.save(notification)
     }

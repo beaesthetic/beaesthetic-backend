@@ -32,7 +32,7 @@ class SetupRabbit(private val config: Config) {
                             port = config.getValue("rabbitmq-port", Int::class.java)
                             user = config.getValue("rabbitmq-username", String::class.java)
                             password = config.getValue("rabbitmq-password", String::class.java)
-                        }
+                        },
                     )
                 val retryQueue = "${queueName}-retry"
                 val retryExchange = "$retryQueue-exchange"
@@ -51,8 +51,8 @@ class SetupRabbit(private val config: Config) {
                                 "x-dead-letter-exchange",
                                 "amq.direct",
                                 "x-message-ttl",
-                                1
-                            )
+                                1,
+                            ),
                         )
                     }
                     .flatMap {
@@ -61,10 +61,7 @@ class SetupRabbit(private val config: Config) {
                             true,
                             false,
                             false,
-                            JsonObject.of(
-                                "x-dead-letter-exchange",
-                                retryQueue,
-                            )
+                            JsonObject.of("x-dead-letter-exchange", retryQueue),
                         )
                     }
                     .flatMap { rabbitClient.queueBind(queueName, "amq.direct", queueName) }

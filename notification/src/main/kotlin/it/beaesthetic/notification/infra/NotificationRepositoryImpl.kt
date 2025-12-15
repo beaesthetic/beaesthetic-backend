@@ -16,7 +16,7 @@ class PanacheNotificationRepository : ReactivePanacheMongoRepository<Notificatio
 @ApplicationScoped
 class NotificationRepositoryImpl(
     private val panacheNotificationRepository: PanacheNotificationRepository,
-    private val eventBus: EventBus
+    private val eventBus: EventBus,
 ) : NotificationRepository {
 
     override suspend fun findById(notificationId: String): Notification? {
@@ -50,7 +50,7 @@ class NotificationRepositoryImpl(
                 channel = notification.channel,
                 channelData = notification.channelMetadata,
                 createdAt = notification.createdAt,
-                updatedAt = Instant.now()
+                updatedAt = Instant.now(),
             )
 
         fun toDomain(entity: NotificationEntity): Notification =
@@ -63,7 +63,7 @@ class NotificationRepositoryImpl(
                 channel = entity.channel,
                 channelMetadata = entity.channelData,
                 createdAt = entity.createdAt,
-                domainEventRegistry = DomainEventRegistryDelegate()
+                domainEventRegistry = DomainEventRegistryDelegate(),
             )
     }
 }

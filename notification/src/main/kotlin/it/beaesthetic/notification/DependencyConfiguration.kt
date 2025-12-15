@@ -19,7 +19,7 @@ class DependencyConfiguration {
     @Produces
     fun notificationService(
         notificationRepository: NotificationRepository,
-        notificationProvider: NotificationProvider
+        notificationProvider: NotificationProvider,
     ): NotificationService {
         return NotificationService(notificationRepository, notificationProvider)
     }
@@ -27,7 +27,7 @@ class DependencyConfiguration {
     @Produces
     fun notificationProvider(
         @RestClient smsApi: SmsApi,
-        smsGatewayConfig: SmsGatewayConfig
+        smsGatewayConfig: SmsGatewayConfig,
     ): NotificationProvider {
         return CompoundNotificationProvider(
             listOf(SmsNotificationProvider(smsApi, smsGatewayConfig.senderNumber()))
@@ -46,7 +46,7 @@ class DependencyConfiguration {
                     .enableDiscriminator(true)
                     .discriminatorKey("type")
                     .discriminator("sms")
-                    .build()
+                    .build(),
             )
             .build()
     }

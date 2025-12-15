@@ -32,7 +32,7 @@ class NotificationResource(
             .createNotification(
                 sendNotificationRequestDto.title,
                 sendNotificationRequestDto.content,
-                channel
+                channel,
             )
             .map { CreateNotification200ResponseDto(UUID.fromString(it.id)) }
             .getOrThrow()
@@ -51,9 +51,8 @@ class NotificationResource(
                         is Email -> EmailChannelDto(it.channel.email)
                         is Sms -> SmsChannelDto(it.channel.phone)
                         is WhatsApp -> WhatsappChannelDto(it.channel.phone)
-                    }
+                    },
             )
-        }
-            ?: throw NotFoundException("Notification with id $notificationId not found")
+        } ?: throw NotFoundException("Notification with id $notificationId not found")
     }
 }

@@ -13,7 +13,7 @@ data class Notification(
     val channel: Channel,
     val channelMetadata: ChannelMetadata?,
     val createdAt: Instant,
-    private val domainEventRegistry: DomainEventRegistry<NotificationEvent>
+    private val domainEventRegistry: DomainEventRegistry<NotificationEvent>,
 ) : DomainEventRegistry<NotificationEvent> by domainEventRegistry {
 
     companion object {
@@ -27,7 +27,7 @@ data class Notification(
                     isSentConfirmed = false,
                     channelMetadata = null,
                     createdAt = Instant.now(),
-                    domainEventRegistry = DomainEventRegistryDelegate()
+                    domainEventRegistry = DomainEventRegistryDelegate(),
                 )
                 .apply { addEvent(NotificationCreated(id)) }
     }
