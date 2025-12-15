@@ -16,7 +16,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
       - name: Detect changed services
         id: set-matrix
@@ -39,10 +39,10 @@ jobs:
       matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
     name: Check ${{ matrix.folder }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
       - name: Set up Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 21
