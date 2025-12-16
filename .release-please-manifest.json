@@ -1,8 +1,8 @@
 {
-  "appointment": "1.9.2",
+  "appointment": "1.9.3",
   "customer": "1.10.1",
   "gateway": "1.4.0",
   "notification": "1.1.2",
-  "scheduler": "1.1.6",
+  "scheduler": "1.1.7",
   "insights": "1.2.0"
 }
