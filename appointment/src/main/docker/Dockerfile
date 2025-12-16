@@ -1,5 +1,5 @@
 # see https://quarkus.io/guides/building-native-image#multistage-docker
-FROM quay.io/quarkus/ubi-quarkus-mandrel-builder-image@sha256:eaeefa7e92980ca6ff13572808153ce5b55d3efe08f40ee15bdf5109a68ac2b8 AS builder
+FROM quay.io/quarkus/ubi-quarkus-mandrel-builder-image:25.0-jdk-25 AS builder
 USER root
 RUN microdnf install findutils
 #COPY --chown=quarkus:quarkus --chmod=0755 gradle.lockfile /code/
