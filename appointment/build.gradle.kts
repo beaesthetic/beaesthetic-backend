@@ -109,16 +109,6 @@ allOpen {
   annotation("io.quarkus.test.junit.QuarkusTest")
 }
 
-// sourceSets {
-//  main {
-//    java {
-//      srcDirs("${layout.buildDirectory.get()}/generated/src/main/java")
-//
-// srcDirs("${layout.buildDirectory.get()}/classes/java/quarkus-generated-sources/open-api-yaml")
-//    }
-//  }
-// }
-
 tasks.withType<KotlinCompile> { dependsOn("appointment-api") }
 
 spotless {
