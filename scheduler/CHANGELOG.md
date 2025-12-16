@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.6](https://github.com/beaesthetic/beaesthetic-backend/compare/scheduler-service-v1.1.5...scheduler-service-v1.1.6) (2025-12-16)
+
+
+### Bug Fixes
+
+* docker image base ([860a009](https://github.com/beaesthetic/beaesthetic-backend/commit/860a0090b2f1fc20fb07626cef234a8e217beff6))
+
 ## [1.1.5](https://github.com/beaesthetic/beaesthetic-backend/compare/scheduler-service-v1.1.4...scheduler-service-v1.1.5) (2025-12-15)
 
 
