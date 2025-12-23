@@ -3,6 +3,6 @@
   "customer": "1.10.1",
   "gateway": "1.4.0",
   "notification": "1.1.2",
-  "scheduler": "1.1.7",
+  "scheduler": "1.1.8",
   "insights": "1.2.0"
 }
