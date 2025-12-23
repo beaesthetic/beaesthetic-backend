@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.5](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.9.4...appointment-service-v1.9.5) (2025-12-23)
+
+
+### Bug Fixes
+
+* docker file appointment to java 21 ([a0d9a94](https://github.com/beaesthetic/beaesthetic-backend/commit/a0d9a94e3dcdb43fb62c153266e228d5d052c4d4))
+
 ## [1.9.4](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.9.3...appointment-service-v1.9.4) (2025-12-23)
 
 
