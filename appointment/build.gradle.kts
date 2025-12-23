@@ -31,7 +31,6 @@ dependencies {
   )
   implementation("io.quarkus:quarkus-rest")
   implementation("io.quarkus:quarkus-rest-jackson")
-  implementation("io.quarkus:quarkus-smallrye-health")
   implementation("io.quarkus:quarkus-mongodb-client")
   implementation("io.quarkus:quarkus-arc")
 
@@ -52,6 +51,9 @@ dependencies {
 
   // rabbitmq
   implementation("io.quarkus:quarkus-messaging-rabbitmq")
+
+  // bouncycastle for native SSL support (required by Netty native build)
+  implementation("org.bouncycastle:bcpkix-jdk18on:1.80")
 
   // validation
   implementation("io.quarkus:quarkus-hibernate-validator")
