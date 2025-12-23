@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.4](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.9.3...appointment-service-v1.9.4) (2025-12-23)
+
+
+### Bug Fixes
+
+* appointment transitive dep bouncy castle native ([55a242e](https://github.com/beaesthetic/beaesthetic-backend/commit/55a242e72c603b7209b3fb1647557f2a9e942f04))
+
 ## [1.9.3](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.9.2...appointment-service-v1.9.3) (2025-12-16)
 
 
