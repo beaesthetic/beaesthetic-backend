@@ -1,9 +1,9 @@
 name: Build and Release Consent Service
 
 on:
-  push:
-    tags:
-      - 'consent-service-v*'
+  release:
+    types: [published]
+  workflow_dispatch:
 
 env:
   TARGET_PLATFORMS: linux/arm64
