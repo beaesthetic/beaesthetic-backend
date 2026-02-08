@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - 'consent-service-v*'
+  workflow_dispatch:
 
 env:
   TARGET_PLATFORMS: linux/arm64
@@ -21,12 +22,18 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Extract version from tag
+      - name: Extract version
         id: version
         run: |
-          TAG=${GITHUB_REF#refs/tags/consent-service-v}
-          echo "version=$TAG" >> $GITHUB_OUTPUT
-          echo "Version: $TAG"
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            VERSION=$(cat .release-please-manifest.json | jq -r '."consent-service"')
+          else
+            # Extract version from tag (e.g., consent-service-v1.0.0 -> 1.0.0)
+            TAG_NAME="${GITHUB_REF#refs/tags/consent-service-v}"
+            VERSION="$TAG_NAME"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
 
       - name: Set up Go
         uses: actions/setup-go@v5
