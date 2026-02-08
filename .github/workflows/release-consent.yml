@@ -12,7 +12,9 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
+    name: "Build and Push Docker image"
+    if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'consent-service-v')
     permissions:
       contents: write
       packages: write
@@ -25,11 +27,16 @@ jobs:
         id: version
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            VERSION=$(cat .release-please-manifest.json | jq -r '."consent-service"')
+            VERSION=$(cat consent-service/VERSION)
           else
-            # Extract version from tag (e.g., consent-service-v1.0.0 -> 1.0.0)
-            TAG_NAME="${GITHUB_REF#refs/tags/consent-service-v}"
-            VERSION="$TAG_NAME"
+            # Extract version from release tag (e.g., consent-service-v1.0.0 -> 1.0.0)
+            TAG_NAME="${{ github.event.release.tag_name }}"
+            if [[ "$TAG_NAME" =~ consent-service-v(.*) ]]; then
+              VERSION="${BASH_REMATCH[1]}"
+            else
+              echo "Error: Tag name doesn't match expected pattern"
+              exit 1
+            fi
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
