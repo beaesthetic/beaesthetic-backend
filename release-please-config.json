@@ -91,10 +91,18 @@
       "changelog-path": "CHANGELOG.md"
     },
     "consent-service": {
-      "release-type": "go",
+      "release-type": "simple",
       "package-name": "consent-service",
       "include-component-in-tag": true,
       "component": "consent-service",
+      "extra-files": [
+        "VERSION",
+        {
+          "type": "yaml",
+          "path": "deployment/kustomization.yaml",
+          "jsonpath": "$.images[0].newTag"
+        }
+      ],
       "changelog-path": "CHANGELOG.md"
     }
   },
