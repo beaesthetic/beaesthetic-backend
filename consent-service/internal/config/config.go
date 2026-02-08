@@ -46,11 +46,12 @@ func Load(configPath string) (*Config, error) {
 	}
 
 	// Load from environment variables (overrides file config)
-	// Environment variable format: CONSENT_SERVER_PORT, CONSENT_MONGODB_CONNECTION_STRING, etc.
-	if err := k.Load(env.Provider("CONSENT_", ".", func(s string) string {
+	// Environment variable format: CONSENT__SERVER__PORT, CONSENT__MONGODB__CONNECTION_STRING, etc.
+	// Double underscore (__) is used as level separator, single underscore (_) is preserved
+	if err := k.Load(env.Provider("CONSENT__", ".", func(s string) string {
 		return strings.Replace(
-			strings.ToLower(strings.TrimPrefix(s, "CONSENT_")),
-			"_",
+			strings.ToLower(strings.TrimPrefix(s, "CONSENT__")),
+			"__",
 			".",
 			-1,
 		)

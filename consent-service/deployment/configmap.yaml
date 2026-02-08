@@ -5,4 +5,4 @@ metadata:
   namespace: beaesthetic
 data:
   GIN_MODE: "release"
-  CONSENT_MONGODB_DATABASE: "consentdb"
+  CONSENT__MONGODB__DATABASE: "consentdb"

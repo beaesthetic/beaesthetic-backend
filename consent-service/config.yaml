@@ -1,6 +1,7 @@
 # Consent Service Configuration
-# Environment variables override these settings with CONSENT_ prefix
-# e.g., CONSENT_SERVER_PORT=8085
+# Environment variables override these settings with CONSENT__ prefix (double underscore)
+# Double underscore (__) separates levels, single underscore (_) is preserved
+# e.g., CONSENT__SERVER__PORT=8085, CONSENT__MONGODB__CONNECTION_STRING=...
 
 server:
   port: 8080
