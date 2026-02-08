@@ -1,0 +1,40 @@
+### Create Consent Link
+POST http://localhost:8085/admin/links
+Content-Type: application/json
+
+{
+  "subject": "customer-uuid-789",
+  "policies": ["privacy-policy", "marketing-consent"],
+  "expires_in_hours": 48,
+  "created_by": "operator-123"
+}
+
+### Get Link Status (Admin)
+# Replace with actual token
+GET http://localhost:8085/admin/links/token-here
+
+### Delete/Invalidate Link (Admin)
+# Replace with actual token
+DELETE http://localhost:8085/admin/links/token-here
+
+### Public: Get Link Info (for consent page)
+# Replace with actual token
+GET http://localhost:8085/public/links/token-here
+
+### Public: Accept Consents via Link
+# Replace with actual token
+POST http://localhost:8085/public/links/token-here/accept
+Content-Type: application/json
+
+{
+  "accepted_policies": ["privacy-policy", "marketing-consent"]
+}
+
+### Public: Accept Only Some Policies
+# Replace with actual token
+POST http://localhost:8085/public/links/token-here/accept
+Content-Type: application/json
+
+{
+  "accepted_policies": ["privacy-policy"]
+}

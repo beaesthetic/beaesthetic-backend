@@ -4,5 +4,6 @@
   "gateway": "1.4.0",
   "notification": "1.1.2",
   "scheduler": "1.1.7",
-  "insights": "1.2.0"
+  "insights": "1.2.0",
+  "consent-service": "0.1.0"
 }

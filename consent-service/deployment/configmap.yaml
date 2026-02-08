@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: beaesthetic-consent-service-config
+  namespace: beaesthetic
+data:
+  GIN_MODE: "release"
+  CONSENT_MONGODB_DATABASE: "consentdb"

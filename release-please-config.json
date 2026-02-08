@@ -89,6 +89,13 @@
         }
       ],
       "changelog-path": "CHANGELOG.md"
+    },
+    "consent-service": {
+      "release-type": "go",
+      "package-name": "consent-service",
+      "include-component-in-tag": true,
+      "component": "consent-service",
+      "changelog-path": "CHANGELOG.md"
     }
   },
   "changelog-sections": [

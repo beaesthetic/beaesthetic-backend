@@ -1,0 +1,766 @@
+openapi: 3.0.3
+info:
+  title: Consent Service API
+  description: |
+    Subject-agnostic consent management service for handling privacy policies,
+    marketing consents, and other policy types.
+  version: 1.0.0
+  contact:
+    name: BeAesthetic Team
+
+servers:
+  - url: http://localhost:8085
+    description: Local development server
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Admin - Policies
+    description: Policy management endpoints (authenticated)
+  - name: Admin - Consents
+    description: Consent management endpoints (authenticated)
+  - name: Admin - Links
+    description: Consent link management endpoints (authenticated)
+  - name: Public
+    description: Public endpoints for consent acceptance (no auth, token-based)
+
+paths:
+  # Admin - Policy endpoints
+  /admin/policies:
+    get:
+      tags:
+        - Admin - Policies
+      summary: List all policies
+      operationId: listPolicies
+      parameters:
+        - name: active
+          in: query
+          description: Filter to only policies with active versions
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: List of policies
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyListResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Admin - Policies
+      summary: Create a new policy
+      operationId: createPolicy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePolicyRequest'
+      responses:
+        '201':
+          description: Policy created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '409':
+          description: Policy already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/policies/{slug}:
+    get:
+      tags:
+        - Admin - Policies
+      summary: Get policy details
+      operationId: getPolicy
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: privacy-policy
+      responses:
+        '200':
+          description: Policy details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/policies/{slug}/versions:
+    post:
+      tags:
+        - Admin - Policies
+      summary: Add a new version to a policy
+      operationId: addPolicyVersion
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: privacy-policy
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddVersionRequest'
+      responses:
+        '201':
+          description: Version added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Version already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Admin - Consent endpoints
+  /admin/consents:
+    get:
+      tags:
+        - Admin - Consents
+      summary: Get consents for a subject
+      operationId: getConsents
+      parameters:
+        - name: subject
+          in: query
+          required: true
+          description: Subject identifier (external ID)
+          schema:
+            type: string
+          example: customer-uuid-123
+        - name: policy
+          in: query
+          description: Filter by specific policy slug
+          schema:
+            type: string
+          example: privacy-policy
+      responses:
+        '200':
+          description: Subject consents
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SubjectConsentsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Admin - Consents
+      summary: Create consents (direct acceptance via tablet/operator)
+      operationId: createConsent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateConsentRequest'
+      responses:
+        '201':
+          description: Consents created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/consents/{id}:
+    get:
+      tags:
+        - Admin - Consents
+      summary: Get consent by ID
+      operationId: getConsentById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: consent-uuid-123
+      responses:
+        '200':
+          description: Consent details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Admin - Consents
+      summary: Revoke a consent
+      operationId: revokeConsent
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: consent-uuid-123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RevokeConsentRequest'
+      responses:
+        '200':
+          description: Consent revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Consent'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          description: Consent already revoked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Admin - Link endpoints
+  /admin/links:
+    post:
+      tags:
+        - Admin - Links
+      summary: Create a shareable consent link
+      operationId: createLink
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateLinkRequest'
+      responses:
+        '201':
+          description: Link created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateLinkResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /admin/links/{token}:
+    get:
+      tags:
+        - Admin - Links
+      summary: Get link status
+      operationId: getLinkStatus
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          example: abc123-def456
+      responses:
+        '200':
+          description: Link details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentLink'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Admin - Links
+      summary: Invalidate a consent link
+      operationId: deleteLink
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          example: abc123-def456
+      responses:
+        '204':
+          description: Link deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Public endpoints
+  /public/links/{token}:
+    get:
+      tags:
+        - Public
+      summary: Get link info for consent acceptance
+      description: Returns policy details for the consent link. No authentication required.
+      operationId: getPublicLinkInfo
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          example: abc123-def456
+      responses:
+        '200':
+          description: Link info with policy details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicLinkInfo'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '410':
+          description: Link expired or already used
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /public/links/{token}/accept:
+    post:
+      tags:
+        - Public
+      summary: Accept consents via link
+      description: Records consent acceptance for the specified policies. No authentication required.
+      operationId: acceptConsent
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          example: abc123-def456
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AcceptConsentRequest'
+      responses:
+        '201':
+          description: Consents accepted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '410':
+          description: Link expired or already used
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: ok
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Resource not found
+
+    Policy:
+      type: object
+      properties:
+        slug:
+          type: string
+          example: privacy-policy
+        name:
+          type: string
+          example: Privacy Policy
+        description:
+          type: string
+          example: Our privacy policy
+        versions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyVersion'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    PolicyVersion:
+      type: object
+      properties:
+        version:
+          type: string
+          example: "1.0.0"
+        published_at:
+          type: string
+          format: date-time
+        content_html:
+          type: string
+          example: "<h1>Privacy Policy</h1>..."
+        content_markdown:
+          type: string
+          example: "# Privacy Policy\n..."
+        pdf_url:
+          type: string
+          format: uri
+          example: "https://cdn.example.com/policies/privacy-1.0.0.pdf"
+        is_active:
+          type: boolean
+          example: true
+
+    PolicyListResponse:
+      type: object
+      properties:
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Policy'
+
+    CreatePolicyRequest:
+      type: object
+      required:
+        - slug
+        - name
+      properties:
+        slug:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: privacy-policy
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Privacy Policy
+        description:
+          type: string
+          maxLength: 1000
+          example: Our privacy policy document
+
+    AddVersionRequest:
+      type: object
+      required:
+        - version
+      properties:
+        version:
+          type: string
+          minLength: 1
+          maxLength: 20
+          example: "1.0.0"
+        content_html:
+          type: string
+          example: "<h1>Privacy Policy</h1>..."
+        content_markdown:
+          type: string
+          example: "# Privacy Policy\n..."
+        pdf_url:
+          type: string
+          format: uri
+          example: "https://cdn.example.com/policies/privacy-1.0.0.pdf"
+        is_active:
+          type: boolean
+          default: false
+          example: true
+
+    Consent:
+      type: object
+      properties:
+        id:
+          type: string
+          example: consent-uuid-123
+        subject:
+          type: string
+          example: customer-uuid-123
+        policy_slug:
+          type: string
+          example: privacy-policy
+        policy_version:
+          type: string
+          example: "1.0.0"
+        accepted_at:
+          type: string
+          format: date-time
+        acceptance_method:
+          type: string
+          enum:
+            - direct
+            - link
+          example: direct
+        link_token:
+          type: string
+          nullable: true
+          example: abc123-def456
+        revoked_at:
+          type: string
+          format: date-time
+          nullable: true
+        revoked_by:
+          type: string
+          nullable: true
+          example: operator-123
+
+    SubjectConsentsResponse:
+      type: object
+      properties:
+        subject:
+          type: string
+          example: customer-uuid-123
+        consents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Consent'
+
+    ConsentsResponse:
+      type: object
+      properties:
+        consents:
+          type: array
+          items:
+            $ref: '#/components/schemas/Consent'
+
+    CreateConsentRequest:
+      type: object
+      required:
+        - subject
+        - policies
+      properties:
+        subject:
+          type: string
+          example: customer-uuid-123
+        policies:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required:
+              - slug
+            properties:
+              slug:
+                type: string
+                example: privacy-policy
+              version:
+                type: string
+                description: If not provided, uses the active version
+                example: "1.0.0"
+
+    RevokeConsentRequest:
+      type: object
+      required:
+        - revoked_by
+      properties:
+        revoked_by:
+          type: string
+          example: operator-123
+
+    ConsentLink:
+      type: object
+      properties:
+        token:
+          type: string
+          example: abc123-def456
+        subject:
+          type: string
+          example: customer-uuid-123
+        policies:
+          type: array
+          items:
+            type: string
+          example:
+            - privacy-policy
+            - marketing-consent
+        created_at:
+          type: string
+          format: date-time
+        expires_at:
+          type: string
+          format: date-time
+        used_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_by:
+          type: string
+          example: operator-123
+
+    CreateLinkRequest:
+      type: object
+      required:
+        - subject
+        - policies
+        - expires_in_hours
+        - created_by
+      properties:
+        subject:
+          type: string
+          example: customer-uuid-123
+        policies:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          example:
+            - privacy-policy
+            - marketing-consent
+        expires_in_hours:
+          type: integer
+          minimum: 1
+          maximum: 168
+          example: 48
+        created_by:
+          type: string
+          example: operator-123
+
+    CreateLinkResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          example: abc123-def456
+        url:
+          type: string
+          format: uri
+          example: "https://consent.example.com/public/links/abc123-def456"
+        expires_at:
+          type: string
+          format: date-time
+
+    PublicLinkInfo:
+      type: object
+      properties:
+        token:
+          type: string
+          example: abc123-def456
+        subject:
+          type: string
+          example: customer-uuid-123
+        policies:
+          type: array
+          items:
+            $ref: '#/components/schemas/PublicPolicyInfo'
+        expires_at:
+          type: string
+          format: date-time
+
+    PublicPolicyInfo:
+      type: object
+      properties:
+        slug:
+          type: string
+          example: privacy-policy
+        name:
+          type: string
+          example: Privacy Policy
+        description:
+          type: string
+          example: Our privacy policy
+        version:
+          type: string
+          example: "1.0.0"
+        content_html:
+          type: string
+          example: "<h1>Privacy Policy</h1>..."
+        content_markdown:
+          type: string
+          example: "# Privacy Policy\n..."
+        pdf_url:
+          type: string
+          format: uri
+          example: "https://cdn.example.com/policies/privacy-1.0.0.pdf"
+
+    AcceptConsentRequest:
+      type: object
+      required:
+        - accepted_policies
+      properties:
+        accepted_policies:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          example:
+            - privacy-policy
+            - marketing-consent
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'

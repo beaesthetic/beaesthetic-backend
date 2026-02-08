@@ -1,0 +1,14 @@
+# Consent Service Configuration
+# Environment variables override these settings with CONSENT_ prefix
+# e.g., CONSENT_SERVER_PORT=8085
+
+server:
+  port: 8080
+  base_url: http://localhost:8080
+
+mongodb:
+  connection_string: mongodb://localhost:27017
+  database: consents
+
+consent:
+  default_link_expiry_hours: 48

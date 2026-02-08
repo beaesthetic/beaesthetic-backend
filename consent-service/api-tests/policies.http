@@ -1,0 +1,80 @@
+### Health Check
+GET http://localhost:8085/health
+
+### Readiness Check
+GET http://localhost:8085/ready
+
+### Create Privacy Policy
+POST http://localhost:8085/admin/policies
+Content-Type: application/json
+
+{
+  "slug": "privacy-policy",
+  "name": "Privacy Policy",
+  "description": "Informativa sulla privacy e trattamento dati personali"
+}
+
+### Create Marketing Consent Policy
+POST http://localhost:8085/admin/policies
+Content-Type: application/json
+
+{
+  "slug": "marketing-consent",
+  "name": "Marketing Consent",
+  "description": "Consenso per comunicazioni marketing e promozionali"
+}
+
+### Create Cookie Policy
+POST http://localhost:8085/admin/policies
+Content-Type: application/json
+
+{
+  "slug": "cookie-policy",
+  "name": "Cookie Policy",
+  "description": "Informativa sull'utilizzo dei cookie"
+}
+
+### List All Policies
+GET http://localhost:8085/admin/policies
+
+### List Active Policies Only
+GET http://localhost:8085/admin/policies?active=true
+
+### Get Privacy Policy Details
+GET http://localhost:8085/admin/policies/privacy-policy
+
+### Add Version 1.0.0 to Privacy Policy (Active)
+POST http://localhost:8085/admin/policies/privacy-policy/versions
+Content-Type: application/json
+
+{
+  "version": "1.0.0",
+  "content_html": "<h1>Privacy Policy</h1><p>This is our privacy policy version 1.0.0...</p>",
+  "content_markdown": "# Privacy Policy\n\nThis is our privacy policy version 1.0.0...",
+  "pdf_url": "https://cdn.example.com/policies/privacy-policy-1.0.0.pdf",
+  "is_active": true
+}
+
+### Add Version 1.1.0 to Privacy Policy
+POST http://localhost:8085/admin/policies/privacy-policy/versions
+Content-Type: application/json
+
+{
+  "version": "1.1.0",
+  "content_html": "<h1>Privacy Policy</h1><p>Updated privacy policy version 1.1.0...</p>",
+  "content_markdown": "# Privacy Policy\n\nUpdated privacy policy version 1.1.0...",
+  "pdf_url": "https://cdn.example.com/policies/privacy-policy-1.1.0.pdf",
+  "is_active": true
+}
+
+### Add Version 1.0.0 to Marketing Consent (Active)
+POST http://localhost:8085/admin/policies/marketing-consent/versions
+Content-Type: application/json
+
+{
+  "version": "1.0.0",
+  "content_html": "<h1>Marketing Consent</h1><p>Marketing consent terms...</p>",
+  "content_markdown": "# Marketing Consent\n\nMarketing consent terms...",
+  "pdf_url": "https://cdn.example.com/policies/marketing-consent-1.0.0.pdf",
+  "is_active": true
+}

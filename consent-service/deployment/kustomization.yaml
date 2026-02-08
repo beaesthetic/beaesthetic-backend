@@ -1,0 +1,10 @@
+
+resources:
+  - external-secrets.yaml
+  - configmap.yaml
+  - deployment.yaml
+  - svc.yaml
+
+images:
+  - name: petretiandrea/beaesthetic-consent-service
+    newTag: "2.3.2"

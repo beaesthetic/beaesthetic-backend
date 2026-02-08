@@ -1,0 +1,41 @@
+### Create Direct Consent (Tablet Flow)
+POST http://localhost:8085/admin/consents
+Content-Type: application/json
+
+{
+  "subject": "customer-uuid-123",
+  "policies": [
+    { "slug": "privacy-policy" },
+    { "slug": "marketing-consent" }
+  ]
+}
+
+### Create Consent with Specific Version
+POST http://localhost:8085/admin/consents
+Content-Type: application/json
+
+{
+  "subject": "customer-uuid-456",
+  "policies": [
+    { "slug": "privacy-policy", "version": "1.0.0" }
+  ]
+}
+
+### Get All Consents for a Subject
+GET http://localhost:8085/admin/consents?subject=customer-uuid-123
+
+### Get Specific Policy Consent for Subject
+GET http://localhost:8085/admin/consents?subject=customer-uuid-123&policy=privacy-policy
+
+### Get Consent by ID
+# Replace with actual consent ID
+GET http://localhost:8085/admin/consents/consent-id-here
+
+### Revoke Consent
+# Replace with actual consent ID
+DELETE http://localhost:8085/admin/consents/consent-id-here
+Content-Type: application/json
+
+{
+  "revoked_by": "operator-123"
+}

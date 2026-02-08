@@ -1,0 +1,9 @@
+# oapi-codegen configuration for consent-service
+# Run: go generate ./...
+
+package: api
+generate:
+  models: true
+  gin-server: true
+  strict-server: true
+  embedded-spec: true
