@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/beaesthetic/beaesthetic-backend/compare/consent-service-v0.2.1...consent-service-v0.2.2) (2026-02-08)
+
+
+### Bug Fixes
+
+* koanf parsing env varialbe ([b2d7063](https://github.com/beaesthetic/beaesthetic-backend/commit/b2d70634183e83af0e5bf99e85567741af11427e))
+
 ## [0.2.1](https://github.com/beaesthetic/beaesthetic-backend/compare/consent-service-v0.2.0...consent-service-v0.2.1) (2026-02-08)
 
 
