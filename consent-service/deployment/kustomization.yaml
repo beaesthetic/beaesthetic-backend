@@ -1,4 +1,3 @@
-
 resources:
   - external-secrets.yaml
   - configmap.yaml
@@ -7,4 +6,4 @@ resources:
 
 images:
   - name: petretiandrea/beaesthetic-consent-service
-    newTag: "0.1.0"
+    newTag: "0.2.1"
