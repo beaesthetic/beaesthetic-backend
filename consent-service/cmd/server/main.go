@@ -79,7 +79,7 @@ func main() {
 	// Initialize HTTP router
 	router := httpport.NewRouter(policyService, consentService, linkService)
 
-	// register health check endpoint
+	// Register health check endpoint
 	health.RegisterGinHealthCheck(router.Engine(), mongoClient)
 
 	// Create HTTP server
