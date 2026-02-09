@@ -3,7 +3,6 @@ resources:
   - configmap.yaml
   - deployment.yaml
   - svc.yaml
-
 images:
   - name: petretiandrea/beaesthetic-consent-service
-    newTag: "0.2.1"
+    newTag: 0.2.3
