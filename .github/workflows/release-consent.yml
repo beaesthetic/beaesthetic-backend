@@ -26,17 +26,10 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            VERSION=$(cat consent-service/VERSION)
+          if [[ "${{ github.ref }}" =~ ^refs/tags/consent-service-v(.*) ]]; then
+            VERSION="${BASH_REMATCH[1]}"
           else
-            # Extract version from release tag (e.g., consent-service-v1.0.0 -> 1.0.0)
-            TAG_NAME="${{ github.event.release.tag_name }}"
-            if [[ "$TAG_NAME" =~ consent-service-v(.*) ]]; then
-              VERSION="${BASH_REMATCH[1]}"
-            else
-              echo "Error: Tag name doesn't match expected pattern"
-              exit 1
-            fi
+            VERSION="dev-$(echo ${{ github.sha }} | cut -c1-7)"
           fi
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Version: $VERSION"
