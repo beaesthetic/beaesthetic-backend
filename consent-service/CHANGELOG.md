@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/beaesthetic/beaesthetic-backend/compare/consent-service-v0.2.2...consent-service-v0.2.3) (2026-02-09)
+
+
+### Bug Fixes
+
+* update comment for health check registration ([4341b6f](https://github.com/beaesthetic/beaesthetic-backend/commit/4341b6f1535d227996fc86377ae588170667a0a5))
+
 ## [0.2.2](https://github.com/beaesthetic/beaesthetic-backend/compare/consent-service-v0.2.1...consent-service-v0.2.2) (2026-02-08)
 
 
