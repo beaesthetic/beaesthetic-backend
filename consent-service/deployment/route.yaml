@@ -1,0 +1,30 @@
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: beaesthetic-consents
+  namespace: beaesthetic
+spec:
+  ingressClassName: apisix
+  http:
+    - name: beaesthetic-consents
+      plugin_config_name: oidc-firebase
+      match:
+        hosts: ["api.agenda.beaesthetic.it"]
+        paths: ["/consent-service/*"]
+      backends:
+        - serviceName: beaesthetic-consent-service
+          servicePort: 8080
+      plugins:
+        - name: proxy-rewrite
+          enable: true
+          config:
+            regex_uri: ["^/consent-service/(.*)", "/$1"]
+        - name: cors
+          enable: true
+          config:
+            allow_origins: "*"
+            allow_credential: false
+            allow_methods: "*"
+            allow_headers: "*"
+            expose_headers: "*"
+            max_age: 5
