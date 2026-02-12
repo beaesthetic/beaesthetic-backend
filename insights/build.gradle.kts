@@ -36,7 +36,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
 
     // vertx-lang-kotlin-coroutines
-    implementation("io.vertx:vertx-lang-kotlin-coroutines:4.5.7")
+    implementation("io.vertx:vertx-lang-kotlin-coroutines:4.5.24")
 
     // validation
     implementation("io.quarkus:quarkus-hibernate-validator")
