@@ -211,12 +211,14 @@ func (s *Server) CreateConsent(ctx context.Context, request CreateConsentRequest
 func (s *Server) GetConsentStatus(ctx context.Context, request GetConsentStatusRequestObject) (GetConsentStatusResponseObject, error) {
 	tenantID := request.Params.XTenantID
 	subject := request.Params.Subject
-	slugsStr := request.Params.Slugs
 
-	// Parse comma-separated slugs
-	slugs := strings.Split(slugsStr, ",")
-	for i := range slugs {
-		slugs[i] = strings.TrimSpace(slugs[i])
+	// Parse optional comma-separated slugs
+	var slugs []string
+	if request.Params.Slugs != nil && *request.Params.Slugs != "" {
+		slugs = strings.Split(*request.Params.Slugs, ",")
+		for i := range slugs {
+			slugs[i] = strings.TrimSpace(slugs[i])
+		}
 	}
 
 	statuses, err := s.consentService.GetConsentStatus(tenantID, subject, slugs)

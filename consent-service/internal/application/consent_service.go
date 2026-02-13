@@ -143,7 +143,8 @@ func (s *ConsentService) RevokeConsent(id string, revokedBy string) (*domain.Con
 	return consent, nil
 }
 
-// GetConsentStatus returns the consent status for a subject and a list of policy slugs
+// GetConsentStatus returns the consent status for a subject and a list of policy slugs.
+// If slugs is empty, all active policies of the tenant are used.
 func (s *ConsentService) GetConsentStatus(tenantID, subject string, slugs []string) ([]domain.PolicyConsentStatus, error) {
 	if tenantID == "" {
 		return nil, domain.ErrInvalidTenantID
@@ -151,33 +152,49 @@ func (s *ConsentService) GetConsentStatus(tenantID, subject string, slugs []stri
 	if subject == "" {
 		return nil, domain.ErrInvalidSubject
 	}
+
+	var policies []domain.Policy
+	var err error
+
 	if len(slugs) == 0 {
-		return nil, fmt.Errorf("at least one policy slug is required")
-	}
+		// No slugs provided: use all active policies of the tenant
+		policies, err = s.policyRepo.FindAllActive(tenantID)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// Fetch requested policies
+		policies, err = s.policyRepo.FindBySlugs(tenantID, slugs)
+		if err != nil {
+			return nil, err
+		}
 
-	// Fetch all requested policies in one query
-	policies, err := s.policyRepo.FindBySlugs(tenantID, slugs)
-	if err != nil {
-		return nil, err
-	}
-
-	// Check all slugs were found
-	policyMap := make(map[string]domain.Policy, len(policies))
-	for _, p := range policies {
-		policyMap[p.Slug] = p
-	}
-	var notFound []string
-	for _, slug := range slugs {
-		if _, ok := policyMap[slug]; !ok {
-			notFound = append(notFound, slug)
+		// Check all slugs were found
+		policyMap := make(map[string]bool, len(policies))
+		for _, p := range policies {
+			policyMap[p.Slug] = true
+		}
+		var notFound []string
+		for _, slug := range slugs {
+			if !policyMap[slug] {
+				notFound = append(notFound, slug)
+			}
+		}
+		if len(notFound) > 0 {
+			return nil, fmt.Errorf("policies not found: %v: %w", notFound, domain.ErrPolicyNotFound)
 		}
 	}
-	if len(notFound) > 0 {
-		return nil, fmt.Errorf("policies not found: %v: %w", notFound, domain.ErrPolicyNotFound)
+
+	// Build slug list from policies
+	policySlugs := make([]string, len(policies))
+	policyMap := make(map[string]domain.Policy, len(policies))
+	for i, p := range policies {
+		policySlugs[i] = p.Slug
+		policyMap[p.Slug] = p
 	}
 
-	// Fetch all active consents for subject+slugs in one query
-	consents, err := s.consentRepo.FindActiveBySubjectAndPolicies(tenantID, subject, slugs)
+	// Fetch all active consents for subject+policies in one query
+	consents, err := s.consentRepo.FindActiveBySubjectAndPolicies(tenantID, subject, policySlugs)
 	if err != nil && !errors.Is(err, domain.ErrConsentNotFound) {
 		return nil, err
 	}
@@ -192,7 +209,7 @@ func (s *ConsentService) GetConsentStatus(tenantID, subject string, slugs []stri
 
 	// Compute status for each policy
 	var statuses []domain.PolicyConsentStatus
-	for _, slug := range slugs {
+	for _, slug := range policySlugs {
 		policy := policyMap[slug]
 
 		activeVersion, err := policy.GetActiveVersion()

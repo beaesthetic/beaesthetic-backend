@@ -224,6 +224,7 @@ paths:
         Statuses: accepted (consent on current version), missing (no consent),
         outdated (consent on old version and re-acceptance required).
         Policies without an active version are skipped.
+        If slugs is omitted, returns the status for all active policies of the tenant.
       operationId: getConsentStatus
       parameters:
         - $ref: '#/components/parameters/TenantID'
@@ -236,8 +237,8 @@ paths:
           example: customer-uuid-123
         - name: slugs
           in: query
-          required: true
-          description: Comma-separated list of policy slugs to check
+          required: false
+          description: Comma-separated list of policy slugs to check. If omitted, all active policies of the tenant are used.
           schema:
             type: string
           example: privacy-policy,marketing-consent
