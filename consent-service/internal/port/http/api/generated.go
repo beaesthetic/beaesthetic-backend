@@ -35,6 +35,13 @@ const (
 	Outdated PolicyConsentStatusStatus = "outdated"
 )
 
+// Defines values for PolicyConsentStatusStatus.
+const (
+	Accepted PolicyConsentStatusStatus = "accepted"
+	Missing  PolicyConsentStatusStatus = "missing"
+	Outdated PolicyConsentStatusStatus = "outdated"
+)
+
 // AcceptConsentRequest defines model for AcceptConsentRequest.
 type AcceptConsentRequest struct {
 	AcceptedPolicies []string `json:"accepted_policies"`
@@ -46,6 +53,10 @@ type AddVersionRequest struct {
 	ContentMarkdown *string `json:"content_markdown,omitempty"`
 	IsActive        *bool   `json:"is_active,omitempty"`
 	PdfUrl          *string `json:"pdf_url,omitempty"`
+
+	// RequiresReAcceptance Whether this version requires subjects to re-accept their consent
+	RequiresReAcceptance *bool  `json:"requires_re_acceptance,omitempty"`
+	Version              string `json:"version"`
 
 	// RequiresReAcceptance Whether this version requires subjects to re-accept their consent
 	RequiresReAcceptance *bool  `json:"requires_re_acceptance,omitempty"`
@@ -79,6 +90,12 @@ type ConsentLink struct {
 	TenantId  *string    `json:"tenant_id,omitempty"`
 	Token     *string    `json:"token,omitempty"`
 	UsedAt    *time.Time `json:"used_at"`
+}
+
+// ConsentStatusResponse defines model for ConsentStatusResponse.
+type ConsentStatusResponse struct {
+	Statuses *[]PolicyConsentStatus `json:"statuses,omitempty"`
+	Subject  *string                `json:"subject,omitempty"`
 }
 
 // ConsentStatusResponse defines model for ConsentStatusResponse.
@@ -135,12 +152,29 @@ type Policy struct {
 	CreatedAt   *time.Time       `json:"created_at,omitempty"`
 	Description *string          `json:"description,omitempty"`
 	Id          *string          `json:"id,omitempty"`
+	Id          *string          `json:"id,omitempty"`
 	Name        *string          `json:"name,omitempty"`
 	Slug        *string          `json:"slug,omitempty"`
+	TenantId    *string          `json:"tenant_id,omitempty"`
 	TenantId    *string          `json:"tenant_id,omitempty"`
 	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
 	Versions    *[]PolicyVersion `json:"versions,omitempty"`
 }
+
+// PolicyConsentStatus defines model for PolicyConsentStatus.
+type PolicyConsentStatus struct {
+	ActiveVersion *string `json:"active_version,omitempty"`
+
+	// ConsentedVersion Version the subject consented to, null if missing
+	ConsentedVersion *string                    `json:"consented_version"`
+	Description      *string                    `json:"description,omitempty"`
+	Name             *string                    `json:"name,omitempty"`
+	Slug             *string                    `json:"slug,omitempty"`
+	Status           *PolicyConsentStatusStatus `json:"status,omitempty"`
+}
+
+// PolicyConsentStatusStatus defines model for PolicyConsentStatus.Status.
+type PolicyConsentStatusStatus string
 
 // PolicyConsentStatus defines model for PolicyConsentStatus.
 type PolicyConsentStatus struct {
