@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/beaesthetic/beaesthetic-backend/compare/consent-service-v0.2.4...consent-service-v0.3.0) (2026-02-13)
+
+
+### Features
+
+* multi tenant support ([#66](https://github.com/beaesthetic/beaesthetic-backend/issues/66)) ([ad7a793](https://github.com/beaesthetic/beaesthetic-backend/commit/ad7a793822b947cc1f5cafcd11bbf3f5deb34fa4))
+
 ## [0.2.4](https://github.com/beaesthetic/beaesthetic-backend/compare/consent-service-v0.2.3...consent-service-v0.2.4) (2026-02-10)
 
 
