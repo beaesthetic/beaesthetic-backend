@@ -9,9 +9,11 @@ import (
 
 func TestNewPolicy(t *testing.T) {
 	t.Run("creates policy with valid inputs", func(t *testing.T) {
-		policy, err := NewPolicy("privacy-policy", "Privacy Policy", "Our privacy policy")
+		policy, err := NewPolicy("tenant-1", "privacy-policy", "Privacy Policy", "Our privacy policy")
 
 		require.NoError(t, err)
+		assert.NotEmpty(t, policy.ID)
+		assert.Equal(t, "tenant-1", policy.TenantID)
 		assert.Equal(t, "privacy-policy", policy.Slug)
 		assert.Equal(t, "Privacy Policy", policy.Name)
 		assert.Equal(t, "Our privacy policy", policy.Description)
@@ -20,8 +22,15 @@ func TestNewPolicy(t *testing.T) {
 		assert.False(t, policy.UpdatedAt.IsZero())
 	})
 
+	t.Run("returns error for empty tenant id", func(t *testing.T) {
+		policy, err := NewPolicy("", "privacy-policy", "Privacy Policy", "Description")
+
+		assert.Nil(t, policy)
+		assert.ErrorIs(t, err, ErrInvalidTenantID)
+	})
+
 	t.Run("returns error for empty slug", func(t *testing.T) {
-		policy, err := NewPolicy("", "Privacy Policy", "Description")
+		policy, err := NewPolicy("tenant-1", "", "Privacy Policy", "Description")
 
 		assert.Nil(t, policy)
 		assert.ErrorIs(t, err, ErrInvalidPolicySlug)
@@ -30,7 +39,7 @@ func TestNewPolicy(t *testing.T) {
 
 func TestPolicy_AddVersion(t *testing.T) {
 	t.Run("adds first version", func(t *testing.T) {
-		policy, _ := NewPolicy("privacy-policy", "Privacy Policy", "Description")
+		policy, _ := NewPolicy("tenant-1", "privacy-policy", "Privacy Policy", "Description")
 
 		version := PolicyVersion{
 			Version:         "1.0.0",
@@ -46,10 +55,26 @@ func TestPolicy_AddVersion(t *testing.T) {
 		assert.Len(t, policy.Versions, 1)
 		assert.Equal(t, "1.0.0", policy.Versions[0].Version)
 		assert.True(t, policy.Versions[0].IsActive)
+		assert.False(t, policy.Versions[0].RequiresReAcceptance)
+	})
+
+	t.Run("adds version with requires_re_acceptance", func(t *testing.T) {
+		policy, _ := NewPolicy("tenant-1", "privacy-policy", "Privacy Policy", "Description")
+
+		policy.AddVersion(PolicyVersion{Version: "1.0.0", IsActive: true})
+		err := policy.AddVersion(PolicyVersion{
+			Version:              "2.0.0",
+			IsActive:             true,
+			RequiresReAcceptance: true,
+		})
+
+		require.NoError(t, err)
+		assert.Len(t, policy.Versions, 2)
+		assert.True(t, policy.Versions[1].RequiresReAcceptance)
 	})
 
 	t.Run("deactivates previous version when adding active version", func(t *testing.T) {
-		policy, _ := NewPolicy("privacy-policy", "Privacy Policy", "Description")
+		policy, _ := NewPolicy("tenant-1", "privacy-policy", "Privacy Policy", "Description")
 
 		policy.AddVersion(PolicyVersion{Version: "1.0.0", IsActive: true})
 		policy.AddVersion(PolicyVersion{Version: "1.1.0", IsActive: true})
@@ -60,7 +85,7 @@ func TestPolicy_AddVersion(t *testing.T) {
 	})
 
 	t.Run("returns error for duplicate version", func(t *testing.T) {
-		policy, _ := NewPolicy("privacy-policy", "Privacy Policy", "Description")
+		policy, _ := NewPolicy("tenant-1", "privacy-policy", "Privacy Policy", "Description")
 
 		policy.AddVersion(PolicyVersion{Version: "1.0.0", IsActive: true})
 		err := policy.AddVersion(PolicyVersion{Version: "1.0.0", IsActive: false})
@@ -69,7 +94,7 @@ func TestPolicy_AddVersion(t *testing.T) {
 	})
 
 	t.Run("returns error for empty version", func(t *testing.T) {
-		policy, _ := NewPolicy("privacy-policy", "Privacy Policy", "Description")
+		policy, _ := NewPolicy("tenant-1", "privacy-policy", "Privacy Policy", "Description")
 
 		err := policy.AddVersion(PolicyVersion{Version: "", IsActive: true})
 
@@ -79,7 +104,7 @@ func TestPolicy_AddVersion(t *testing.T) {
 
 func TestPolicy_GetActiveVersion(t *testing.T) {
 	t.Run("returns active version", func(t *testing.T) {
-		policy, _ := NewPolicy("privacy-policy", "Privacy Policy", "Description")
+		policy, _ := NewPolicy("tenant-1", "privacy-policy", "Privacy Policy", "Description")
 		policy.AddVersion(PolicyVersion{Version: "1.0.0", IsActive: false})
 		policy.AddVersion(PolicyVersion{Version: "1.1.0", IsActive: true})
 
@@ -90,7 +115,7 @@ func TestPolicy_GetActiveVersion(t *testing.T) {
 	})
 
 	t.Run("returns error when no active version", func(t *testing.T) {
-		policy, _ := NewPolicy("privacy-policy", "Privacy Policy", "Description")
+		policy, _ := NewPolicy("tenant-1", "privacy-policy", "Privacy Policy", "Description")
 		policy.AddVersion(PolicyVersion{Version: "1.0.0", IsActive: false})
 
 		activeVersion, err := policy.GetActiveVersion()
@@ -102,7 +127,7 @@ func TestPolicy_GetActiveVersion(t *testing.T) {
 
 func TestPolicy_GetVersion(t *testing.T) {
 	t.Run("returns specific version", func(t *testing.T) {
-		policy, _ := NewPolicy("privacy-policy", "Privacy Policy", "Description")
+		policy, _ := NewPolicy("tenant-1", "privacy-policy", "Privacy Policy", "Description")
 		policy.AddVersion(PolicyVersion{Version: "1.0.0", ContentHTML: "v1"})
 		policy.AddVersion(PolicyVersion{Version: "1.1.0", ContentHTML: "v2"})
 
@@ -113,7 +138,7 @@ func TestPolicy_GetVersion(t *testing.T) {
 	})
 
 	t.Run("returns error for non-existent version", func(t *testing.T) {
-		policy, _ := NewPolicy("privacy-policy", "Privacy Policy", "Description")
+		policy, _ := NewPolicy("tenant-1", "privacy-policy", "Privacy Policy", "Description")
 		policy.AddVersion(PolicyVersion{Version: "1.0.0"})
 
 		version, err := policy.GetVersion("2.0.0")

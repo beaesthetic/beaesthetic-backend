@@ -23,6 +23,7 @@ const (
 // Consent represents a subject's consent to a specific policy version
 type Consent struct {
 	ID               string           `bson:"_id" json:"id"`
+	TenantID         string           `bson:"tenant_id" json:"tenant_id"`
 	Subject          string           `bson:"subject" json:"subject"`
 	PolicySlug       string           `bson:"policy_slug" json:"policy_slug"`
 	PolicyVersion    string           `bson:"policy_version" json:"policy_version"`
@@ -34,7 +35,10 @@ type Consent struct {
 }
 
 // NewConsent creates a new consent record
-func NewConsent(id, subject, policySlug, policyVersion string, method AcceptanceMethod, linkToken *string) (*Consent, error) {
+func NewConsent(id, tenantID, subject, policySlug, policyVersion string, method AcceptanceMethod, linkToken *string) (*Consent, error) {
+	if tenantID == "" {
+		return nil, ErrInvalidTenantID
+	}
 	if subject == "" {
 		return nil, ErrInvalidSubject
 	}
@@ -47,6 +51,7 @@ func NewConsent(id, subject, policySlug, policyVersion string, method Acceptance
 
 	return &Consent{
 		ID:               id,
+		TenantID:         tenantID,
 		Subject:          subject,
 		PolicySlug:       policySlug,
 		PolicyVersion:    policyVersion,
@@ -82,9 +87,10 @@ type SubjectConsents struct {
 // ConsentRepository defines the interface for consent persistence
 type ConsentRepository interface {
 	FindByID(id string) (*Consent, error)
-	FindBySubject(subject string) ([]Consent, error)
-	FindBySubjectAndPolicy(subject, policySlug string) (*Consent, error)
-	FindActiveBySubjectAndPolicy(subject, policySlug string) (*Consent, error)
+	FindBySubject(tenantID, subject string) ([]Consent, error)
+	FindBySubjectAndPolicy(tenantID, subject, policySlug string) (*Consent, error)
+	FindActiveBySubjectAndPolicy(tenantID, subject, policySlug string) (*Consent, error)
+	FindActiveBySubjectAndPolicies(tenantID, subject string, slugs []string) ([]Consent, error)
 	Save(consent *Consent) error
 	Update(consent *Consent) error
 }

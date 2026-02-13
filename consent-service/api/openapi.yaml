@@ -3,8 +3,8 @@ info:
   title: Consent Service API
   description: |
     Subject-agnostic consent management service for handling privacy policies,
-    marketing consents, and other policy types.
-  version: 1.0.0
+    marketing consents, and other policy types. Multi-tenant via X-Tenant-ID header.
+  version: 2.0.0
   contact:
     name: BeAesthetic Team
 
@@ -33,6 +33,7 @@ paths:
       summary: List all policies
       operationId: listPolicies
       parameters:
+        - $ref: '#/components/parameters/TenantID'
         - name: active
           in: query
           description: Filter to only policies with active versions
@@ -46,6 +47,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PolicyListResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -54,6 +57,8 @@ paths:
         - Admin - Policies
       summary: Create a new policy
       operationId: createPolicy
+      parameters:
+        - $ref: '#/components/parameters/TenantID'
       requestBody:
         required: true
         content:
@@ -85,6 +90,7 @@ paths:
       summary: Get policy details
       operationId: getPolicy
       parameters:
+        - $ref: '#/components/parameters/TenantID'
         - name: slug
           in: path
           required: true
@@ -98,6 +104,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Policy'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -110,6 +118,7 @@ paths:
       summary: Add a new version to a policy
       operationId: addPolicyVersion
       parameters:
+        - $ref: '#/components/parameters/TenantID'
         - name: slug
           in: path
           required: true
@@ -150,6 +159,7 @@ paths:
       summary: Get consents for a subject
       operationId: getConsents
       parameters:
+        - $ref: '#/components/parameters/TenantID'
         - name: subject
           in: query
           required: true
@@ -182,6 +192,8 @@ paths:
         - Admin - Consents
       summary: Create consents (direct acceptance via tablet/operator)
       operationId: createConsent
+      parameters:
+        - $ref: '#/components/parameters/TenantID'
       requestBody:
         required: true
         content:
@@ -202,6 +214,47 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
+  /admin/consents/status:
+    get:
+      tags:
+        - Admin - Consents
+      summary: Get consent status for a subject
+      description: |
+        Returns the consent status for each requested policy slug.
+        Statuses: accepted (consent on current version), missing (no consent),
+        outdated (consent on old version and re-acceptance required).
+        Policies without an active version are skipped.
+      operationId: getConsentStatus
+      parameters:
+        - $ref: '#/components/parameters/TenantID'
+        - name: subject
+          in: query
+          required: true
+          description: Subject identifier (external ID)
+          schema:
+            type: string
+          example: customer-uuid-123
+        - name: slugs
+          in: query
+          required: true
+          description: Comma-separated list of policy slugs to check
+          schema:
+            type: string
+          example: privacy-policy,marketing-consent
+      responses:
+        '200':
+          description: Consent status for each policy
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentStatusResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
   /admin/consents/{id}:
     get:
       tags:
@@ -209,6 +262,7 @@ paths:
       summary: Get consent by ID
       operationId: getConsentById
       parameters:
+        - $ref: '#/components/parameters/TenantID'
         - name: id
           in: path
           required: true
@@ -222,6 +276,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Consent'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -233,6 +289,7 @@ paths:
       summary: Revoke a consent
       operationId: revokeConsent
       parameters:
+        - $ref: '#/components/parameters/TenantID'
         - name: id
           in: path
           required: true
@@ -270,6 +327,8 @@ paths:
         - Admin - Links
       summary: Create a shareable consent link
       operationId: createLink
+      parameters:
+        - $ref: '#/components/parameters/TenantID'
       requestBody:
         required: true
         content:
@@ -297,6 +356,7 @@ paths:
       summary: Get link status
       operationId: getLinkStatus
       parameters:
+        - $ref: '#/components/parameters/TenantID'
         - name: token
           in: path
           required: true
@@ -310,6 +370,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConsentLink'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '404':
           $ref: '#/components/responses/NotFound'
         '500':
@@ -321,6 +383,7 @@ paths:
       summary: Invalidate a consent link
       operationId: deleteLink
       parameters:
+        - $ref: '#/components/parameters/TenantID'
         - name: token
           in: path
           required: true
@@ -409,6 +472,16 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
 components:
+  parameters:
+    TenantID:
+      name: X-Tenant-ID
+      in: header
+      required: true
+      description: Tenant identifier for multi-tenancy
+      schema:
+        type: string
+      example: salon-uuid-123
+
   schemas:
     HealthResponse:
       type: object
@@ -427,6 +500,12 @@ components:
     Policy:
       type: object
       properties:
+        id:
+          type: string
+          example: policy-uuid-123
+        tenant_id:
+          type: string
+          example: salon-uuid-123
         slug:
           type: string
           example: privacy-policy
@@ -469,6 +548,10 @@ components:
         is_active:
           type: boolean
           example: true
+        requires_re_acceptance:
+          type: boolean
+          example: false
+          description: Whether upgrading to this version requires subjects to re-accept
 
     PolicyListResponse:
       type: object
@@ -523,6 +606,11 @@ components:
           type: boolean
           default: false
           example: true
+        requires_re_acceptance:
+          type: boolean
+          default: false
+          example: false
+          description: Whether this version requires subjects to re-accept their consent
 
     Consent:
       type: object
@@ -530,6 +618,9 @@ components:
         id:
           type: string
           example: consent-uuid-123
+        tenant_id:
+          type: string
+          example: salon-uuid-123
         subject:
           type: string
           example: customer-uuid-123
@@ -614,12 +705,54 @@ components:
           type: string
           example: operator-123
 
+    ConsentStatusResponse:
+      type: object
+      properties:
+        subject:
+          type: string
+          example: customer-uuid-123
+        statuses:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyConsentStatus'
+
+    PolicyConsentStatus:
+      type: object
+      properties:
+        slug:
+          type: string
+          example: privacy-policy
+        name:
+          type: string
+          example: Privacy Policy
+        description:
+          type: string
+          example: Our privacy policy
+        status:
+          type: string
+          enum:
+            - accepted
+            - missing
+            - outdated
+          example: accepted
+        active_version:
+          type: string
+          example: "2.0.0"
+        consented_version:
+          type: string
+          nullable: true
+          example: "1.0.0"
+          description: Version the subject consented to, null if missing
+
     ConsentLink:
       type: object
       properties:
         token:
           type: string
           example: abc123-def456
+        tenant_id:
+          type: string
+          example: salon-uuid-123
         subject:
           type: string
           example: customer-uuid-123

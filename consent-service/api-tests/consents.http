@@ -1,6 +1,7 @@
 ### Create Direct Consent (Tablet Flow)
 POST http://localhost:8085/admin/consents
 Content-Type: application/json
+X-Tenant-ID: salon-uuid-123
 
 {
   "subject": "customer-uuid-123",
@@ -13,6 +14,7 @@ Content-Type: application/json
 ### Create Consent with Specific Version
 POST http://localhost:8085/admin/consents
 Content-Type: application/json
+X-Tenant-ID: salon-uuid-123
 
 {
   "subject": "customer-uuid-456",
@@ -23,19 +25,36 @@ Content-Type: application/json
 
 ### Get All Consents for a Subject
 GET http://localhost:8085/admin/consents?subject=customer-uuid-123
+X-Tenant-ID: salon-uuid-123
 
 ### Get Specific Policy Consent for Subject
 GET http://localhost:8085/admin/consents?subject=customer-uuid-123&policy=privacy-policy
+X-Tenant-ID: salon-uuid-123
 
 ### Get Consent by ID
 # Replace with actual consent ID
 GET http://localhost:8085/admin/consents/consent-id-here
+X-Tenant-ID: salon-uuid-123
 
 ### Revoke Consent
 # Replace with actual consent ID
 DELETE http://localhost:8085/admin/consents/consent-id-here
 Content-Type: application/json
+X-Tenant-ID: salon-uuid-123
 
 {
   "revoked_by": "operator-123"
 }
+
+### Get Consent Status - All policies for a subject
+# Returns: accepted, missing, or outdated for each requested policy
+GET http://localhost:8085/admin/consents/status?subject=customer-uuid-123&slugs=privacy-policy,marketing-consent
+X-Tenant-ID: salon-uuid-123
+
+### Get Consent Status - Single policy
+GET http://localhost:8085/admin/consents/status?subject=customer-uuid-123&slugs=privacy-policy
+X-Tenant-ID: salon-uuid-123
+
+### Get Consent Status - Subject with no consents (all missing)
+GET http://localhost:8085/admin/consents/status?subject=new-customer-uuid&slugs=privacy-policy,marketing-consent
+X-Tenant-ID: salon-uuid-123

@@ -14,19 +14,23 @@ var (
 
 // ConsentLink represents a shareable link for consent collection
 type ConsentLink struct {
-	Token     string    `bson:"_id" json:"token"`
-	Subject   string    `bson:"subject" json:"subject"`
-	Policies  []string  `bson:"policies" json:"policies"`
-	CreatedAt time.Time `bson:"created_at" json:"created_at"`
-	ExpiresAt time.Time `bson:"expires_at" json:"expires_at"`
+	Token     string     `bson:"_id" json:"token"`
+	TenantID  string     `bson:"tenant_id" json:"tenant_id"`
+	Subject   string     `bson:"subject" json:"subject"`
+	Policies  []string   `bson:"policies" json:"policies"`
+	CreatedAt time.Time  `bson:"created_at" json:"created_at"`
+	ExpiresAt time.Time  `bson:"expires_at" json:"expires_at"`
 	UsedAt    *time.Time `bson:"used_at,omitempty" json:"used_at,omitempty"`
-	CreatedBy string    `bson:"created_by" json:"created_by"`
+	CreatedBy string     `bson:"created_by" json:"created_by"`
 }
 
 // NewConsentLink creates a new consent link
-func NewConsentLink(token, subject string, policies []string, expiresInHours int, createdBy string) (*ConsentLink, error) {
+func NewConsentLink(token, tenantID, subject string, policies []string, expiresInHours int, createdBy string) (*ConsentLink, error) {
 	if token == "" {
 		return nil, ErrInvalidLinkToken
+	}
+	if tenantID == "" {
+		return nil, ErrInvalidTenantID
 	}
 	if subject == "" {
 		return nil, ErrInvalidSubject
@@ -38,6 +42,7 @@ func NewConsentLink(token, subject string, policies []string, expiresInHours int
 	now := time.Now().UTC()
 	return &ConsentLink{
 		Token:     token,
+		TenantID:  tenantID,
 		Subject:   subject,
 		Policies:  policies,
 		CreatedAt: now,

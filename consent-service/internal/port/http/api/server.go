@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/beaesthetic/consent-service/internal/application"
 	"github.com/beaesthetic/consent-service/internal/domain"
@@ -33,13 +34,15 @@ var _ StrictServerInterface = (*Server)(nil)
 
 // ListPolicies implements StrictServerInterface
 func (s *Server) ListPolicies(ctx context.Context, request ListPoliciesRequestObject) (ListPoliciesResponseObject, error) {
+	tenantID := request.Params.XTenantID
+
 	var policies []domain.Policy
 	var err error
 
 	if request.Params.Active != nil && *request.Params.Active {
-		policies, err = s.policyService.GetActivePolicies()
+		policies, err = s.policyService.GetActivePolicies(tenantID)
 	} else {
-		policies, err = s.policyService.GetAllPolicies()
+		policies, err = s.policyService.GetAllPolicies(tenantID)
 	}
 
 	if err != nil {
@@ -56,7 +59,9 @@ func (s *Server) ListPolicies(ctx context.Context, request ListPoliciesRequestOb
 
 // GetPolicy implements StrictServerInterface
 func (s *Server) GetPolicy(ctx context.Context, request GetPolicyRequestObject) (GetPolicyResponseObject, error) {
-	policy, err := s.policyService.GetPolicy(request.Slug)
+	tenantID := request.Params.XTenantID
+
+	policy, err := s.policyService.GetPolicy(tenantID, request.Slug)
 	if err != nil {
 		if errors.Is(err, domain.ErrPolicyNotFound) {
 			return GetPolicy404JSONResponse{notFoundResponse("policy not found")}, nil
@@ -70,7 +75,9 @@ func (s *Server) GetPolicy(ctx context.Context, request GetPolicyRequestObject) 
 
 // CreatePolicy implements StrictServerInterface
 func (s *Server) CreatePolicy(ctx context.Context, request CreatePolicyRequestObject) (CreatePolicyResponseObject, error) {
-	policy, err := s.policyService.CreatePolicy(application.CreatePolicyRequest{
+	tenantID := request.Params.XTenantID
+
+	policy, err := s.policyService.CreatePolicy(tenantID, application.CreatePolicyRequest{
 		Slug:        request.Body.Slug,
 		Name:        request.Body.Name,
 		Description: derefString(request.Body.Description),
@@ -88,12 +95,15 @@ func (s *Server) CreatePolicy(ctx context.Context, request CreatePolicyRequestOb
 
 // AddPolicyVersion implements StrictServerInterface
 func (s *Server) AddPolicyVersion(ctx context.Context, request AddPolicyVersionRequestObject) (AddPolicyVersionResponseObject, error) {
-	policy, err := s.policyService.AddVersion(request.Slug, application.AddVersionRequest{
-		Version:         request.Body.Version,
-		ContentHTML:     derefString(request.Body.ContentHtml),
-		ContentMarkdown: derefString(request.Body.ContentMarkdown),
-		PDFURL:          derefString(request.Body.PdfUrl),
-		IsActive:        derefBool(request.Body.IsActive),
+	tenantID := request.Params.XTenantID
+
+	policy, err := s.policyService.AddVersion(tenantID, request.Slug, application.AddVersionRequest{
+		Version:              request.Body.Version,
+		ContentHTML:          derefString(request.Body.ContentHtml),
+		ContentMarkdown:      derefString(request.Body.ContentMarkdown),
+		PDFURL:               derefString(request.Body.PdfUrl),
+		IsActive:             derefBool(request.Body.IsActive),
+		RequiresReAcceptance: derefBool(request.Body.RequiresReAcceptance),
 	})
 	if err != nil {
 		if errors.Is(err, domain.ErrPolicyNotFound) {
@@ -111,8 +121,10 @@ func (s *Server) AddPolicyVersion(ctx context.Context, request AddPolicyVersionR
 
 // GetConsents implements StrictServerInterface
 func (s *Server) GetConsents(ctx context.Context, request GetConsentsRequestObject) (GetConsentsResponseObject, error) {
+	tenantID := request.Params.XTenantID
+
 	if request.Params.Policy != nil {
-		consent, err := s.consentService.GetActiveConsentBySubjectAndPolicy(request.Params.Subject, *request.Params.Policy)
+		consent, err := s.consentService.GetActiveConsentBySubjectAndPolicy(tenantID, request.Params.Subject, *request.Params.Policy)
 		if err != nil {
 			if errors.Is(err, domain.ErrConsentNotFound) {
 				return GetConsents404JSONResponse{notFoundResponse("consent not found")}, nil
@@ -126,7 +138,7 @@ func (s *Server) GetConsents(ctx context.Context, request GetConsentsRequestObje
 		}, nil
 	}
 
-	subjectConsents, err := s.consentService.GetConsentsBySubject(request.Params.Subject)
+	subjectConsents, err := s.consentService.GetConsentsBySubject(tenantID, request.Params.Subject)
 	if err != nil {
 		return GetConsents500JSONResponse{errResponse(err.Error())}, nil
 	}
@@ -158,6 +170,8 @@ func (s *Server) GetConsentById(ctx context.Context, request GetConsentByIdReque
 
 // CreateConsent implements StrictServerInterface
 func (s *Server) CreateConsent(ctx context.Context, request CreateConsentRequestObject) (CreateConsentResponseObject, error) {
+	tenantID := request.Params.XTenantID
+
 	policies := make([]application.PolicyConsent, len(request.Body.Policies))
 	for i, p := range request.Body.Policies {
 		policies[i] = application.PolicyConsent{
@@ -167,6 +181,7 @@ func (s *Server) CreateConsent(ctx context.Context, request CreateConsentRequest
 	}
 
 	consents, err := s.consentService.CreateConsents(
+		tenantID,
 		application.CreateConsentRequest{
 			Subject:  request.Body.Subject,
 			Policies: policies,
@@ -192,6 +207,40 @@ func (s *Server) CreateConsent(ctx context.Context, request CreateConsentRequest
 	return CreateConsent201JSONResponse{Consents: &apiConsents}, nil
 }
 
+// GetConsentStatus implements StrictServerInterface
+func (s *Server) GetConsentStatus(ctx context.Context, request GetConsentStatusRequestObject) (GetConsentStatusResponseObject, error) {
+	tenantID := request.Params.XTenantID
+	subject := request.Params.Subject
+	slugsStr := request.Params.Slugs
+
+	// Parse comma-separated slugs
+	slugs := strings.Split(slugsStr, ",")
+	for i := range slugs {
+		slugs[i] = strings.TrimSpace(slugs[i])
+	}
+
+	statuses, err := s.consentService.GetConsentStatus(tenantID, subject, slugs)
+	if err != nil {
+		if errors.Is(err, domain.ErrInvalidTenantID) || errors.Is(err, domain.ErrInvalidSubject) {
+			return GetConsentStatus400JSONResponse{badRequestResponse(err.Error())}, nil
+		}
+		if errors.Is(err, domain.ErrPolicyNotFound) {
+			return GetConsentStatus404JSONResponse{notFoundResponse(err.Error())}, nil
+		}
+		return GetConsentStatus500JSONResponse{errResponse(err.Error())}, nil
+	}
+
+	apiStatuses := make([]PolicyConsentStatus, len(statuses))
+	for i, s := range statuses {
+		apiStatuses[i] = domainConsentStatusToAPI(s)
+	}
+
+	return GetConsentStatus200JSONResponse{
+		Subject:  ptr(subject),
+		Statuses: &apiStatuses,
+	}, nil
+}
+
 // RevokeConsent implements StrictServerInterface
 func (s *Server) RevokeConsent(ctx context.Context, request RevokeConsentRequestObject) (RevokeConsentResponseObject, error) {
 	consent, err := s.consentService.RevokeConsent(request.Id, request.Body.RevokedBy)
@@ -211,7 +260,9 @@ func (s *Server) RevokeConsent(ctx context.Context, request RevokeConsentRequest
 
 // CreateLink implements StrictServerInterface
 func (s *Server) CreateLink(ctx context.Context, request CreateLinkRequestObject) (CreateLinkResponseObject, error) {
-	response, err := s.linkService.CreateLink(application.CreateLinkRequest{
+	tenantID := request.Params.XTenantID
+
+	response, err := s.linkService.CreateLink(tenantID, application.CreateLinkRequest{
 		Subject:        request.Body.Subject,
 		Policies:       request.Body.Policies,
 		ExpiresInHours: request.Body.ExpiresInHours,
@@ -330,7 +381,7 @@ func (s *Server) AcceptConsent(ctx context.Context, request AcceptConsentRequest
 		}
 	}
 
-	// Create consents for accepted policies
+	// Create consents for accepted policies using the link's tenant
 	policies := make([]application.PolicyConsent, len(request.Body.AcceptedPolicies))
 	for i, slug := range request.Body.AcceptedPolicies {
 		policies[i] = application.PolicyConsent{Slug: slug}
@@ -338,6 +389,7 @@ func (s *Server) AcceptConsent(ctx context.Context, request AcceptConsentRequest
 
 	token := request.Token
 	consents, err := s.consentService.CreateConsents(
+		link.TenantID,
 		application.CreateConsentRequest{
 			Subject:  link.Subject,
 			Policies: policies,

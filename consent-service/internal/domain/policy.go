@@ -3,6 +3,8 @@ package domain
 import (
 	"errors"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 var (
@@ -12,21 +14,25 @@ var (
 	ErrNoActiveVersion       = errors.New("no active version found")
 	ErrInvalidPolicySlug     = errors.New("invalid policy slug")
 	ErrInvalidPolicyVersion  = errors.New("invalid policy version")
+	ErrInvalidTenantID       = errors.New("invalid tenant id")
 )
 
 // PolicyVersion represents a specific version of a policy
 type PolicyVersion struct {
-	Version         string    `bson:"version" json:"version"`
-	PublishedAt     time.Time `bson:"published_at" json:"published_at"`
-	ContentHTML     string    `bson:"content_html" json:"content_html"`
-	ContentMarkdown string    `bson:"content_markdown" json:"content_markdown"`
-	PDFURL          string    `bson:"pdf_url" json:"pdf_url"`
-	IsActive        bool      `bson:"is_active" json:"is_active"`
+	Version               string    `bson:"version" json:"version"`
+	PublishedAt           time.Time `bson:"published_at" json:"published_at"`
+	ContentHTML           string    `bson:"content_html" json:"content_html"`
+	ContentMarkdown       string    `bson:"content_markdown" json:"content_markdown"`
+	PDFURL                string    `bson:"pdf_url" json:"pdf_url"`
+	IsActive              bool      `bson:"is_active" json:"is_active"`
+	RequiresReAcceptance  bool      `bson:"requires_re_acceptance" json:"requires_re_acceptance"`
 }
 
 // Policy represents a consent policy (e.g., privacy, marketing, cookies)
 type Policy struct {
-	Slug        string          `bson:"_id" json:"slug"`
+	ID          string          `bson:"_id" json:"id"`
+	TenantID    string          `bson:"tenant_id" json:"tenant_id"`
+	Slug        string          `bson:"slug" json:"slug"`
 	Name        string          `bson:"name" json:"name"`
 	Description string          `bson:"description" json:"description"`
 	Versions    []PolicyVersion `bson:"versions" json:"versions"`
@@ -35,13 +41,18 @@ type Policy struct {
 }
 
 // NewPolicy creates a new policy with the given details
-func NewPolicy(slug, name, description string) (*Policy, error) {
+func NewPolicy(tenantID, slug, name, description string) (*Policy, error) {
+	if tenantID == "" {
+		return nil, ErrInvalidTenantID
+	}
 	if slug == "" {
 		return nil, ErrInvalidPolicySlug
 	}
 
 	now := time.Now().UTC()
 	return &Policy{
+		ID:          uuid.New().String(),
+		TenantID:    tenantID,
 		Slug:        slug,
 		Name:        name,
 		Description: description,
@@ -100,9 +111,10 @@ func (p *Policy) GetVersion(version string) (*PolicyVersion, error) {
 
 // PolicyRepository defines the interface for policy persistence
 type PolicyRepository interface {
-	FindBySlug(slug string) (*Policy, error)
-	FindAll() ([]Policy, error)
-	FindAllActive() ([]Policy, error)
+	FindBySlug(tenantID, slug string) (*Policy, error)
+	FindBySlugs(tenantID string, slugs []string) ([]Policy, error)
+	FindAll(tenantID string) ([]Policy, error)
+	FindAllActive(tenantID string) ([]Policy, error)
 	Save(policy *Policy) error
 	Update(policy *Policy) error
 }

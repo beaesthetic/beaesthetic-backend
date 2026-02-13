@@ -39,13 +39,14 @@ func (r *ConsentRepository) FindByID(id string) (*domain.Consent, error) {
 	return &consent, nil
 }
 
-// FindBySubject finds all consents for a subject
-func (r *ConsentRepository) FindBySubject(subject string) ([]domain.Consent, error) {
+// FindBySubject finds all consents for a subject within a tenant
+func (r *ConsentRepository) FindBySubject(tenantID, subject string) ([]domain.Consent, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	filter := bson.M{"tenant_id": tenantID, "subject": subject}
 	opts := options.Find().SetSort(bson.D{{Key: "accepted_at", Value: -1}})
-	cursor, err := r.collection.Find(ctx, bson.M{"subject": subject}, opts)
+	cursor, err := r.collection.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -59,12 +60,13 @@ func (r *ConsentRepository) FindBySubject(subject string) ([]domain.Consent, err
 	return consents, nil
 }
 
-// FindBySubjectAndPolicy finds the most recent consent for a subject and policy
-func (r *ConsentRepository) FindBySubjectAndPolicy(subject, policySlug string) (*domain.Consent, error) {
+// FindBySubjectAndPolicy finds the most recent consent for a subject and policy within a tenant
+func (r *ConsentRepository) FindBySubjectAndPolicy(tenantID, subject, policySlug string) (*domain.Consent, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	filter := bson.M{
+		"tenant_id":   tenantID,
 		"subject":     subject,
 		"policy_slug": policySlug,
 	}
@@ -82,12 +84,13 @@ func (r *ConsentRepository) FindBySubjectAndPolicy(subject, policySlug string) (
 	return &consent, nil
 }
 
-// FindActiveBySubjectAndPolicy finds the active (non-revoked) consent for a subject and policy
-func (r *ConsentRepository) FindActiveBySubjectAndPolicy(subject, policySlug string) (*domain.Consent, error) {
+// FindActiveBySubjectAndPolicy finds the active (non-revoked) consent for a subject and policy within a tenant
+func (r *ConsentRepository) FindActiveBySubjectAndPolicy(tenantID, subject, policySlug string) (*domain.Consent, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	filter := bson.M{
+		"tenant_id":   tenantID,
 		"subject":     subject,
 		"policy_slug": policySlug,
 		"revoked_at":  nil,
@@ -104,6 +107,33 @@ func (r *ConsentRepository) FindActiveBySubjectAndPolicy(subject, policySlug str
 	}
 
 	return &consent, nil
+}
+
+// FindActiveBySubjectAndPolicies finds all active (non-revoked) consents for a subject and multiple policies
+func (r *ConsentRepository) FindActiveBySubjectAndPolicies(tenantID, subject string, slugs []string) ([]domain.Consent, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	filter := bson.M{
+		"tenant_id":   tenantID,
+		"subject":     subject,
+		"policy_slug": bson.M{"$in": slugs},
+		"revoked_at":  nil,
+	}
+	opts := options.Find().SetSort(bson.D{{Key: "accepted_at", Value: -1}})
+
+	cursor, err := r.collection.Find(ctx, filter, opts)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var consents []domain.Consent
+	if err := cursor.All(ctx, &consents); err != nil {
+		return nil, err
+	}
+
+	return consents, nil
 }
 
 // Save saves a new consent
@@ -132,12 +162,16 @@ func (r *ConsentRepository) EnsureIndexes() error {
 	indexes := []mongo.IndexModel{
 		{
 			Keys: bson.D{
+				{Key: "tenant_id", Value: 1},
 				{Key: "subject", Value: 1},
 				{Key: "policy_slug", Value: 1},
 			},
 		},
 		{
-			Keys: bson.D{{Key: "subject", Value: 1}},
+			Keys: bson.D{
+				{Key: "tenant_id", Value: 1},
+				{Key: "subject", Value: 1},
+			},
 		},
 		{
 			Keys: bson.D{{Key: "accepted_at", Value: -1}},

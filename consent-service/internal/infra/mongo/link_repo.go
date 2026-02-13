@@ -84,7 +84,10 @@ func (r *ConsentLinkRepository) EnsureIndexes() error {
 			Options: options.Index().SetExpireAfterSeconds(0),
 		},
 		{
-			Keys: bson.D{{Key: "subject", Value: 1}},
+			Keys: bson.D{
+				{Key: "tenant_id", Value: 1},
+				{Key: "subject", Value: 1},
+			},
 		},
 	}
 
