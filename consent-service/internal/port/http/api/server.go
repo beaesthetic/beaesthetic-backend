@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"strings"
 
 	"github.com/beaesthetic/consent-service/internal/application"
 	"github.com/beaesthetic/consent-service/internal/domain"
@@ -35,16 +36,12 @@ var _ StrictServerInterface = (*Server)(nil)
 func (s *Server) ListPolicies(ctx context.Context, request ListPoliciesRequestObject) (ListPoliciesResponseObject, error) {
 	tenantID := request.Params.XTenantID
 
-	tenantID := request.Params.XTenantID
-
 	var policies []domain.Policy
 	var err error
 
 	if request.Params.Active != nil && *request.Params.Active {
 		policies, err = s.policyService.GetActivePolicies(tenantID)
-		policies, err = s.policyService.GetActivePolicies(tenantID)
 	} else {
-		policies, err = s.policyService.GetAllPolicies(tenantID)
 		policies, err = s.policyService.GetAllPolicies(tenantID)
 	}
 
@@ -62,9 +59,6 @@ func (s *Server) ListPolicies(ctx context.Context, request ListPoliciesRequestOb
 
 // GetPolicy implements StrictServerInterface
 func (s *Server) GetPolicy(ctx context.Context, request GetPolicyRequestObject) (GetPolicyResponseObject, error) {
-	tenantID := request.Params.XTenantID
-
-	policy, err := s.policyService.GetPolicy(tenantID, request.Slug)
 	tenantID := request.Params.XTenantID
 
 	policy, err := s.policyService.GetPolicy(tenantID, request.Slug)

@@ -45,6 +45,24 @@ services:
     networks:
       - appointment_book_net
 
+  consent-service:
+    build:
+      context: ./consent-service
+      dockerfile: Dockerfile
+    container_name: consent-service
+    ports:
+      - "8085:8085"
+    environment:
+      - CONSENT_SERVER_PORT=8085
+      - CONSENT_SERVER_BASE_URL=http://localhost:8085
+      - CONSENT_MONGODB_CONNECTION_STRING=mongodb://mongo:27017
+      - CONSENT_MONGODB_DATABASE=consents
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - appointment_book_net
+
 networks:
   appointment_book_net:
     driver: bridge

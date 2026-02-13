@@ -75,21 +75,6 @@
       ],
       "changelog-path": "CHANGELOG.md"
     },
-    "insights": {
-      "release-type": "simple",
-      "package-name": "insights",
-      "include-component-in-tag": true,
-      "component": "insights",
-      "extra-files": [
-        "gradle.properties",
-        {
-          "type": "yaml",
-          "path": "helm/Chart.yaml",
-          "jsonpath": "$.appVersion"
-        }
-      ],
-      "changelog-path": "CHANGELOG.md"
-    },
     "consent-service": {
       "release-type": "simple",
       "package-name": "consent-service",

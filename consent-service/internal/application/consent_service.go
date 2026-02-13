@@ -4,9 +4,6 @@ import (
 	"errors"
 	"fmt"
 
-	"errors"
-	"fmt"
-
 	"github.com/beaesthetic/consent-service/internal/domain"
 	"github.com/google/uuid"
 )
@@ -44,12 +41,10 @@ func NewConsentService(consentRepo domain.ConsentRepository, policyRepo domain.P
 
 // CreateConsents creates consent records for the given policies
 func (s *ConsentService) CreateConsents(tenantID string, req CreateConsentRequest, method domain.AcceptanceMethod, linkToken *string) ([]domain.Consent, error) {
-func (s *ConsentService) CreateConsents(tenantID string, req CreateConsentRequest, method domain.AcceptanceMethod, linkToken *string) ([]domain.Consent, error) {
 	var consents []domain.Consent
 
 	for _, pc := range req.Policies {
 		// Get policy to validate and get version
-		policy, err := s.policyRepo.FindBySlug(tenantID, pc.Slug)
 		policy, err := s.policyRepo.FindBySlug(tenantID, pc.Slug)
 		if err != nil {
 			return nil, err
@@ -72,7 +67,6 @@ func (s *ConsentService) CreateConsents(tenantID string, req CreateConsentReques
 
 		// Check if consent already exists (active)
 		existing, _ := s.consentRepo.FindActiveBySubjectAndPolicy(tenantID, req.Subject, pc.Slug)
-		existing, _ := s.consentRepo.FindActiveBySubjectAndPolicy(tenantID, req.Subject, pc.Slug)
 		if existing != nil && existing.PolicyVersion == version {
 			// Skip if already consented to this version
 			consents = append(consents, *existing)
@@ -82,7 +76,6 @@ func (s *ConsentService) CreateConsents(tenantID string, req CreateConsentReques
 		// Create new consent
 		consent, err := domain.NewConsent(
 			uuid.New().String(),
-			tenantID,
 			tenantID,
 			req.Subject,
 			pc.Slug,
@@ -107,8 +100,6 @@ func (s *ConsentService) CreateConsents(tenantID string, req CreateConsentReques
 // GetConsentsBySubject retrieves all consents for a subject
 func (s *ConsentService) GetConsentsBySubject(tenantID, subject string) (*domain.SubjectConsents, error) {
 	consents, err := s.consentRepo.FindBySubject(tenantID, subject)
-func (s *ConsentService) GetConsentsBySubject(tenantID, subject string) (*domain.SubjectConsents, error) {
-	consents, err := s.consentRepo.FindBySubject(tenantID, subject)
 	if err != nil {
 		return nil, err
 	}
@@ -122,13 +113,9 @@ func (s *ConsentService) GetConsentsBySubject(tenantID, subject string) (*domain
 // GetConsentBySubjectAndPolicy retrieves the consent for a specific policy
 func (s *ConsentService) GetConsentBySubjectAndPolicy(tenantID, subject, policySlug string) (*domain.Consent, error) {
 	return s.consentRepo.FindBySubjectAndPolicy(tenantID, subject, policySlug)
-func (s *ConsentService) GetConsentBySubjectAndPolicy(tenantID, subject, policySlug string) (*domain.Consent, error) {
-	return s.consentRepo.FindBySubjectAndPolicy(tenantID, subject, policySlug)
 }
 
 // GetActiveConsentBySubjectAndPolicy retrieves the active consent for a specific policy
-func (s *ConsentService) GetActiveConsentBySubjectAndPolicy(tenantID, subject, policySlug string) (*domain.Consent, error) {
-	return s.consentRepo.FindActiveBySubjectAndPolicy(tenantID, subject, policySlug)
 func (s *ConsentService) GetActiveConsentBySubjectAndPolicy(tenantID, subject, policySlug string) (*domain.Consent, error) {
 	return s.consentRepo.FindActiveBySubjectAndPolicy(tenantID, subject, policySlug)
 }
@@ -183,13 +170,13 @@ func (s *ConsentService) GetConsentStatus(tenantID, subject string, slugs []stri
 		}
 
 		// Check all slugs were found
-		policyMap := make(map[string]bool, len(policies))
+		found := make(map[string]bool, len(policies))
 		for _, p := range policies {
-			policyMap[p.Slug] = true
+			found[p.Slug] = true
 		}
 		var notFound []string
 		for _, slug := range slugs {
-			if !policyMap[slug] {
+			if !found[slug] {
 				notFound = append(notFound, slug)
 			}
 		}
