@@ -44,16 +44,19 @@ func domainPolicyToAPI(p domain.Policy) Policy {
 	versions := make([]PolicyVersion, len(p.Versions))
 	for i, v := range p.Versions {
 		versions[i] = PolicyVersion{
-			Version:         ptr(v.Version),
-			PublishedAt:     ptr(v.PublishedAt),
-			ContentHtml:     ptr(v.ContentHTML),
-			ContentMarkdown: ptr(v.ContentMarkdown),
-			PdfUrl:          ptr(v.PDFURL),
-			IsActive:        ptr(v.IsActive),
+			Version:              ptr(v.Version),
+			PublishedAt:          ptr(v.PublishedAt),
+			ContentHtml:          ptr(v.ContentHTML),
+			ContentMarkdown:      ptr(v.ContentMarkdown),
+			PdfUrl:               ptr(v.PDFURL),
+			IsActive:             ptr(v.IsActive),
+			RequiresReAcceptance: ptr(v.RequiresReAcceptance),
 		}
 	}
 
 	return Policy{
+		Id:          ptr(p.ID),
+		TenantId:    ptr(p.TenantID),
 		Slug:        ptr(p.Slug),
 		Name:        ptr(p.Name),
 		Description: ptr(p.Description),
@@ -66,6 +69,7 @@ func domainPolicyToAPI(p domain.Policy) Policy {
 func domainConsentToAPI(c domain.Consent) Consent {
 	return Consent{
 		Id:               ptr(c.ID),
+		TenantId:         ptr(c.TenantID),
 		Subject:          ptr(c.Subject),
 		PolicySlug:       ptr(c.PolicySlug),
 		PolicyVersion:    ptr(c.PolicyVersion),
@@ -80,11 +84,23 @@ func domainConsentToAPI(c domain.Consent) Consent {
 func domainLinkToAPI(l domain.ConsentLink) ConsentLink {
 	return ConsentLink{
 		Token:     ptr(l.Token),
+		TenantId:  ptr(l.TenantID),
 		Subject:   ptr(l.Subject),
 		Policies:  &l.Policies,
 		CreatedAt: ptr(l.CreatedAt),
 		ExpiresAt: ptr(l.ExpiresAt),
 		UsedAt:    l.UsedAt,
 		CreatedBy: ptr(l.CreatedBy),
+	}
+}
+
+func domainConsentStatusToAPI(s domain.PolicyConsentStatus) PolicyConsentStatus {
+	return PolicyConsentStatus{
+		Slug:             ptr(s.Slug),
+		Name:             ptr(s.Name),
+		Description:      ptr(s.Description),
+		Status:           ptr(PolicyConsentStatusStatus(s.Status)),
+		ActiveVersion:    ptr(s.ActiveVersion),
+		ConsentedVersion: s.ConsentedVersion,
 	}
 }

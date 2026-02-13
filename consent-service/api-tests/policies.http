@@ -7,6 +7,7 @@ GET http://localhost:8085/ready
 ### Create Privacy Policy
 POST http://localhost:8085/admin/policies
 Content-Type: application/json
+X-Tenant-ID: salon-uuid-123
 
 {
   "slug": "privacy-policy",
@@ -17,6 +18,7 @@ Content-Type: application/json
 ### Create Marketing Consent Policy
 POST http://localhost:8085/admin/policies
 Content-Type: application/json
+X-Tenant-ID: salon-uuid-123
 
 {
   "slug": "marketing-consent",
@@ -27,6 +29,7 @@ Content-Type: application/json
 ### Create Cookie Policy
 POST http://localhost:8085/admin/policies
 Content-Type: application/json
+X-Tenant-ID: salon-uuid-123
 
 {
   "slug": "cookie-policy",
@@ -36,45 +39,54 @@ Content-Type: application/json
 
 ### List All Policies
 GET http://localhost:8085/admin/policies
+X-Tenant-ID: salon-uuid-123
 
 ### List Active Policies Only
 GET http://localhost:8085/admin/policies?active=true
+X-Tenant-ID: salon-uuid-123
 
 ### Get Privacy Policy Details
 GET http://localhost:8085/admin/policies/privacy-policy
+X-Tenant-ID: salon-uuid-123
 
 ### Add Version 1.0.0 to Privacy Policy (Active)
 POST http://localhost:8085/admin/policies/privacy-policy/versions
 Content-Type: application/json
+X-Tenant-ID: salon-uuid-123
 
 {
   "version": "1.0.0",
   "content_html": "<h1>Privacy Policy</h1><p>This is our privacy policy version 1.0.0...</p>",
   "content_markdown": "# Privacy Policy\n\nThis is our privacy policy version 1.0.0...",
   "pdf_url": "https://cdn.example.com/policies/privacy-policy-1.0.0.pdf",
-  "is_active": true
+  "is_active": true,
+  "requires_re_acceptance": false
 }
 
-### Add Version 1.1.0 to Privacy Policy
+### Add Version 1.1.0 to Privacy Policy (Active, requires re-acceptance)
 POST http://localhost:8085/admin/policies/privacy-policy/versions
 Content-Type: application/json
+X-Tenant-ID: salon-uuid-123
 
 {
   "version": "1.1.0",
   "content_html": "<h1>Privacy Policy</h1><p>Updated privacy policy version 1.1.0...</p>",
   "content_markdown": "# Privacy Policy\n\nUpdated privacy policy version 1.1.0...",
   "pdf_url": "https://cdn.example.com/policies/privacy-policy-1.1.0.pdf",
-  "is_active": true
+  "is_active": true,
+  "requires_re_acceptance": true
 }
 
 ### Add Version 1.0.0 to Marketing Consent (Active)
 POST http://localhost:8085/admin/policies/marketing-consent/versions
 Content-Type: application/json
+X-Tenant-ID: salon-uuid-123
 
 {
   "version": "1.0.0",
   "content_html": "<h1>Marketing Consent</h1><p>Marketing consent terms...</p>",
   "content_markdown": "# Marketing Consent\n\nMarketing consent terms...",
   "pdf_url": "https://cdn.example.com/policies/marketing-consent-1.0.0.pdf",
-  "is_active": true
+  "is_active": true,
+  "requires_re_acceptance": false
 }

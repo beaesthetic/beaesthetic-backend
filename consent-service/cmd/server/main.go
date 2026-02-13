@@ -21,14 +21,21 @@ import (
 )
 
 func main() {
-	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
-
-	// Load configuration
+	// Load configuration first to determine log format
 	cfg, err := config.Load("")
 	if err != nil {
-		log.Fatal().Err(err).Msg("Failed to load configuration")
+		fmt.Fprintf(os.Stderr, "Failed to load configuration: %v\n", err)
+		os.Exit(1)
 	}
+
+	// Configure logging based on environment
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	if cfg.Server.Env == "production" {
+		log.Logger = log.Output(os.Stdout)
+	} else {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout, TimeFormat: time.RFC3339})
+	}
+
 
 	log.Info().
 		Int("port", cfg.Server.Port).
@@ -63,6 +70,9 @@ func main() {
 	linkRepo := mongoinfra.NewConsentLinkRepository(db)
 
 	// Create indexes
+	if err := policyRepo.EnsureIndexes(); err != nil {
+		log.Warn().Err(err).Msg("Failed to create policy indexes")
+	}
 	if err := consentRepo.EnsureIndexes(); err != nil {
 		log.Warn().Err(err).Msg("Failed to create consent indexes")
 	}

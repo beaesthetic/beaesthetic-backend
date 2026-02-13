@@ -1,6 +1,7 @@
 ### Create Consent Link
 POST http://localhost:8085/admin/links
 Content-Type: application/json
+X-Tenant-ID: salon-uuid-123
 
 {
   "subject": "customer-uuid-789",
@@ -12,10 +13,12 @@ Content-Type: application/json
 ### Get Link Status (Admin)
 # Replace with actual token
 GET http://localhost:8085/admin/links/token-here
+X-Tenant-ID: salon-uuid-123
 
 ### Delete/Invalidate Link (Admin)
 # Replace with actual token
 DELETE http://localhost:8085/admin/links/token-here
+X-Tenant-ID: salon-uuid-123
 
 ### Public: Get Link Info (for consent page)
 # Replace with actual token

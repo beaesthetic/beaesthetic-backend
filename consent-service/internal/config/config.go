@@ -20,6 +20,7 @@ type Config struct {
 type ServerConfig struct {
 	Port    int    `koanf:"port"`
 	BaseURL string `koanf:"base_url"`
+	Env     string `koanf:"env"`
 }
 
 // MongoDBConfig represents MongoDB configuration
@@ -64,6 +65,7 @@ func Load(configPath string) (*Config, error) {
 	// Set defaults
 	config.Server.Port = 8080
 	config.Server.BaseURL = "http://localhost:8080"
+	config.Server.Env = "development"
 	config.MongoDB.ConnectionString = "mongodb://localhost:27017"
 	config.MongoDB.Database = "consents"
 	config.Consent.DefaultLinkExpiryHours = 48

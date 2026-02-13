@@ -18,8 +18,8 @@ type CreateLinkRequest struct {
 
 // CreateLinkResponse represents the response after creating a consent link
 type CreateLinkResponse struct {
-	Token     string `json:"token"`
-	URL       string `json:"url"`
+	Token     string     `json:"token"`
+	URL       string     `json:"url"`
 	ExpiresAt *time.Time `json:"expires_at"`
 }
 
@@ -59,21 +59,20 @@ func NewLinkService(linkRepo domain.ConsentLinkRepository, policyRepo domain.Pol
 }
 
 // CreateLink creates a new consent link
-func (s *LinkService) CreateLink(req CreateLinkRequest) (*CreateLinkResponse, error) {
-	// Validate all policies exist
+func (s *LinkService) CreateLink(tenantID string, req CreateLinkRequest) (*CreateLinkResponse, error) {
+	// Validate all policies exist and have active versions
 	for _, slug := range req.Policies {
-		policy, err := s.policyRepo.FindBySlug(slug)
+		policy, err := s.policyRepo.FindBySlug(tenantID, slug)
 		if err != nil {
 			return nil, err
 		}
-		// Check if policy has an active version
 		if _, err := policy.GetActiveVersion(); err != nil {
 			return nil, fmt.Errorf("policy %s: %w", slug, err)
 		}
 	}
 
 	token := uuid.New().String()
-	link, err := domain.NewConsentLink(token, req.Subject, req.Policies, req.ExpiresInHours, req.CreatedBy)
+	link, err := domain.NewConsentLink(token, tenantID, req.Subject, req.Policies, req.ExpiresInHours, req.CreatedBy)
 	if err != nil {
 		return nil, err
 	}
@@ -106,10 +105,10 @@ func (s *LinkService) GetLinkInfo(token string) (*LinkInfo, error) {
 		return nil, err
 	}
 
-	// Get policy details
+	// Get policy details using link's tenant
 	var policies []LinkPolicyInfo
 	for _, slug := range link.Policies {
-		policy, err := s.policyRepo.FindBySlug(slug)
+		policy, err := s.policyRepo.FindBySlug(link.TenantID, slug)
 		if err != nil {
 			return nil, err
 		}

@@ -28,6 +28,13 @@ const (
 	Link   ConsentAcceptanceMethod = "link"
 )
 
+// Defines values for PolicyConsentStatusStatus.
+const (
+	Accepted PolicyConsentStatusStatus = "accepted"
+	Missing  PolicyConsentStatusStatus = "missing"
+	Outdated PolicyConsentStatusStatus = "outdated"
+)
+
 // AcceptConsentRequest defines model for AcceptConsentRequest.
 type AcceptConsentRequest struct {
 	AcceptedPolicies []string `json:"accepted_policies"`
@@ -39,7 +46,10 @@ type AddVersionRequest struct {
 	ContentMarkdown *string `json:"content_markdown,omitempty"`
 	IsActive        *bool   `json:"is_active,omitempty"`
 	PdfUrl          *string `json:"pdf_url,omitempty"`
-	Version         string  `json:"version"`
+
+	// RequiresReAcceptance Whether this version requires subjects to re-accept their consent
+	RequiresReAcceptance *bool  `json:"requires_re_acceptance,omitempty"`
+	Version              string `json:"version"`
 }
 
 // Consent defines model for Consent.
@@ -53,6 +63,7 @@ type Consent struct {
 	RevokedAt        *time.Time               `json:"revoked_at"`
 	RevokedBy        *string                  `json:"revoked_by"`
 	Subject          *string                  `json:"subject,omitempty"`
+	TenantId         *string                  `json:"tenant_id,omitempty"`
 }
 
 // ConsentAcceptanceMethod defines model for Consent.AcceptanceMethod.
@@ -65,8 +76,15 @@ type ConsentLink struct {
 	ExpiresAt *time.Time `json:"expires_at,omitempty"`
 	Policies  *[]string  `json:"policies,omitempty"`
 	Subject   *string    `json:"subject,omitempty"`
+	TenantId  *string    `json:"tenant_id,omitempty"`
 	Token     *string    `json:"token,omitempty"`
 	UsedAt    *time.Time `json:"used_at"`
+}
+
+// ConsentStatusResponse defines model for ConsentStatusResponse.
+type ConsentStatusResponse struct {
+	Statuses *[]PolicyConsentStatus `json:"statuses,omitempty"`
+	Subject  *string                `json:"subject,omitempty"`
 }
 
 // ConsentsResponse defines model for ConsentsResponse.
@@ -116,11 +134,28 @@ type ErrorResponse struct {
 type Policy struct {
 	CreatedAt   *time.Time       `json:"created_at,omitempty"`
 	Description *string          `json:"description,omitempty"`
+	Id          *string          `json:"id,omitempty"`
 	Name        *string          `json:"name,omitempty"`
 	Slug        *string          `json:"slug,omitempty"`
+	TenantId    *string          `json:"tenant_id,omitempty"`
 	UpdatedAt   *time.Time       `json:"updated_at,omitempty"`
 	Versions    *[]PolicyVersion `json:"versions,omitempty"`
 }
+
+// PolicyConsentStatus defines model for PolicyConsentStatus.
+type PolicyConsentStatus struct {
+	ActiveVersion *string `json:"active_version,omitempty"`
+
+	// ConsentedVersion Version the subject consented to, null if missing
+	ConsentedVersion *string                    `json:"consented_version"`
+	Description      *string                    `json:"description,omitempty"`
+	Name             *string                    `json:"name,omitempty"`
+	Slug             *string                    `json:"slug,omitempty"`
+	Status           *PolicyConsentStatusStatus `json:"status,omitempty"`
+}
+
+// PolicyConsentStatusStatus defines model for PolicyConsentStatus.Status.
+type PolicyConsentStatusStatus string
 
 // PolicyListResponse defines model for PolicyListResponse.
 type PolicyListResponse struct {
@@ -134,7 +169,10 @@ type PolicyVersion struct {
 	IsActive        *bool      `json:"is_active,omitempty"`
 	PdfUrl          *string    `json:"pdf_url,omitempty"`
 	PublishedAt     *time.Time `json:"published_at,omitempty"`
-	Version         *string    `json:"version,omitempty"`
+
+	// RequiresReAcceptance Whether upgrading to this version requires subjects to re-accept
+	RequiresReAcceptance *bool   `json:"requires_re_acceptance,omitempty"`
+	Version              *string `json:"version,omitempty"`
 }
 
 // PublicLinkInfo defines model for PublicLinkInfo.
@@ -167,6 +205,9 @@ type SubjectConsentsResponse struct {
 	Subject  *string    `json:"subject,omitempty"`
 }
 
+// TenantID defines model for TenantID.
+type TenantID = string
+
 // BadRequest defines model for BadRequest.
 type BadRequest = ErrorResponse
 
@@ -183,12 +224,84 @@ type GetConsentsParams struct {
 
 	// Policy Filter by specific policy slug
 	Policy *string `form:"policy,omitempty" json:"policy,omitempty"`
+
+	// XTenantID Tenant identifier for multi-tenancy
+	XTenantID TenantID `json:"X-Tenant-ID"`
+}
+
+// CreateConsentParams defines parameters for CreateConsent.
+type CreateConsentParams struct {
+	// XTenantID Tenant identifier for multi-tenancy
+	XTenantID TenantID `json:"X-Tenant-ID"`
+}
+
+// GetConsentStatusParams defines parameters for GetConsentStatus.
+type GetConsentStatusParams struct {
+	// Subject Subject identifier (external ID)
+	Subject string `form:"subject" json:"subject"`
+
+	// Slugs Comma-separated list of policy slugs to check
+	Slugs string `form:"slugs" json:"slugs"`
+
+	// XTenantID Tenant identifier for multi-tenancy
+	XTenantID TenantID `json:"X-Tenant-ID"`
+}
+
+// RevokeConsentParams defines parameters for RevokeConsent.
+type RevokeConsentParams struct {
+	// XTenantID Tenant identifier for multi-tenancy
+	XTenantID TenantID `json:"X-Tenant-ID"`
+}
+
+// GetConsentByIdParams defines parameters for GetConsentById.
+type GetConsentByIdParams struct {
+	// XTenantID Tenant identifier for multi-tenancy
+	XTenantID TenantID `json:"X-Tenant-ID"`
+}
+
+// CreateLinkParams defines parameters for CreateLink.
+type CreateLinkParams struct {
+	// XTenantID Tenant identifier for multi-tenancy
+	XTenantID TenantID `json:"X-Tenant-ID"`
+}
+
+// DeleteLinkParams defines parameters for DeleteLink.
+type DeleteLinkParams struct {
+	// XTenantID Tenant identifier for multi-tenancy
+	XTenantID TenantID `json:"X-Tenant-ID"`
+}
+
+// GetLinkStatusParams defines parameters for GetLinkStatus.
+type GetLinkStatusParams struct {
+	// XTenantID Tenant identifier for multi-tenancy
+	XTenantID TenantID `json:"X-Tenant-ID"`
 }
 
 // ListPoliciesParams defines parameters for ListPolicies.
 type ListPoliciesParams struct {
 	// Active Filter to only policies with active versions
 	Active *bool `form:"active,omitempty" json:"active,omitempty"`
+
+	// XTenantID Tenant identifier for multi-tenancy
+	XTenantID TenantID `json:"X-Tenant-ID"`
+}
+
+// CreatePolicyParams defines parameters for CreatePolicy.
+type CreatePolicyParams struct {
+	// XTenantID Tenant identifier for multi-tenancy
+	XTenantID TenantID `json:"X-Tenant-ID"`
+}
+
+// GetPolicyParams defines parameters for GetPolicy.
+type GetPolicyParams struct {
+	// XTenantID Tenant identifier for multi-tenancy
+	XTenantID TenantID `json:"X-Tenant-ID"`
+}
+
+// AddPolicyVersionParams defines parameters for AddPolicyVersion.
+type AddPolicyVersionParams struct {
+	// XTenantID Tenant identifier for multi-tenancy
+	XTenantID TenantID `json:"X-Tenant-ID"`
 }
 
 // CreateConsentJSONRequestBody defines body for CreateConsent for application/json ContentType.
@@ -216,34 +329,37 @@ type ServerInterface interface {
 	GetConsents(c *gin.Context, params GetConsentsParams)
 	// Create consents (direct acceptance via tablet/operator)
 	// (POST /admin/consents)
-	CreateConsent(c *gin.Context)
+	CreateConsent(c *gin.Context, params CreateConsentParams)
+	// Get consent status for a subject
+	// (GET /admin/consents/status)
+	GetConsentStatus(c *gin.Context, params GetConsentStatusParams)
 	// Revoke a consent
 	// (DELETE /admin/consents/{id})
-	RevokeConsent(c *gin.Context, id string)
+	RevokeConsent(c *gin.Context, id string, params RevokeConsentParams)
 	// Get consent by ID
 	// (GET /admin/consents/{id})
-	GetConsentById(c *gin.Context, id string)
+	GetConsentById(c *gin.Context, id string, params GetConsentByIdParams)
 	// Create a shareable consent link
 	// (POST /admin/links)
-	CreateLink(c *gin.Context)
+	CreateLink(c *gin.Context, params CreateLinkParams)
 	// Invalidate a consent link
 	// (DELETE /admin/links/{token})
-	DeleteLink(c *gin.Context, token string)
+	DeleteLink(c *gin.Context, token string, params DeleteLinkParams)
 	// Get link status
 	// (GET /admin/links/{token})
-	GetLinkStatus(c *gin.Context, token string)
+	GetLinkStatus(c *gin.Context, token string, params GetLinkStatusParams)
 	// List all policies
 	// (GET /admin/policies)
 	ListPolicies(c *gin.Context, params ListPoliciesParams)
 	// Create a new policy
 	// (POST /admin/policies)
-	CreatePolicy(c *gin.Context)
+	CreatePolicy(c *gin.Context, params CreatePolicyParams)
 	// Get policy details
 	// (GET /admin/policies/{slug})
-	GetPolicy(c *gin.Context, slug string)
+	GetPolicy(c *gin.Context, slug string, params GetPolicyParams)
 	// Add a new version to a policy
 	// (POST /admin/policies/{slug}/versions)
-	AddPolicyVersion(c *gin.Context, slug string)
+	AddPolicyVersion(c *gin.Context, slug string, params AddPolicyVersionParams)
 	// Get link info for consent acceptance
 	// (GET /public/links/{token})
 	GetPublicLinkInfo(c *gin.Context, token string)
@@ -292,6 +408,30 @@ func (siw *ServerInterfaceWrapper) GetConsents(c *gin.Context) {
 		return
 	}
 
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Tenant-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Tenant-ID")]; found {
+		var XTenantID TenantID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Tenant-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Tenant-ID", valueList[0], &XTenantID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Tenant-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XTenantID = XTenantID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Tenant-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -305,6 +445,35 @@ func (siw *ServerInterfaceWrapper) GetConsents(c *gin.Context) {
 // CreateConsent operation middleware
 func (siw *ServerInterfaceWrapper) CreateConsent(c *gin.Context) {
 
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateConsentParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Tenant-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Tenant-ID")]; found {
+		var XTenantID TenantID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Tenant-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Tenant-ID", valueList[0], &XTenantID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Tenant-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XTenantID = XTenantID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Tenant-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -312,7 +481,79 @@ func (siw *ServerInterfaceWrapper) CreateConsent(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.CreateConsent(c)
+	siw.Handler.CreateConsent(c, params)
+}
+
+// GetConsentStatus operation middleware
+func (siw *ServerInterfaceWrapper) GetConsentStatus(c *gin.Context) {
+
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetConsentStatusParams
+
+	// ------------- Required query parameter "subject" -------------
+
+	if paramValue := c.Query("subject"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument subject is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "subject", c.Request.URL.Query(), &params.Subject)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter subject: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	// ------------- Required query parameter "slugs" -------------
+
+	if paramValue := c.Query("slugs"); paramValue != "" {
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Query argument slugs is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	err = runtime.BindQueryParameter("form", true, true, "slugs", c.Request.URL.Query(), &params.Slugs)
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter slugs: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Tenant-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Tenant-ID")]; found {
+		var XTenantID TenantID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Tenant-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Tenant-ID", valueList[0], &XTenantID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Tenant-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XTenantID = XTenantID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Tenant-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetConsentStatus(c, params)
 }
 
 // RevokeConsent operation middleware
@@ -329,6 +570,33 @@ func (siw *ServerInterfaceWrapper) RevokeConsent(c *gin.Context) {
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params RevokeConsentParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Tenant-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Tenant-ID")]; found {
+		var XTenantID TenantID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Tenant-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Tenant-ID", valueList[0], &XTenantID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Tenant-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XTenantID = XTenantID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Tenant-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -336,7 +604,7 @@ func (siw *ServerInterfaceWrapper) RevokeConsent(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.RevokeConsent(c, id)
+	siw.Handler.RevokeConsent(c, id, params)
 }
 
 // GetConsentById operation middleware
@@ -353,6 +621,33 @@ func (siw *ServerInterfaceWrapper) GetConsentById(c *gin.Context) {
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetConsentByIdParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Tenant-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Tenant-ID")]; found {
+		var XTenantID TenantID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Tenant-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Tenant-ID", valueList[0], &XTenantID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Tenant-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XTenantID = XTenantID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Tenant-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -360,12 +655,41 @@ func (siw *ServerInterfaceWrapper) GetConsentById(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetConsentById(c, id)
+	siw.Handler.GetConsentById(c, id, params)
 }
 
 // CreateLink operation middleware
 func (siw *ServerInterfaceWrapper) CreateLink(c *gin.Context) {
 
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateLinkParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Tenant-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Tenant-ID")]; found {
+		var XTenantID TenantID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Tenant-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Tenant-ID", valueList[0], &XTenantID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Tenant-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XTenantID = XTenantID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Tenant-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -373,7 +697,7 @@ func (siw *ServerInterfaceWrapper) CreateLink(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.CreateLink(c)
+	siw.Handler.CreateLink(c, params)
 }
 
 // DeleteLink operation middleware
@@ -390,6 +714,33 @@ func (siw *ServerInterfaceWrapper) DeleteLink(c *gin.Context) {
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteLinkParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Tenant-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Tenant-ID")]; found {
+		var XTenantID TenantID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Tenant-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Tenant-ID", valueList[0], &XTenantID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Tenant-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XTenantID = XTenantID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Tenant-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -397,7 +748,7 @@ func (siw *ServerInterfaceWrapper) DeleteLink(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.DeleteLink(c, token)
+	siw.Handler.DeleteLink(c, token, params)
 }
 
 // GetLinkStatus operation middleware
@@ -414,6 +765,33 @@ func (siw *ServerInterfaceWrapper) GetLinkStatus(c *gin.Context) {
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetLinkStatusParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Tenant-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Tenant-ID")]; found {
+		var XTenantID TenantID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Tenant-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Tenant-ID", valueList[0], &XTenantID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Tenant-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XTenantID = XTenantID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Tenant-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -421,7 +799,7 @@ func (siw *ServerInterfaceWrapper) GetLinkStatus(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetLinkStatus(c, token)
+	siw.Handler.GetLinkStatus(c, token, params)
 }
 
 // ListPolicies operation middleware
@@ -440,6 +818,30 @@ func (siw *ServerInterfaceWrapper) ListPolicies(c *gin.Context) {
 		return
 	}
 
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Tenant-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Tenant-ID")]; found {
+		var XTenantID TenantID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Tenant-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Tenant-ID", valueList[0], &XTenantID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Tenant-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XTenantID = XTenantID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Tenant-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -453,6 +855,35 @@ func (siw *ServerInterfaceWrapper) ListPolicies(c *gin.Context) {
 // CreatePolicy operation middleware
 func (siw *ServerInterfaceWrapper) CreatePolicy(c *gin.Context) {
 
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreatePolicyParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Tenant-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Tenant-ID")]; found {
+		var XTenantID TenantID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Tenant-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Tenant-ID", valueList[0], &XTenantID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Tenant-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XTenantID = XTenantID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Tenant-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -460,7 +891,7 @@ func (siw *ServerInterfaceWrapper) CreatePolicy(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.CreatePolicy(c)
+	siw.Handler.CreatePolicy(c, params)
 }
 
 // GetPolicy operation middleware
@@ -477,6 +908,33 @@ func (siw *ServerInterfaceWrapper) GetPolicy(c *gin.Context) {
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetPolicyParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Tenant-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Tenant-ID")]; found {
+		var XTenantID TenantID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Tenant-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Tenant-ID", valueList[0], &XTenantID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Tenant-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XTenantID = XTenantID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Tenant-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -484,7 +942,7 @@ func (siw *ServerInterfaceWrapper) GetPolicy(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetPolicy(c, slug)
+	siw.Handler.GetPolicy(c, slug, params)
 }
 
 // AddPolicyVersion operation middleware
@@ -501,6 +959,33 @@ func (siw *ServerInterfaceWrapper) AddPolicyVersion(c *gin.Context) {
 		return
 	}
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params AddPolicyVersionParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Tenant-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Tenant-ID")]; found {
+		var XTenantID TenantID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Tenant-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Tenant-ID", valueList[0], &XTenantID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Tenant-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XTenantID = XTenantID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Tenant-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -508,7 +993,7 @@ func (siw *ServerInterfaceWrapper) AddPolicyVersion(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.AddPolicyVersion(c, slug)
+	siw.Handler.AddPolicyVersion(c, slug, params)
 }
 
 // GetPublicLinkInfo operation middleware
@@ -588,6 +1073,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 
 	router.GET(options.BaseURL+"/admin/consents", wrapper.GetConsents)
 	router.POST(options.BaseURL+"/admin/consents", wrapper.CreateConsent)
+	router.GET(options.BaseURL+"/admin/consents/status", wrapper.GetConsentStatus)
 	router.DELETE(options.BaseURL+"/admin/consents/:id", wrapper.RevokeConsent)
 	router.GET(options.BaseURL+"/admin/consents/:id", wrapper.GetConsentById)
 	router.POST(options.BaseURL+"/admin/links", wrapper.CreateLink)
@@ -654,7 +1140,8 @@ func (response GetConsents500JSONResponse) VisitGetConsentsResponse(w http.Respo
 }
 
 type CreateConsentRequestObject struct {
-	Body *CreateConsentJSONRequestBody
+	Params CreateConsentParams
+	Body   *CreateConsentJSONRequestBody
 }
 
 type CreateConsentResponseObject interface {
@@ -699,9 +1186,56 @@ func (response CreateConsent500JSONResponse) VisitCreateConsentResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetConsentStatusRequestObject struct {
+	Params GetConsentStatusParams
+}
+
+type GetConsentStatusResponseObject interface {
+	VisitGetConsentStatusResponse(w http.ResponseWriter) error
+}
+
+type GetConsentStatus200JSONResponse ConsentStatusResponse
+
+func (response GetConsentStatus200JSONResponse) VisitGetConsentStatusResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetConsentStatus400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetConsentStatus400JSONResponse) VisitGetConsentStatusResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetConsentStatus404JSONResponse struct{ NotFoundJSONResponse }
+
+func (response GetConsentStatus404JSONResponse) VisitGetConsentStatusResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(404)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetConsentStatus500JSONResponse struct {
+	InternalServerErrorJSONResponse
+}
+
+func (response GetConsentStatus500JSONResponse) VisitGetConsentStatusResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(500)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type RevokeConsentRequestObject struct {
-	Id   string `json:"id"`
-	Body *RevokeConsentJSONRequestBody
+	Id     string `json:"id"`
+	Params RevokeConsentParams
+	Body   *RevokeConsentJSONRequestBody
 }
 
 type RevokeConsentResponseObject interface {
@@ -747,7 +1281,8 @@ func (response RevokeConsent500JSONResponse) VisitRevokeConsentResponse(w http.R
 }
 
 type GetConsentByIdRequestObject struct {
-	Id string `json:"id"`
+	Id     string `json:"id"`
+	Params GetConsentByIdParams
 }
 
 type GetConsentByIdResponseObject interface {
@@ -759,6 +1294,15 @@ type GetConsentById200JSONResponse Consent
 func (response GetConsentById200JSONResponse) VisitGetConsentByIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetConsentById400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetConsentById400JSONResponse) VisitGetConsentByIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -784,7 +1328,8 @@ func (response GetConsentById500JSONResponse) VisitGetConsentByIdResponse(w http
 }
 
 type CreateLinkRequestObject struct {
-	Body *CreateLinkJSONRequestBody
+	Params CreateLinkParams
+	Body   *CreateLinkJSONRequestBody
 }
 
 type CreateLinkResponseObject interface {
@@ -830,7 +1375,8 @@ func (response CreateLink500JSONResponse) VisitCreateLinkResponse(w http.Respons
 }
 
 type DeleteLinkRequestObject struct {
-	Token string `json:"token"`
+	Token  string `json:"token"`
+	Params DeleteLinkParams
 }
 
 type DeleteLinkResponseObject interface {
@@ -866,7 +1412,8 @@ func (response DeleteLink500JSONResponse) VisitDeleteLinkResponse(w http.Respons
 }
 
 type GetLinkStatusRequestObject struct {
-	Token string `json:"token"`
+	Token  string `json:"token"`
+	Params GetLinkStatusParams
 }
 
 type GetLinkStatusResponseObject interface {
@@ -878,6 +1425,15 @@ type GetLinkStatus200JSONResponse ConsentLink
 func (response GetLinkStatus200JSONResponse) VisitGetLinkStatusResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetLinkStatus400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetLinkStatus400JSONResponse) VisitGetLinkStatusResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -919,6 +1475,15 @@ func (response ListPolicies200JSONResponse) VisitListPoliciesResponse(w http.Res
 	return json.NewEncoder(w).Encode(response)
 }
 
+type ListPolicies400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response ListPolicies400JSONResponse) VisitListPoliciesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type ListPolicies500JSONResponse struct {
 	InternalServerErrorJSONResponse
 }
@@ -931,7 +1496,8 @@ func (response ListPolicies500JSONResponse) VisitListPoliciesResponse(w http.Res
 }
 
 type CreatePolicyRequestObject struct {
-	Body *CreatePolicyJSONRequestBody
+	Params CreatePolicyParams
+	Body   *CreatePolicyJSONRequestBody
 }
 
 type CreatePolicyResponseObject interface {
@@ -977,7 +1543,8 @@ func (response CreatePolicy500JSONResponse) VisitCreatePolicyResponse(w http.Res
 }
 
 type GetPolicyRequestObject struct {
-	Slug string `json:"slug"`
+	Slug   string `json:"slug"`
+	Params GetPolicyParams
 }
 
 type GetPolicyResponseObject interface {
@@ -989,6 +1556,15 @@ type GetPolicy200JSONResponse Policy
 func (response GetPolicy200JSONResponse) VisitGetPolicyResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetPolicy400JSONResponse struct{ BadRequestJSONResponse }
+
+func (response GetPolicy400JSONResponse) VisitGetPolicyResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(400)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -1014,8 +1590,9 @@ func (response GetPolicy500JSONResponse) VisitGetPolicyResponse(w http.ResponseW
 }
 
 type AddPolicyVersionRequestObject struct {
-	Slug string `json:"slug"`
-	Body *AddPolicyVersionJSONRequestBody
+	Slug   string `json:"slug"`
+	Params AddPolicyVersionParams
+	Body   *AddPolicyVersionJSONRequestBody
 }
 
 type AddPolicyVersionResponseObject interface {
@@ -1179,6 +1756,9 @@ type StrictServerInterface interface {
 	// Create consents (direct acceptance via tablet/operator)
 	// (POST /admin/consents)
 	CreateConsent(ctx context.Context, request CreateConsentRequestObject) (CreateConsentResponseObject, error)
+	// Get consent status for a subject
+	// (GET /admin/consents/status)
+	GetConsentStatus(ctx context.Context, request GetConsentStatusRequestObject) (GetConsentStatusResponseObject, error)
 	// Revoke a consent
 	// (DELETE /admin/consents/{id})
 	RevokeConsent(ctx context.Context, request RevokeConsentRequestObject) (RevokeConsentResponseObject, error)
@@ -1254,8 +1834,10 @@ func (sh *strictHandler) GetConsents(ctx *gin.Context, params GetConsentsParams)
 }
 
 // CreateConsent operation middleware
-func (sh *strictHandler) CreateConsent(ctx *gin.Context) {
+func (sh *strictHandler) CreateConsent(ctx *gin.Context, params CreateConsentParams) {
 	var request CreateConsentRequestObject
+
+	request.Params = params
 
 	var body CreateConsentJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
@@ -1286,11 +1868,39 @@ func (sh *strictHandler) CreateConsent(ctx *gin.Context) {
 	}
 }
 
+// GetConsentStatus operation middleware
+func (sh *strictHandler) GetConsentStatus(ctx *gin.Context, params GetConsentStatusParams) {
+	var request GetConsentStatusRequestObject
+
+	request.Params = params
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetConsentStatus(ctx, request.(GetConsentStatusRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetConsentStatus")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		ctx.Error(err)
+		ctx.Status(http.StatusInternalServerError)
+	} else if validResponse, ok := response.(GetConsentStatusResponseObject); ok {
+		if err := validResponse.VisitGetConsentStatusResponse(ctx.Writer); err != nil {
+			ctx.Error(err)
+		}
+	} else if response != nil {
+		ctx.Error(fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
 // RevokeConsent operation middleware
-func (sh *strictHandler) RevokeConsent(ctx *gin.Context, id string) {
+func (sh *strictHandler) RevokeConsent(ctx *gin.Context, id string, params RevokeConsentParams) {
 	var request RevokeConsentRequestObject
 
 	request.Id = id
+	request.Params = params
 
 	var body RevokeConsentJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
@@ -1322,10 +1932,11 @@ func (sh *strictHandler) RevokeConsent(ctx *gin.Context, id string) {
 }
 
 // GetConsentById operation middleware
-func (sh *strictHandler) GetConsentById(ctx *gin.Context, id string) {
+func (sh *strictHandler) GetConsentById(ctx *gin.Context, id string, params GetConsentByIdParams) {
 	var request GetConsentByIdRequestObject
 
 	request.Id = id
+	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetConsentById(ctx, request.(GetConsentByIdRequestObject))
@@ -1349,8 +1960,10 @@ func (sh *strictHandler) GetConsentById(ctx *gin.Context, id string) {
 }
 
 // CreateLink operation middleware
-func (sh *strictHandler) CreateLink(ctx *gin.Context) {
+func (sh *strictHandler) CreateLink(ctx *gin.Context, params CreateLinkParams) {
 	var request CreateLinkRequestObject
+
+	request.Params = params
 
 	var body CreateLinkJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
@@ -1382,10 +1995,11 @@ func (sh *strictHandler) CreateLink(ctx *gin.Context) {
 }
 
 // DeleteLink operation middleware
-func (sh *strictHandler) DeleteLink(ctx *gin.Context, token string) {
+func (sh *strictHandler) DeleteLink(ctx *gin.Context, token string, params DeleteLinkParams) {
 	var request DeleteLinkRequestObject
 
 	request.Token = token
+	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteLink(ctx, request.(DeleteLinkRequestObject))
@@ -1409,10 +2023,11 @@ func (sh *strictHandler) DeleteLink(ctx *gin.Context, token string) {
 }
 
 // GetLinkStatus operation middleware
-func (sh *strictHandler) GetLinkStatus(ctx *gin.Context, token string) {
+func (sh *strictHandler) GetLinkStatus(ctx *gin.Context, token string, params GetLinkStatusParams) {
 	var request GetLinkStatusRequestObject
 
 	request.Token = token
+	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetLinkStatus(ctx, request.(GetLinkStatusRequestObject))
@@ -1463,8 +2078,10 @@ func (sh *strictHandler) ListPolicies(ctx *gin.Context, params ListPoliciesParam
 }
 
 // CreatePolicy operation middleware
-func (sh *strictHandler) CreatePolicy(ctx *gin.Context) {
+func (sh *strictHandler) CreatePolicy(ctx *gin.Context, params CreatePolicyParams) {
 	var request CreatePolicyRequestObject
+
+	request.Params = params
 
 	var body CreatePolicyJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
@@ -1496,10 +2113,11 @@ func (sh *strictHandler) CreatePolicy(ctx *gin.Context) {
 }
 
 // GetPolicy operation middleware
-func (sh *strictHandler) GetPolicy(ctx *gin.Context, slug string) {
+func (sh *strictHandler) GetPolicy(ctx *gin.Context, slug string, params GetPolicyParams) {
 	var request GetPolicyRequestObject
 
 	request.Slug = slug
+	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetPolicy(ctx, request.(GetPolicyRequestObject))
@@ -1523,10 +2141,11 @@ func (sh *strictHandler) GetPolicy(ctx *gin.Context, slug string) {
 }
 
 // AddPolicyVersion operation middleware
-func (sh *strictHandler) AddPolicyVersion(ctx *gin.Context, slug string) {
+func (sh *strictHandler) AddPolicyVersion(ctx *gin.Context, slug string, params AddPolicyVersionParams) {
 	var request AddPolicyVersionRequestObject
 
 	request.Slug = slug
+	request.Params = params
 
 	var body AddPolicyVersionJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
@@ -1622,43 +2241,51 @@ func (sh *strictHandler) AcceptConsent(ctx *gin.Context, token string) {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/9xbW2/bOBb+KwRnH1pAsew2HXT9lrY7uwGC2aJdzMs0CGjx2OJEIjUk5cYI/N8XvOgu",
-	"+RbbSfvU2jIPD8/3nQvPUR5xJNJMcOBa4ekjlqAywRXYDx8I/QJ/56C0+RQJroHb/5IsS1hENBM8/EsJ",
-	"br5TUQwpMf/7h4Q5nuJfwkp06J6q8F9SCvnFb4LX63WAKahIsswIw1N8zZckYRRJv/E6wNdcg+Qk+Qpy",
-	"CdJKOKc+bnOk7O4I7PbrAP8u9G8i5/R8qnwBJXIZAeJCo7nd2/zIrzfir6IIMv3RCOC6Bl0mRQZSMwcr",
-	"sb8CepeJhEX+S3ggaZYAnv6JM8mWJFpd2McrHOCUyHvQjC8uIica3waYaUjtSr3KAE+x0pLxhbFMyvi1",
-	"ezgJiqdESrKy6hpgmQRqdupqcluuELO/ILL4X1H6B0jFBB88kgfgLtZp0jgN/paPx2+jeGL/hc/uaOiz",
-	"PZp7FhYPR6MRDrrHKWQbK1DxnTfl/4JaMvmAGKbuSKTZEsx6CnOSJxpP5yRREFTytMyhXDwTIgHCzeqM",
-	"zu9y2TpbrHWmpmEYUT7y344ikYaFNcMCycloPBqPMjrHAZ4LmRKNpziXrE/PpTN1cycrwDLh4Qb4Qsd4",
-	"+mZskS4+TjqiWlgXcvsQ9owdoirhEdyloGNhvQ14nhqJlEmzPsAJ4/dGbqVv+ahzvJJyxG5XWoMSDRea",
-	"pdCLHW2aw7vBRZ4zejF587ZvjVHqTot7aJmSzKLJm7cXFOaX737FAeZ5kpBZB/tKkHPDO5Xki6akjp8O",
-	"Ld0IaWeRhKW432ygrToXMmar5qYGW6KF9EbbKkfljiNN6+dKixTkBvOvh0l2Y8jSDSASyL6sKNZsOWRn",
-	"HTxkTILaa68ThepmdD7c3gHegemdNbl6Es02gKzKPNqXKlRR7ZSG2ZSXi+C07klm3f0tJ7Zl4DqapQ7N",
-	"nxzi7jU/bxUxc1szZFIsGQUaoFyBQjoG5FISKlYG2wNEK6xbPfti+oYq4El+3djci6n5x+0gKMbxhwuI",
-	"J/oy43exyGXTPy/f24zJUpOvJr++t0bxn0pZjGtYgDyhkz8TEj3GacTMbUgNOfAh4fOg6DRYbjmjN0uu",
-	"fJawKDRJX4Vt0ZtLruEw4irKQc42fLyu6H9ziTxpkCMNoiLKU8OURg03GY/HPSfnJIWmxGaN2y4Et1WC",
-	"wS7RrKnWfrWlFe/17qNV82rVZVRxpazU67lr7QScN9BR6os98MWHoXgITl0/yejeR/P5Zvck7FT218Dd",
-	"UrFbcsOUHka+NxFv12MfBf6okvKPfWd9QXdUG21VfBjpdroG9eJpY7xJTtd8Lo6TmPYnoFXC4WbVeOYq",
-	"fthQNR1/RO4/Q/Q9nwM98XZxkPt8sT2BbVejHTsHm+uBmpC+cuCr849z3hWP2cowXzHvVobsxEl1jMMf",
-	"4AqUjkGzCP0PSNrhcnH8C7LgQpmf+WOilHCyAFMm2m43iwDNhUQx4TRhfNFkPQMVfOPlVaQQogJEOEVC",
-	"xyCL4tPor0bfzPVSM20P7g2Fvvp9rj5f4xrFPK/WgcGdk4zhKX47Go+MfTKiYwtESGjKeFgHaQHWFI4s",
-	"TPBriqf431BCbZdLkoIGc1f787HfNIhR4JrNGUj0Ch78BOD60+vGBbkPPGak/J2DXBX16LR2N6o46nJo",
-	"NRjogN7W7DeWaJBotkIqg4jNWVRY1xe/G1y5T6ny4bAOt0FzHPRmPD7asGPIBXvGHgUmJc7rAF86Vfp2",
-	"KFUOa+Mru+Ry+5JyqLMO8Ltd9uibTdmhTJ6mRK4c+0rVrTsRVBFCk4WhIb4yTEYXqOTpra0NVA+bGx0m",
-	"zylQ+oOgq6Oh09vFWjejrGHwusOQyfF02IEaxW+Qv179YNRwZq7Y8cqNLVA19UBLRpAmswR0WGTA15t5",
-	"sw7agTF8ZHTtGgYJaOhSqpGZuyFy49zDxhYTkqvQwuheoe72NBzuLTd24vD42BzeQF3kS5WDaHg5/uf5",
-	"ps+FwiSRQOiqrviR3MEhhkjhENvi45Zk/2F1TZ+HzM/HJgqasES9kHxnqpXrT7uGK9s7dU2Z4bxnp3en",
-	"THr1KcG5M163+d0DtXn+Y+c7glRMJJisVjIlcbi2iXJjOdFhSfhoGxUbk9on+73ny2AQaHc3eiKA64k8",
-	"LQhcdmdyFkenPH1OUPwLVw6YHeEYjr3mF1810bl6AVY/eui1bBryyRcSew10SBUQbHeoegeyF9UbpvTn",
-	"aqi38f7sb6laIMGTqlGAvjMdt2bNauBi6hvOdaTbb0u1W88nhb5njNDLAKWRmJcnPiKoVjRJElSbrLZh",
-	"LfHZdm8sm4+ny6DNqeWZc2gxn+ki5J48OXOeseL2GhcFNzwwpdUp0jGH77VO9jC1ukEjfFRJvlhvar2V",
-	"jBvMBv39qmY68E2ul5ENtpLshaSCrKnNYdiG9Vltf2i5orQ563wWsI8fz7ovHr+YaOb1QoTS810Dzhr9",
-	"yhOeKvxdUepjn2e4KVvIzoGw8cZP7T7i42D71X2dS65aHmnbwTpu3oJG6HeBSK5j4NqbFhWMG+GgJ8A2",
-	"x9I/U9ndOtpQ5c34XLgSM3t6/L2cjM9Hcqu+e2+AIiFLsucKTnIvsJYyrCsYV7Waa4x3Zt/A89Atq2eE",
-	"Nt8jIanq2abkvB9jAS3r2v2Y3/hbl+dh/QkyTt8f8LzkwUvx5xRnS0E/oXc60Ksx0JKRdgOm8kiz0krq",
-	"u37fiIgkiMISEpGVc3yQ2L/Nal8mmYZhYn4XC6Wn78fv32HDZr9TW+J/gCQ6RlEM0T0CTjPB3Bjde457",
-	"jrvzal8J114pKFejVzUnB/q6ktZJtV25H7vvKuwh+GM1Qx4SbOPkYdJdc6XHFha9mqT+CIxecRf/AmQD",
-	"0sWMqMY+ngXr2/X/AwAA///hG01ptzkAAA==",
+	"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",
+	"wmmcRgAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
