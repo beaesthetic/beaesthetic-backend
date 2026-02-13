@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/beaesthetic/beaesthetic-backend/compare/consent-service-v0.3.0...consent-service-v0.4.0) (2026-02-13)
+
+
+### Features
+
+* return polices for tenant ([3e6489e](https://github.com/beaesthetic/beaesthetic-backend/commit/3e6489ecd4d0d1f6c9db57d58d25f803668ff00e))
+
 ## [0.3.0](https://github.com/beaesthetic/beaesthetic-backend/compare/consent-service-v0.2.4...consent-service-v0.3.0) (2026-02-13)
 
 
