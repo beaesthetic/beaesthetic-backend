@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/beaesthetic/beaesthetic-backend/compare/consent-service-v0.4.0...consent-service-v0.4.1) (2026-02-13)
+
+
+### Bug Fixes
+
+* build service ([5c5e616](https://github.com/beaesthetic/beaesthetic-backend/commit/5c5e6161ffad445787da86478bf72da0f1787f75))
+
 ## [0.4.0](https://github.com/beaesthetic/beaesthetic-backend/compare/consent-service-v0.3.0...consent-service-v0.4.0) (2026-02-13)
 
 
