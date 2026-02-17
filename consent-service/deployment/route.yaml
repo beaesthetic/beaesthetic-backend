@@ -1,16 +1,16 @@
 apiVersion: apisix.apache.org/v2
 kind: ApisixRoute
 metadata:
-  name: beaesthetic-consents
+  name: beaesthetic-consents-admin
   namespace: beaesthetic
 spec:
   ingressClassName: apisix
   http:
-    - name: beaesthetic-consents
+    - name: beaesthetic-consents-admin
       plugin_config_name: oidc-firebase
       match:
         hosts: ["api.agenda.beaesthetic.it"]
-        paths: ["/consent-service/*"]
+        paths: ["/consent-service/admin/*"]
       backends:
         - serviceName: beaesthetic-consent-service
           servicePort: 8080
@@ -22,9 +22,39 @@ spec:
         - name: cors
           enable: true
           config:
-            allow_origins: "*"
-            allow_credential: false
-            allow_methods: "*"
-            allow_headers: "*"
+            allow_origins: "https://web.agenda.beaesthetic.it"
+            allow_credential: true
+            allow_methods: "GET,POST,PUT,DELETE,OPTIONS"
+            allow_headers: "Authorization,Content-Type,X-Tenant-ID"
             expose_headers: "*"
-            max_age: 5
+            max_age: 3600
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: beaesthetic-consents-public
+  namespace: beaesthetic
+spec:
+  ingressClassName: apisix
+  http:
+    - name: beaesthetic-consents-public
+      match:
+        hosts: ["api.agenda.beaesthetic.it"]
+        paths: ["/consent-service/public/*"]
+      backends:
+        - serviceName: beaesthetic-consent-service
+          servicePort: 8080
+      plugins:
+        - name: proxy-rewrite
+          enable: true
+          config:
+            regex_uri: ["^/consent-service/(.*)", "/$1"]
+        - name: cors
+          enable: true
+          config:
+            allow_origins: "https://web.agenda.beaesthetic.it"
+            allow_credential: true
+            allow_methods: "GET,POST,PUT,DELETE,OPTIONS"
+            allow_headers: "Authorization,Content-Type,X-Tenant-ID"
+            expose_headers: "*"
+            max_age: 3600

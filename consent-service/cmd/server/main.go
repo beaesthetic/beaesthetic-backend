@@ -83,7 +83,7 @@ func main() {
 	// Initialize services
 	policyService := application.NewPolicyService(policyRepo)
 	consentService := application.NewConsentService(consentRepo, policyRepo)
-	linkService := application.NewLinkService(linkRepo, policyRepo, cfg.Server.BaseURL)
+	linkService := application.NewLinkService(linkRepo, policyRepo, cfg.Server.FrontendURL)
 
 	// Initialize HTTP router
 	router := httpport.NewRouter(policyService, consentService, linkService)

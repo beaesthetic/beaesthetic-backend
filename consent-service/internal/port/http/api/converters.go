@@ -76,6 +76,8 @@ func domainConsentToAPI(c domain.Consent) Consent {
 		AcceptedAt:       ptr(c.AcceptedAt),
 		AcceptanceMethod: ptr(ConsentAcceptanceMethod(c.AcceptanceMethod)),
 		LinkToken:        c.LinkToken,
+		IpAddress:        c.IpAddress,
+		UserAgent:        c.UserAgent,
 		RevokedAt:        c.RevokedAt,
 		RevokedBy:        c.RevokedBy,
 	}

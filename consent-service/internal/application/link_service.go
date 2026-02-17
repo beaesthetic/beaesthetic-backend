@@ -44,17 +44,17 @@ type LinkInfo struct {
 
 // LinkService handles consent link operations
 type LinkService struct {
-	linkRepo   domain.ConsentLinkRepository
-	policyRepo domain.PolicyRepository
-	baseURL    string
+	linkRepo    domain.ConsentLinkRepository
+	policyRepo  domain.PolicyRepository
+	frontendURL string
 }
 
 // NewLinkService creates a new LinkService
-func NewLinkService(linkRepo domain.ConsentLinkRepository, policyRepo domain.PolicyRepository, baseURL string) *LinkService {
+func NewLinkService(linkRepo domain.ConsentLinkRepository, policyRepo domain.PolicyRepository, frontendURL string) *LinkService {
 	return &LinkService{
-		linkRepo:   linkRepo,
-		policyRepo: policyRepo,
-		baseURL:    baseURL,
+		linkRepo:    linkRepo,
+		policyRepo:  policyRepo,
+		frontendURL: frontendURL,
 	}
 }
 
@@ -83,7 +83,7 @@ func (s *LinkService) CreateLink(tenantID string, req CreateLinkRequest) (*Creat
 
 	return &CreateLinkResponse{
 		Token:     link.Token,
-		URL:       fmt.Sprintf("%s/public/links/%s", s.baseURL, link.Token),
+		URL:       fmt.Sprintf("%s/consent/%s", s.frontendURL, link.Token),
 		ExpiresAt: &link.ExpiresAt,
 	}, nil
 }

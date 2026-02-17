@@ -30,12 +30,14 @@ type Consent struct {
 	AcceptedAt       time.Time        `bson:"accepted_at" json:"accepted_at"`
 	AcceptanceMethod AcceptanceMethod `bson:"acceptance_method" json:"acceptance_method"`
 	LinkToken        *string          `bson:"link_token,omitempty" json:"link_token,omitempty"`
+	IpAddress        *string          `bson:"ip_address,omitempty" json:"ip_address,omitempty"`
+	UserAgent        *string          `bson:"user_agent,omitempty" json:"user_agent,omitempty"`
 	RevokedAt        *time.Time       `bson:"revoked_at,omitempty" json:"revoked_at,omitempty"`
 	RevokedBy        *string          `bson:"revoked_by,omitempty" json:"revoked_by,omitempty"`
 }
 
 // NewConsent creates a new consent record
-func NewConsent(id, tenantID, subject, policySlug, policyVersion string, method AcceptanceMethod, linkToken *string) (*Consent, error) {
+func NewConsent(id, tenantID, subject, policySlug, policyVersion string, method AcceptanceMethod, linkToken, ipAddress, userAgent *string) (*Consent, error) {
 	if tenantID == "" {
 		return nil, ErrInvalidTenantID
 	}
@@ -58,6 +60,8 @@ func NewConsent(id, tenantID, subject, policySlug, policyVersion string, method 
 		AcceptedAt:       time.Now().UTC(),
 		AcceptanceMethod: method,
 		LinkToken:        linkToken,
+		IpAddress:        ipAddress,
+		UserAgent:        userAgent,
 	}, nil
 }
 

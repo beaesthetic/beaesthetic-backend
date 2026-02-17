@@ -40,7 +40,7 @@ func NewConsentService(consentRepo domain.ConsentRepository, policyRepo domain.P
 }
 
 // CreateConsents creates consent records for the given policies
-func (s *ConsentService) CreateConsents(tenantID string, req CreateConsentRequest, method domain.AcceptanceMethod, linkToken *string) ([]domain.Consent, error) {
+func (s *ConsentService) CreateConsents(tenantID string, req CreateConsentRequest, method domain.AcceptanceMethod, linkToken, ipAddress, userAgent *string) ([]domain.Consent, error) {
 	var consents []domain.Consent
 
 	for _, pc := range req.Policies {
@@ -82,6 +82,8 @@ func (s *ConsentService) CreateConsents(tenantID string, req CreateConsentReques
 			version,
 			method,
 			linkToken,
+			ipAddress,
+			userAgent,
 		)
 		if err != nil {
 			return nil, err

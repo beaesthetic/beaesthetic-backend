@@ -1,6 +1,7 @@
 package http
 
 import (
+	"context"
 	"strings"
 	"time"
 
@@ -28,6 +29,9 @@ func NewRouter(
 
 	// CORS middleware
 	engine.Use(corsMiddleware())
+
+	// Request metadata middleware (extracts IP and User-Agent)
+	engine.Use(requestMetadataMiddleware())
 
 	// Create the server implementation
 	server := api.NewServer(policyService, consentService, linkService)
@@ -87,6 +91,24 @@ func corsMiddleware() gin.HandlerFunc {
 			c.AbortWithStatus(204)
 			return
 		}
+
+		c.Next()
+	}
+}
+
+// requestMetadataMiddleware extracts client IP and User-Agent and injects them into context
+func requestMetadataMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ctx := c.Request.Context()
+
+		clientIP := c.ClientIP()
+		userAgent := c.Request.UserAgent()
+
+		// Use the exported context keys from api package so the handler can read them
+		ctx = context.WithValue(ctx, api.ContextKeyClientIP, clientIP)
+		ctx = context.WithValue(ctx, api.ContextKeyUserAgent, userAgent)
+
+		c.Request = c.Request.WithContext(ctx)
 
 		c.Next()
 	}

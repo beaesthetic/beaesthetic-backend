@@ -644,6 +644,14 @@ components:
           type: string
           nullable: true
           example: abc123-def456
+        ip_address:
+          type: string
+          nullable: true
+          example: "192.168.1.1"
+        user_agent:
+          type: string
+          nullable: true
+          example: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
         revoked_at:
           type: string
           format: date-time
@@ -829,6 +837,10 @@ components:
         subject:
           type: string
           example: customer-uuid-123
+        tenant_name:
+          type: string
+          nullable: true
+          example: "BeAesthetic Salon"
         policies:
           type: array
           items:
