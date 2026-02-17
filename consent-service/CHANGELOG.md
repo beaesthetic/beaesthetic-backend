@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/beaesthetic/beaesthetic-backend/compare/consent-service-v0.4.1...consent-service-v0.5.0) (2026-02-17)
+
+
+### Features
+
+* store user agent consent + public link api ([0f6c2fb](https://github.com/beaesthetic/beaesthetic-backend/commit/0f6c2fb60b1b35328a71c1a4f5377e80f2637109))
+
 ## [0.4.1](https://github.com/beaesthetic/beaesthetic-backend/compare/consent-service-v0.4.0...consent-service-v0.4.1) (2026-02-13)
 
 
