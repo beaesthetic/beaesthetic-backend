@@ -21,7 +21,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Extract version
         id: version
@@ -35,7 +35,7 @@ jobs:
           echo "Version: $VERSION"
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: "1.22"
           check-latest: true
@@ -67,7 +67,7 @@ jobs:
             type=semver,pattern={{major}},value=${{ steps.version.outputs.version }}
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: ./consent-service
           file: ./consent-service/Dockerfile
