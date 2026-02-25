@@ -54,7 +54,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
 
     // firebase
-    implementation("com.google.firebase:firebase-admin:9.2.0")
+    implementation("com.google.firebase:firebase-admin:9.8.0")
 
     // https://mvnrepository.com/artifact/io.grpc/grpc-netty
     implementation("io.grpc:grpc-netty")
