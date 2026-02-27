@@ -78,7 +78,7 @@ dependencyManagement {
     imports {
         mavenBom("org.springframework.cloud:spring-cloud-dependencies:${property("springCloudVersion")}")
         mavenBom("io.grpc:grpc-bom:1.59.0")
-        mavenBom("io.opentelemetry:opentelemetry-bom:1.38.0")
+        mavenBom("io.opentelemetry:opentelemetry-bom:1.59.0")
         mavenBom("io.opentelemetry.instrumentation:opentelemetry-instrumentation-bom-alpha:2.4.0-alpha")
     }
 }
