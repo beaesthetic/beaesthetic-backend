@@ -9,7 +9,7 @@ plugins {
     kotlin("plugin.spring") version "1.9.23"
 
     id("org.graalvm.buildtools.native") version "0.9.28"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "it.beaesthetic.gateway"
