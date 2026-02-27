@@ -33,7 +33,7 @@ extra["springCloudVersion"] = "2023.0.2-SNAPSHOT"
 
 dependencies {
     // functional - fp
-    implementation("io.arrow-kt:arrow-core:1.1.2")
+    implementation("io.arrow-kt:arrow-core:1.2.4")
 
     // spring boot
     implementation("org.springframework.cloud:spring-cloud-starter-gateway")
