@@ -8,7 +8,7 @@ plugins {
     kotlin("jvm") version "1.9.23"
     kotlin("plugin.spring") version "1.9.23"
 
-    id("org.graalvm.buildtools.native") version "0.9.28"
+    id("org.graalvm.buildtools.native") version "0.11.4"
     id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
