@@ -29,38 +29,6 @@ servers:
   - url: https://agenda.beaesthetic.it/customer-service/
 paths:
 
-  /admin/wallets/giftCard:
-    post:
-      tags:
-        - wallets-admin
-      operationId: addGiftCard
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                amount:
-                  type: number
-                customerId:
-                  $ref: '#/components/schemas/CustomerId'
-              required:
-                - amount
-                - customerId
-      responses:
-        '200':
-          description: "Wallet id where gift card has been added"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    $ref: '#/components/schemas/WalletId'
-        '400':
-          description: "Bad request"
-
   /admin/wallets/{walletId}/charge:
     put:
       tags:

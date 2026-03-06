@@ -17,18 +17,6 @@ class WalletResource(
     private val walletRepository: WalletRepository,
 ) : WalletsAdminApi {
 
-    override suspend fun addGiftCard(
-        addGiftCardRequestDto: AddGiftCardRequestDto
-    ): AddGiftCard200ResponseDto {
-        return walletService
-            .createWallet(
-                addGiftCardRequestDto.customerId.toString(),
-                Money(addGiftCardRequestDto.amount.toDouble()),
-            )
-            .map { AddGiftCard200ResponseDto(id = UUID.fromString(it.id)) }
-            .getOrThrow()
-    }
-
     override suspend fun chargeWallet(
         walletId: UUID,
         chargeWalletRequestDto: ChargeWalletRequestDto,

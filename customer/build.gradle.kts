@@ -110,7 +110,7 @@ allOpen {
 
 sourceSets { main { java { srcDirs("${layout.buildDirectory.get()}/generated/src/main/java") } } }
 
-tasks.withType<KotlinCompile> { dependsOn("wallet-api", "customer-api", "fidelity-card-api") }
+tasks.withType<KotlinCompile> { dependsOn("wallet-api", "customer-api", "fidelity-card-api", "gift-card-api-v2") }
 
 spotless {
   lineEndings = LineEnding.UNIX
@@ -213,6 +213,46 @@ tasks.register<GenerateTask>("fidelity-card-api") {
     mapOf("VoucherDto" to "it.beaesthetic.fidelity.http.serialization.VoucherItemMixin")
   )
   typeMappings.putAll(mapOf("VoucherDto" to "VoucherItemMixin"))
+}
+
+tasks.register<GenerateTask>("gift-card-api-v2") {
+  description = "Generate REST API interface for gift cards v2"
+  group = "openapi-generation"
+  generatorName.set("kotlin-server")
+  inputSpec.set("$rootDir/api-spec/gift-card-api-v2.yaml")
+  outputDir.set("${layout.buildDirectory.get()}/generated")
+  apiPackage.set("it.beaesthetic.giftcard.generated.api")
+  modelPackage.set("it.beaesthetic.giftcard.generated.api.model")
+  generateApiTests.set(false)
+  generateApiDocumentation.set(false)
+  generateModelTests.set(false)
+  validateSpec.set(true)
+
+  library.set("jaxrs-spec")
+  modelNameSuffix.set("Dto")
+
+  configOptions.set(
+    mapOf(
+      "additionalModelTypeAnnotations" to "@io.quarkus.runtime.annotations.RegisterForReflection",
+      "sourceFolder" to "src/main/java",
+      "skipDefaultInterface" to "true",
+      "openApiNullable" to "true",
+      "hideGenerationTimestamp" to "true",
+      "oas3" to "true",
+      "generateSupportingFiles" to "true",
+      "enumPropertyNaming" to "UPPERCASE",
+      "legacyDiscriminatorBehavior" to "true",
+      "interfaceOnly" to "true",
+      "useSwaggerAnnotations" to "false",
+      "supportAsync" to "true",
+      "useMutiny" to "false",
+      "useCoroutines" to "true",
+      "useBeanValidation" to "true",
+      "dateLibrary" to "java8",
+      "useJakartaEe" to "true",
+      "useTags" to "true",
+    )
+  )
 }
 
 tasks.register<GenerateTask>("wallet-api") {
