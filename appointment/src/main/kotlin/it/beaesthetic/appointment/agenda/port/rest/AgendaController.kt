@@ -3,11 +3,17 @@ package it.beaesthetic.appointment.agenda.port.rest
 import io.quarkus.runtime.annotations.RegisterForReflection
 import io.smallrye.mutiny.Uni
 import it.beaesthetic.appointment.agenda.application.events.*
+import it.beaesthetic.appointment.agenda.application.reminder.ResendReminder
+import it.beaesthetic.appointment.agenda.application.reminder.ResendReminderHandler
 import it.beaesthetic.appointment.agenda.config.ReminderConfiguration
 import it.beaesthetic.appointment.agenda.domain.event.*
 import it.beaesthetic.appointment.agenda.generated.api.AdminActivitiesApi
 import it.beaesthetic.appointment.agenda.generated.api.model.*
 import it.beaesthetic.appointment.service.common.uniWithScope
+import jakarta.ws.rs.POST
+import jakarta.ws.rs.Path
+import jakarta.ws.rs.PathParam
+import jakarta.ws.rs.Produces
 import java.time.OffsetDateTime
 import java.util.*
 import kotlin.IllegalArgumentException as IllegalArgumentException1
@@ -22,6 +28,7 @@ class AgendaController(
     private val deleteAgendaScheduleHandler: DeleteAgendaScheduleHandler,
     private val queryHandler: AgendaQueryHandler,
     private val reminderConfiguration: ReminderConfiguration,
+    private val resendReminderHandler: ResendReminderHandler,
 ) : AdminActivitiesApi {
 
     override fun createAgendaActivity(
@@ -121,6 +128,17 @@ class AgendaController(
                     .getOrThrow()
             }
             .replaceWithVoid()
+
+    @POST
+    @Path("/admin/activities/{activityId}/reminder/resend")
+    @Produces("application/json")
+    fun resendReminder(@PathParam("activityId") activityId: UUID): Uni<ActivityResponseDto> =
+        uniWithScope {
+            resendReminderHandler
+                .handle(ResendReminder(AgendaEventId(activityId.toString())))
+                .map { AgendaScheduleMapper.toResourceDto(it) }
+                .getOrThrow()
+        }
 
     override fun getAppointmentsByTimeRangeOrCustomer(
         start: OffsetDateTime?,

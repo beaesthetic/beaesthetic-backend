@@ -190,6 +190,40 @@ paths:
               example:
                 error: Appointment not found
 
+  /admin/activities/{activityId}/reminder/resend:
+    post:
+      tags:
+        - admin-activities
+      summary: Resend a reminder for an activity
+      operationId: resendReminder
+      parameters:
+        - name: activityId
+          in: path
+          required: true
+          description: The ID of the activity to resend the reminder for
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Reminder resent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActivityResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              example:
+                error: Invalid activityId or reminder cannot be resent
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              example:
+                error: Activity not found
+
   /insight/customer-ranking:
     get:
       summary: Get customer ranking
