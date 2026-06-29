@@ -2,5 +2,5 @@ package: api
 generate:
   models: true
   gin-server: true
-  strict-server: true
   embedded-spec: true
+output: api.gen.go

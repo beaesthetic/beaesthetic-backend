@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/beaesthetic/scheduler/api"
 	"github.com/beaesthetic/scheduler/internal/application"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.uber.org/zap"
 )
@@ -15,10 +15,8 @@ type Router struct {
 	engine *gin.Engine
 }
 
-type createScheduleRequest struct {
-	ScheduleAt time.Time      `json:"scheduleAt" binding:"required"`
-	Route      string         `json:"route" binding:"required"`
-	Data       map[string]any `json:"data" binding:"required"`
+type scheduleServer struct {
+	service *application.SchedulerService
 }
 
 func NewRouter(service *application.SchedulerService, logger *zap.Logger) *Router {
@@ -38,51 +36,39 @@ func (r *Router) Engine() *gin.Engine {
 }
 
 func (r *Router) register(service *application.SchedulerService) {
-	r.engine.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "UP"})
-	})
-	r.engine.GET("/actuator/health/liveness", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "UP"})
-	})
-	r.engine.GET("/actuator/health/readiness", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "UP"})
-	})
+	r.engine.GET("/health", healthHandler)
+	r.engine.GET("/actuator/health/liveness", healthHandler)
+	r.engine.GET("/actuator/health/readiness", healthHandler)
 
-	r.engine.PUT("/schedules/:scheduleId", func(c *gin.Context) {
-		id, err := uuid.Parse(c.Param("scheduleId"))
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid scheduleId"})
-			return
-		}
+	api.RegisterHandlers(r.engine, &scheduleServer{service: service})
+}
 
-		var request createScheduleRequest
-		if err := c.ShouldBindJSON(&request); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
+func healthHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"status": "UP"})
+}
 
-		if err := service.Schedule(c.Request.Context(), id, request.ScheduleAt, request.Route, request.Data); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to schedule job"})
-			return
-		}
+func (s *scheduleServer) AddSchedule(c *gin.Context, scheduleId api.ScheduleId) {
+	var request api.AddScheduleJSONRequestBody
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
-		c.JSON(http.StatusAccepted, gin.H{"scheduleId": id})
-	})
+	if err := s.service.Schedule(c.Request.Context(), scheduleId, request.ScheduleAt, request.Route, request.Data); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to schedule job"})
+		return
+	}
 
-	r.engine.DELETE("/schedules/:scheduleId", func(c *gin.Context) {
-		id, err := uuid.Parse(c.Param("scheduleId"))
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "invalid scheduleId"})
-			return
-		}
+	c.JSON(http.StatusAccepted, gin.H{"scheduleId": scheduleId})
+}
 
-		if err := service.Delete(c.Request.Context(), id); err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete schedule job"})
-			return
-		}
+func (s *scheduleServer) RemoveSchedule(c *gin.Context, scheduleId api.ScheduleId) {
+	if err := s.service.Delete(c.Request.Context(), scheduleId); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to delete schedule job"})
+		return
+	}
 
-		c.Status(http.StatusNoContent)
-	})
+	c.Status(http.StatusNoContent)
 }
 
 func requestLogger(logger *zap.Logger) gin.HandlerFunc {
