@@ -16,11 +16,15 @@ service:
     - 8080
 
 envConfig:
+  SERVER_PORT: "8080"
   OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
   RABBIT_HOST: "rabbitmq.common.svc.cluster.local"
   RABBIT_PORT: "5672"
-  RABBIT_USER: "guest"
+  RABBIT_USERNAME: "guest"
   RABBIT_PASSWORD: "guest"
+  RABBIT_EXCHANGE: ""
+
+  POSTGRES_DSN: "postgres://scheduler:scheduler@postgres.common.svc.cluster.local:5432/scheduler?sslmode=disable"
 
   REDIS_HOST: "redis-headless.common.svc.cluster.local"
   REDIS_PORT: "6379"
@@ -29,7 +33,6 @@ envConfig:
   SCHEDULER_POLLING_INTERVAL: "60s"
   SCHEDULER_PEEK_LEASE_TTL: "30s"
   SCHEDULER_PEEK_BATCH_SIZE: "50"
-
 
 resources:
   requests:
@@ -43,6 +46,13 @@ secretKeyRef:
   - name: REDIS_PASSWORD
     secretRefName: scheduler-service
     key: REDIS_PASSWORD
+
+initContainers:
+  migrate:
+    enabled: true
+    command:
+      - /app/scheduler
+      - migrate
 
 readinessProbe:
   httpGet:

@@ -16,6 +16,29 @@ spec:
       labels:
         {{- tpl (toYaml .Values.labels) . | nindent 8 }}
     spec:
+      {{- if and .Values.initContainers .Values.initContainers.migrate.enabled }}
+      initContainers:
+        - name: migrate
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            {{- toYaml .Values.initContainers.migrate.command | nindent 12 }}
+          env:
+            {{- range $key, $val := .Values.envConfig }}
+            - name: {{ $key }}
+              valueFrom:
+                configMapKeyRef:
+                  name: "{{ $.Values.name }}-config"
+                  key: {{ $key }}
+            {{- end }}
+            {{- range .Values.secretKeyRef }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .key }}
+                  name: {{ .secretRefName }}
+            {{- end}}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
