@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/beaesthetic/beaesthetic-backend/compare/scheduler-service-v1.1.8...scheduler-service-v1.2.0) (2026-06-29)
+
+
+### Features
+
+* implement OpenAPI server handlers for scheduling operations ([311df48](https://github.com/beaesthetic/beaesthetic-backend/commit/311df4873b28e81f3c47a09543923d4f637378f9))
+
 ## [1.1.8](https://github.com/beaesthetic/beaesthetic-backend/compare/scheduler-service-v1.1.7...scheduler-service-v1.1.8) (2025-12-23)
 
 
