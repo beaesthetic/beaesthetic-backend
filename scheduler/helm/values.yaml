@@ -24,9 +24,6 @@ envConfig:
   RABBIT_PASSWORD: "guest"
   RABBIT_EXCHANGE: ""
 
-  REDIS_HOST: "redis-headless.common.svc.cluster.local"
-  REDIS_PORT: "6379"
-
   SCHEDULER_NAME: "reminders"
   SCHEDULER_POLLING_INTERVAL: "60s"
   SCHEDULER_PEEK_LEASE_TTL: "30s"
@@ -44,9 +41,6 @@ secretKeyRef:
   - name: POSTGRES_DSN
     secretRefName: scheduler-secrets
     key: postgres-dsn
-  - name: REDIS_PASSWORD
-    secretRefName: scheduler-service
-    key: REDIS_PASSWORD
   # - name: RABBIT_PASSWORD
   #   secretRefName: scheduler-secrets
   #   key: rabbitmq-password

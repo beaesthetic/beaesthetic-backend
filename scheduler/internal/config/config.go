@@ -15,7 +15,6 @@ type Config struct {
 	Scheduler SchedulerConfig `koanf:"scheduler"`
 	Postgres  PostgresConfig  `koanf:"postgres"`
 	RabbitMQ  RabbitMQConfig  `koanf:"rabbitmq"`
-	Redis     RedisConfig     `koanf:"redis"`
 	Otel      OtelConfig      `koanf:"otel"`
 	Log       LogConfig       `koanf:"log"`
 }
@@ -41,13 +40,6 @@ type RabbitMQConfig struct {
 	Username string `koanf:"username"`
 	Password string `koanf:"password"`
 	Exchange string `koanf:"exchange"`
-}
-
-type RedisConfig struct {
-	Host     string `koanf:"host"`
-	Port     int    `koanf:"port"`
-	Password string `koanf:"password"`
-	DB       int    `koanf:"db"`
 }
 
 type OtelConfig struct {
@@ -92,11 +84,6 @@ func Load(configPath string) (*Config, error) {
 			Username: "guest",
 			Password: "guest",
 			Exchange: "",
-		},
-		Redis: RedisConfig{
-			Host: "localhost",
-			Port: 6379,
-			DB:   0,
 		},
 		Otel: OtelConfig{
 			Endpoint: "localhost:4317",
@@ -149,10 +136,6 @@ func transformEnv(name string) string {
 		"RABBIT_USERNAME":              "rabbitmq.username",
 		"RABBIT_PASSWORD":              "rabbitmq.password",
 		"RABBIT_EXCHANGE":              "rabbitmq.exchange",
-		"REDIS_HOST":                   "redis.host",
-		"REDIS_PORT":                   "redis.port",
-		"REDIS_PASSWORD":               "redis.password",
-		"REDIS_DB":                     "redis.db",
 		"OTEL_COLLECTOR_GRPC_ENDPOINT": "otel.endpoint",
 		"OTEL_ENABLED":                 "otel.enabled",
 		"LOG_LEVEL":                    "log.level",

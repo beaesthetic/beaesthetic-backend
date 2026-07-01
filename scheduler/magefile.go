@@ -61,13 +61,6 @@ func Migrate() error {
 	return sh.RunV("go", "run", "./cmd/scheduler", "migrate")
 }
 
-func MigrateOld() error {
-	if err := loadLocalEnv(); err != nil {
-		return err
-	}
-	return sh.RunV("go", "run", "./cmd/scheduler", "migrate-old")
-}
-
 func Clean() error {
 	for _, path := range []string{"scheduler", "scheduler.exe", "coverage.out", "coverage.html"} {
 		if err := os.Remove(path); err != nil && !os.IsNotExist(err) {
