@@ -18,9 +18,10 @@ service:
 envConfig:
   SERVER_PORT: "8080"
   OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
-  RABBIT_HOST: "rabbitmq-v2.common.svc.cluster.local"
+  RABBIT_HOST: "rabbitmq.common.svc.cluster.local"
   RABBIT_PORT: "5672"
-  RABBIT_USERNAME: "beaesthetic"
+  RABBIT_USERNAME: "guest"
+  RABBIT_PASSWORD: "guest"
   RABBIT_EXCHANGE: ""
 
   REDIS_HOST: "redis-headless.common.svc.cluster.local"
@@ -43,12 +44,12 @@ secretKeyRef:
   - name: POSTGRES_DSN
     secretRefName: scheduler-secrets
     key: postgres-dsn
-  - name: RABBIT_PASSWORD
-    secretRefName: scheduler-secrets
-    key: rabbitmq-password
   - name: REDIS_PASSWORD
     secretRefName: scheduler-service
     key: REDIS_PASSWORD
+  # - name: RABBIT_PASSWORD
+  #   secretRefName: scheduler-secrets
+  #   key: rabbitmq-password
 
 initContainers:
   migrate:
