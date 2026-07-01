@@ -24,7 +24,7 @@ envConfig:
   RABBIT_PASSWORD: "guest"
   RABBIT_EXCHANGE: ""
 
-  POSTGRES_DSN: "postgres://scheduler:scheduler@postgres.common.svc.cluster.local:5432/scheduler?sslmode=disable"
+  POSTGRES_DSN: "postgres://scheduler:scheduler@postgres-rw.common.svc.cluster.local:5432/scheduler?sslmode=disable"
 
   REDIS_HOST: "redis-headless.common.svc.cluster.local"
   REDIS_PORT: "6379"
