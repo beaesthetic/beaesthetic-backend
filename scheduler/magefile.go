@@ -11,13 +11,24 @@ import (
 	"github.com/magefile/mage/sh"
 )
 
-const localEnvFile = ".env.local"
+const (
+	localEnvFile        = ".env.local"
+	golangciLintVersion = "v1.57.1"
+)
+
+var Aliases = map[string]interface{}{
+	"lintfix": LintFix,
+}
 
 func Deps() error {
 	if err := sh.RunV("go", "mod", "download"); err != nil {
 		return err
 	}
 	return sh.RunV("go", "mod", "tidy")
+}
+
+func InstallTools() error {
+	return sh.RunV("go", "install", "github.com/golangci/golangci-lint/cmd/golangci-lint@"+golangciLintVersion)
 }
 
 func Generate() error {
@@ -48,6 +59,10 @@ func TestCoverage() error {
 
 func Lint() error {
 	return sh.RunV("golangci-lint", "run")
+}
+
+func LintFix() error {
+	return sh.RunV("golangci-lint", "run", "--fix")
 }
 
 func DockerBuild() error {
