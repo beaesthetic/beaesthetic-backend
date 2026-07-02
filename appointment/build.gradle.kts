@@ -1,4 +1,3 @@
-import com.diffplug.spotless.LineEnding
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 
@@ -7,7 +6,6 @@ plugins {
   kotlin("plugin.allopen") version "2.2.21"
   id("io.quarkus")
   id("org.openapi.generator") version "7.17.0"
-  id("com.diffplug.spotless") version "8.1.0"
 }
 
 repositories {
@@ -112,31 +110,6 @@ allOpen {
 }
 
 tasks.withType<KotlinCompile> { dependsOn("appointment-api") }
-
-spotless {
-  lineEndings = LineEnding.UNIX
-  kotlin {
-    toggleOffOn()
-    targetExclude("build/**/*")
-    ktfmt().kotlinlangStyle()
-    trimTrailingWhitespace()
-    endWithNewline()
-  }
-  kotlinGradle {
-    toggleOffOn()
-    targetExclude("build/**/*.kts")
-    ktfmt().googleStyle()
-  }
-}
-
-sourceSets {
-  main {
-    kotlin {
-      srcDirs("${layout.buildDirectory.get()}/generated/src/main/java")
-      srcDirs("${layout.buildDirectory.get()}/classes/java/quarkus-generated-sources/open-api")
-    }
-  }
-}
 
 tasks.register<GenerateTask>("appointment-api") {
   description = "Generate REST API interface for customer"
