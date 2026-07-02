@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.0.0...notification-service-v2.1.0) (2026-07-02)
+
+
+### Features
+
+* refactor notification service and integrate outbox pattern with RabbitMQ ([eef38cd](https://github.com/beaesthetic/beaesthetic-backend/commit/eef38cd5d3aadc116c1fee2360583e62d4a84dc2))
+
 ## [2.0.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v1.1.2...notification-service-v2.0.0) (2026-07-02)
 
 
