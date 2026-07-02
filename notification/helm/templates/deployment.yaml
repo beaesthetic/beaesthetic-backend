@@ -16,6 +16,29 @@ spec:
       labels:
         {{- tpl (toYaml .Values.labels) . | nindent 8 }}
     spec:
+      {{- if and .Values.initContainers .Values.initContainers.migrate.enabled }}
+      initContainers:
+        - name: migrate
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            {{- toYaml .Values.initContainers.migrate.command | nindent 12 }}
+          env:
+            {{- range $key, $val := .Values.envConfig }}
+            - name: {{ $key }}
+              valueFrom:
+                configMapKeyRef:
+                  name: "{{ $.Values.name }}-config"
+                  key: {{ $key }}
+            {{- end }}
+            {{- range .Values.secretKeyRef }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .key }}
+                  name: {{ .secretRefName }}
+            {{- end}}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -41,6 +64,7 @@ spec:
                   key: {{ .key }}
                   name: {{ .secretRefName }}
             {{- end}}
+          {{- if or .Values.configMapRefs .Values.secretsRefs }}
           envFrom:
           {{- range .Values.configMapRefs }}
             - configMapRef:
@@ -49,6 +73,7 @@ spec:
           {{- range .Values.secretsRefs }}
             - secretRef:
                 name: {{ . }}
+          {{- end }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -74,6 +99,7 @@ spec:
         - name: {{ $key }}
           image: "{{ $val.image.repository }}:{{ $val.image.tag }}"
           imagePullPolicy: {{ $val.image.pullPolicy }}
+          {{- if or $val.configMapRefs $val.secretsRefs }}
           envFrom:
             {{- range $val.configMapRefs }}
             - configMapRef:
@@ -83,4 +109,23 @@ spec:
             - secretRef:
                 name: {{ . }}
             {{- end }}
+          {{- end }}
+          {{- if $val.secretKeyRef }}
+          env:
+            {{- range $val.secretKeyRef }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .key }}
+                  name: {{ .secretRefName }}
+            {{- end }}
+          {{- end }}
+          {{- with $val.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
         {{- end}}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

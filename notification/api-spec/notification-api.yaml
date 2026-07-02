@@ -111,6 +111,9 @@ components:
       x-implements: it.beaesthetic.notification.driver.rest.dto.ChannelMixin
       type: object
       properties:
+        type:
+          type: string
+          enum: [sms]
         phone:
           type: string
       required:
@@ -121,6 +124,9 @@ components:
       x-implements: it.beaesthetic.notification.driver.rest.dto.ChannelMixin
       type: object
       properties:
+        type:
+          type: string
+          enum: [email]
         email:
           type: string
       required:
@@ -131,6 +137,9 @@ components:
       x-implements: it.beaesthetic.notification.driver.rest.dto.ChannelMixin
       type: object
       properties:
+        type:
+          type: string
+          enum: [whatsapp]
         phone:
           type: string
       required:

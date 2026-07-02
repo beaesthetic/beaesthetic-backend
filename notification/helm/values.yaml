@@ -16,14 +16,14 @@ service:
     - 8080
 
 envConfig:
-  OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
-  MONGO_DATABASE_NAME: "notifications-v2"
-  SMS_GATEWAY_URL: "http://sms-gateway-api.beaesthetic.svc.cluster.local:80"
-  SMS_GATEWAY_FROM_NUMBER: "+393515253634"
-  RABBITMQ_HOST: "rabbitmq.common.svc.cluster.local"
-  RABBITMQ_PORT: "5672"
-  QUEUE_NOTIFICATION_NAME: "NotificationQueue"
-  QUEUE_NOTIFICATION_CONFIRM_NAME: "NotificationConfirmQueue"
+  APP__NAME: "beaesthetic-notifications"
+  HTTP__ADDR: ":8080"
+  SMS_GATEWAY__URL: "http://sms-gateway-api.beaesthetic.svc.cluster.local:80"
+  SMS_GATEWAY__FROM_NUMBER: "+393515253634"
+  RABBITMQ__NOTIFICATION_QUEUE: "NotificationQueue"
+  RABBITMQ__NOTIFICATION_CONFIRM_QUEUE: "NotificationConfirmQueue"
+  MONGO__DATABASE: "notifications-v2"
+  MONGO__COLLECTION: "notifications"
 
 resources:
   requests:
@@ -34,16 +34,30 @@ resources:
     cpu: "80m"
 
 secretKeyRef:
-  - name: MONGO_CONNECTION_STRING
+  - name: POSTGRES__DSN
+    secretRefName: notification-secrets
+    key: postgres-dsn
+  - name: RABBITMQ__URL
+    secretRefName: notification-secrets
+    key: rabbitmq-url
+  - name: MONGO__URI
     secretRefName: notification-service
     key: MONGO_DB_URI
-  - name: SMS_GATEWAY_API_KEY
+  - name: SMS_GATEWAY__API_KEY
     secretRefName: notification-service
     key: SMS_GATEWAY_API_KEY
 
+initContainers:
+  migrate:
+    enabled: true
+    command:
+      - /app/notification
+      - migrate
+      - up
+
 readinessProbe:
   httpGet:
-    path: /q/health/ready
+    path: /health
     port: 8080
   initialDelaySeconds: 30
   failureThreshold: 10
@@ -51,8 +65,34 @@ readinessProbe:
 
 livenessProbe:
   httpGet:
-    path: /q/health/live
+    path: /health
     port: 8080
   initialDelaySeconds: 30
   failureThreshold: 10
   periodSeconds: 30
+
+sidecar:
+  outbox:
+    image:
+      repository: petretiandrea/outbox-forwarder
+      tag: "v1.6.0"
+      pullPolicy: IfNotPresent
+    configMapRefs:
+      - notification-service-v2-config
+    secretKeyRef:
+      - name: POSTGRES_DSN
+        secretRefName: notification-secrets
+        key: postgres-dsn
+      - name: RABBITMQ_DSN
+        secretRefName: notification-secrets
+        key: rabbitmq-url
+    volumeMounts:
+      - name: outbox-config
+        mountPath: "/etc/outbox/outbox.yaml"
+        subPath: "outbox.yaml"
+        readOnly: true
+
+volumes:
+  - name: outbox-config
+    configMap:
+      name: notification-service-v2-outbox-config

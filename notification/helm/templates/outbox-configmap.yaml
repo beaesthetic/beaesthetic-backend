@@ -1,0 +1,35 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.name }}-outbox-config"
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- tpl (toYaml .Values.labels) . | nindent 4 }}
+data:
+  outbox.yaml: |-
+    source:
+      type: postgres
+      data:
+        dsn: ${POSTGRES_DSN}
+        table_name: outbox_messages
+        batch_size: 100
+        poll_interval: 1s
+        initialize_schema: false
+
+    channels:
+      - name: notifications
+        publisher:
+          type: rabbitmq
+          data:
+            url: ${RABBITMQ_DSN}
+            exchange: amq.direct
+            routing_key: ${RABBITMQ__NOTIFICATION_QUEUE}
+            content_type: application/json
+      - name: notifications.confirmed
+        publisher:
+          type: rabbitmq
+          data:
+            url: ${RABBITMQ_DSN}
+            exchange: notification-confirm-exchange
+            routing_key: ${RABBITMQ__NOTIFICATION_CONFIRM_QUEUE}
+            content_type: application/json
