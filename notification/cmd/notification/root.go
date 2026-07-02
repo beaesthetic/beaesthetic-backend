@@ -13,7 +13,6 @@ import (
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/config"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/container"
-	"github.com/petretiandrea/beaesthetic-backend/notification/internal/infra/backfill"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/infra/messaging"
 	httpport "github.com/petretiandrea/beaesthetic-backend/notification/internal/port/http"
 	"github.com/spf13/cobra"
@@ -28,7 +27,7 @@ func NewRootCommand() *cobra.Command {
 		SilenceUsage: true,
 	}
 	root.PersistentFlags().StringVar(&envFile, "env-file", "", "optional dotenv file")
-	root.AddCommand(appCommand(&envFile), migrateCommand(&envFile), backfillCommand(&envFile))
+	root.AddCommand(appCommand(&envFile), migrateCommand(&envFile))
 	return root
 }
 
@@ -108,22 +107,6 @@ func migrateCommand(envFile *string) *cobra.Command {
 				return fmt.Errorf("unsupported migration command %q", args[0])
 			}
 			return nil
-		},
-	}
-}
-
-func backfillCommand(envFile *string) *cobra.Command {
-	return &cobra.Command{
-		Use:   "backfill",
-		Short: "Copy legacy MongoDB notifications into PostgreSQL DB",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := config.Load(*envFile)
-			if err != nil {
-				return err
-			}
-			log, _ := zap.NewProduction()
-			defer log.Sync()
-			return backfill.Run(cmd.Context(), cfg, log)
 		},
 	}
 }
