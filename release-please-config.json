@@ -51,7 +51,6 @@
       "include-component-in-tag": true,
       "component": "notification-service",
       "extra-files": [
-        "gradle.properties",
         {
           "type": "yaml",
           "path": "helm/Chart.yaml",
