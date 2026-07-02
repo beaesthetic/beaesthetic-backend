@@ -4,22 +4,18 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"time"
 )
 
-func TestLoadUsesDefaults(t *testing.T) {
+func TestLoadWithoutEnvironmentUsesZeroValues(t *testing.T) {
 	cfg, err := Load("")
 	if err != nil {
 		t.Fatalf("Load() error = %v", err)
 	}
-	if cfg.App.Name != "beaesthetic-notifications" {
+	if cfg.App.Name != "" {
 		t.Fatalf("App.Name = %q", cfg.App.Name)
 	}
-	if cfg.HTTP.Addr != ":8080" {
+	if cfg.HTTP.Addr != "" {
 		t.Fatalf("HTTP.Addr = %q", cfg.HTTP.Addr)
-	}
-	if cfg.RabbitMQ.RetryTTL != time.Millisecond {
-		t.Fatalf("RetryTTL = %s, want 1ms", cfg.RabbitMQ.RetryTTL)
 	}
 }
 
@@ -27,7 +23,6 @@ func TestLoadOverridesFromEnvironment(t *testing.T) {
 	t.Setenv("POSTGRES__DSN", "postgres://user:pass@postgres:5432/notifications")
 	t.Setenv("RABBITMQ__URL", "amqp://user:pass@rabbitmq:5672/")
 	t.Setenv("SMS_GATEWAY__API_KEY", "secret")
-	t.Setenv("RABBITMQ__RETRY_TTL", "5s")
 
 	cfg, err := Load("")
 	if err != nil {
@@ -41,9 +36,6 @@ func TestLoadOverridesFromEnvironment(t *testing.T) {
 	}
 	if cfg.SMSGateway.APIKey != "secret" {
 		t.Fatalf("SMSGateway.APIKey = %q", cfg.SMSGateway.APIKey)
-	}
-	if cfg.RabbitMQ.RetryTTL != 5*time.Second {
-		t.Fatalf("RetryTTL = %s, want 5s", cfg.RabbitMQ.RetryTTL)
 	}
 }
 

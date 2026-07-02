@@ -2,7 +2,6 @@ package config
 
 import (
 	"strings"
-	"time"
 
 	"github.com/knadh/koanf/parsers/dotenv"
 	"github.com/knadh/koanf/providers/env"
@@ -41,10 +40,9 @@ type MongoConfig struct {
 }
 
 type RabbitMQConfig struct {
-	URL                      string        `koanf:"url"`
-	NotificationQueue        string        `koanf:"notification_queue"`
-	NotificationConfirmQueue string        `koanf:"notification_confirm_queue"`
-	RetryTTL                 time.Duration `koanf:"retry_ttl"`
+	URL                      string `koanf:"url"`
+	NotificationQueue        string `koanf:"notification_queue"`
+	NotificationConfirmQueue string `koanf:"notification_confirm_queue"`
 }
 
 type SMSGatewayConfig struct {
@@ -56,9 +54,6 @@ type SMSGatewayConfig struct {
 
 func Load(envFile string) (Config, error) {
 	k := koanf.New(keyDelimiter)
-	if err := loadDefaults(k); err != nil {
-		return Config{}, err
-	}
 	if strings.TrimSpace(envFile) != "" {
 		if err := k.Load(file.Provider(envFile), dotenv.ParserEnv("", keyDelimiter, normalizeEnvKey)); err != nil {
 			return Config{}, err
@@ -73,26 +68,6 @@ func Load(envFile string) (Config, error) {
 		return Config{}, err
 	}
 	return cfg, nil
-}
-
-func loadDefaults(k *koanf.Koanf) error {
-	defaults := map[string]interface{}{
-		"app.name":                            "beaesthetic-notifications",
-		"app.env":                             "dev",
-		"http.addr":                           ":8080",
-		"mongo.database":                      "notifications",
-		"mongo.collection":                    "notifications",
-		"rabbitmq.notification_queue":         "NotificationQueue",
-		"rabbitmq.notification_confirm_queue": "NotificationConfirmQueue",
-		"rabbitmq.retry_ttl":                  "1ms",
-		"sms_gateway.from_number":             "123",
-	}
-	for key, value := range defaults {
-		if err := k.Set(key, value); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func normalizeEnvKey(key string) string {

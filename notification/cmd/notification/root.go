@@ -28,7 +28,7 @@ func NewRootCommand() *cobra.Command {
 		SilenceUsage: true,
 	}
 	root.PersistentFlags().StringVar(&envFile, "env-file", "", "optional dotenv file")
-	root.AddCommand(appCommand(&envFile), migrateCommand(&envFile), backfillCommand(&envFile), rabbitCommand(&envFile))
+	root.AddCommand(appCommand(&envFile), migrateCommand(&envFile), backfillCommand(&envFile))
 	return root
 }
 
@@ -57,7 +57,7 @@ func appCommand(envFile *string) *cobra.Command {
 				}
 			}()
 			go func() {
-				errCh <- messaging.NewConsumer(c.Config.RabbitMQ, service, c.Log).Run(ctx)
+				errCh <- messaging.NewConsumer(c.Config.RabbitMQ.URL, c.Config.RabbitMQ.NotificationQueue, messaging.NewNotificationOutboxConsumer(service), c.Log).Run(ctx)
 			}()
 
 			select {
@@ -124,20 +124,6 @@ func backfillCommand(envFile *string) *cobra.Command {
 			log, _ := zap.NewProduction()
 			defer log.Sync()
 			return backfill.Run(cmd.Context(), cfg, log)
-		},
-	}
-}
-
-func rabbitCommand(envFile *string) *cobra.Command {
-	return &cobra.Command{
-		Use:   "rabbitmq-topology",
-		Short: "Apply RabbitMQ queue topology",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := config.Load(*envFile)
-			if err != nil {
-				return err
-			}
-			return messaging.ApplyTopology(cfg.RabbitMQ)
 		},
 	}
 }

@@ -11,6 +11,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/domain"
+	"github.com/petretiandrea/outbox-go/pkg/outbox"
+	outboxpostgres "github.com/petretiandrea/outbox-go/pkg/outbox/postgres"
 )
 
 const (
@@ -84,9 +86,23 @@ func (repo *NotificationRepository) Save(ctx context.Context, notification *doma
 		return fmt.Errorf("save notification: %w", err)
 	}
 
-	for _, event := range events {
-		if err := insertOutboxEvent(ctx, tx, event); err != nil {
+	if len(events) > 0 {
+		publisher, err := outboxpostgres.NewPublisher(tx, outboxpostgres.PublisherConfig{
+			TableName: "outbox_messages",
+		})
+		if err != nil {
 			return err
+		}
+		messages := make([]outbox.Message, 0, len(events))
+		for _, event := range events {
+			message, err := newOutboxMessage(event)
+			if err != nil {
+				return err
+			}
+			messages = append(messages, message)
+		}
+		if err := publisher.Publish(ctx, messages...); err != nil {
+			return fmt.Errorf("publish outbox notification events: %w", err)
 		}
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -145,21 +161,21 @@ func (record notificationRecord) toDomain() domain.Notification {
 	return domain.HydrateNotification(record.ID, record.Title, record.Content, record.IsSent, record.IsSentConfirmed, channel, metadata, record.CreatedAt, record.UpdatedAt)
 }
 
-func insertOutboxEvent(ctx context.Context, tx pgx.Tx, event domain.Event) error {
+func newOutboxMessage(event domain.Event) (outbox.Message, error) {
 	payload, err := json.Marshal(map[string]string{"notificationId": event.NotificationID()})
 	if err != nil {
-		return fmt.Errorf("marshal notification event: %w", err)
+		return outbox.Message{}, fmt.Errorf("marshal notification event: %w", err)
 	}
-	channel := channelNotifications
+	channel := outbox.Channel(channelNotifications)
 	if _, ok := event.(domain.NotificationSentConfirmed); ok {
-		channel = channelNotificationsConfirmed
+		channel = outbox.Channel(channelNotificationsConfirmed)
 	}
-	_, err = tx.Exec(ctx, `
-		INSERT INTO outbox_messages (id, channel, affinity_key, payload, metadata, occurred_at)
-		VALUES ($1, $2, $3, $4, $5, $6)
-	`, uuid.NewString(), channel, event.NotificationID(), payload, []byte(`{}`), time.Now().UTC())
-	if err != nil {
-		return fmt.Errorf("insert outbox notification event: %w", err)
-	}
-	return nil
+	return outbox.Message{
+		ID:          uuid.NewString(),
+		Channel:     channel,
+		AffinityKey: outbox.AffinityKey(event.NotificationID()),
+		Payload:     payload,
+		Metadata:    outbox.Metadata{},
+		OccurredAt:  time.Now().UTC(),
+	}, nil
 }

@@ -17,6 +17,7 @@ service:
 
 envConfig:
   APP__NAME: "beaesthetic-notifications"
+  APP__ENV: "prod"
   HTTP__ADDR: ":8080"
   SMS_GATEWAY__URL: "http://sms-gateway-api.beaesthetic.svc.cluster.local:80"
   SMS_GATEWAY__FROM_NUMBER: "+393515253634"
