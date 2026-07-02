@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.1.1](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.1.0...notification-service-v2.1.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* enable schema initialization in outbox configuration ([1509358](https://github.com/beaesthetic/beaesthetic-backend/commit/15093587fd765c5d36e01fe0cf6be66845881e46))
+* update NewNotification to require only id and content, allow empty title ([c6e4347](https://github.com/beaesthetic/beaesthetic-backend/commit/c6e43471c223f154a11200576b2874e6f24a9453))
+
 ## [2.1.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.0.0...notification-service-v2.1.0) (2026-07-02)
 
 
