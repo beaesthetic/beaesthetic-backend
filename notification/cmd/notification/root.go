@@ -115,7 +115,7 @@ func migrateCommand(envFile *string) *cobra.Command {
 func backfillCommand(envFile *string) *cobra.Command {
 	return &cobra.Command{
 		Use:   "backfill",
-		Short: "Copy legacy MongoDB notifications into PostgreSQL",
+		Short: "Copy legacy MongoDB notifications into PostgreSQL DB",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			cfg, err := config.Load(*envFile)
 			if err != nil {
