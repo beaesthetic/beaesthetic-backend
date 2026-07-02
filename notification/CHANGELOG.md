@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v1.1.2...notification-service-v2.0.0) (2026-07-02)
+
+
+### ⚠ BREAKING CHANGES
+
+* **notification:** migrate notification service to Go
+
+### Features
+
+* **notification:** migrate notification service to Go ([d7b2387](https://github.com/beaesthetic/beaesthetic-backend/commit/d7b238786623c1bdc05f85706e442a7fa414e0eb))
+
 ## [1.1.2](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v1.1.1...notification-service-v1.1.2) (2025-12-16)
 
 
