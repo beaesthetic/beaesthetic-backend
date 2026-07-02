@@ -31,8 +31,9 @@ envConfig:
   NOTIFICATION_SERVICE_BASEURL: "http://notification-service-v2:8080"
   NOTIFICATION_CONFIRMED_QUEUE_NAME: "NotificationConfirmQueue"
 
-  RABBITMQ_HOST: "rabbitmq.common.svc.cluster.local"
+  RABBITMQ_HOST: "rabbitmq-v2.common.svc.cluster.local"
   RABBITMQ_PORT: "5672"
+  RABBITMQ_USERNAME: "beaesthetic"
 
   REMIND_BEFORE: "24h"
   NO_SEND_THRESHOLD_DURATION: "30m"
@@ -56,6 +57,9 @@ secretKeyRef:
   - name: REDIS_PASSWORD
     secretRefName: appointment-secrets
     key: REDIS_PASSWORD
+  - name: RABBITMQ_PASSWORD
+    secretRefName: appointment-rabbitmq-secrets
+    key: rabbitmq-password
 
 readinessProbe:
   httpGet:
