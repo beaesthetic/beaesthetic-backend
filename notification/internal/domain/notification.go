@@ -53,8 +53,8 @@ func (event NotificationSentConfirmed) EventName() string      { return "Notific
 func (event NotificationSentConfirmed) NotificationID() string { return event.ID }
 
 func NewNotification(id, title, content string, channel Channel, now time.Time) (Notification, error) {
-	if id == "" || title == "" || content == "" {
-		return Notification{}, errors.New("id, title and content are required")
+	if id == "" || content == "" {
+		return Notification{}, errors.New("id and content are required")
 	}
 	if err := channel.Validate(); err != nil {
 		return Notification{}, err

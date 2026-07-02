@@ -39,6 +39,22 @@ func TestCreateNotification(t *testing.T) {
 	}
 }
 
+func TestCreateNotificationAcceptsAppointmentPayload(t *testing.T) {
+	repo := &memoryRepo{}
+	service := application.NewNotificationService(repo, fakeProvider{})
+	router := NewRouter(NewServer(service, zap.NewNop()))
+
+	body := []byte(`{"title":"","content":"Reminder text","channel":{"type":"sms","phone":"+393331234567"}}`)
+	response := httptest.NewRecorder()
+	request := httptest.NewRequest(http.MethodPost, "/notifications", bytes.NewReader(body))
+	request.Header.Set("Content-Type", "application/json")
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status = %d, body = %s", response.Code, response.Body.String())
+	}
+}
 func TestWebhookRequiresNotificationMetadata(t *testing.T) {
 	service := application.NewNotificationService(&memoryRepo{}, fakeProvider{})
 	router := NewRouter(NewServer(service, zap.NewNop()))

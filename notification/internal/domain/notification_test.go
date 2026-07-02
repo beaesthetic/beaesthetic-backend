@@ -44,6 +44,24 @@ func TestNotificationLifecycleEvents(t *testing.T) {
 	}
 }
 
+func TestNewNotificationAllowsEmptyTitle(t *testing.T) {
+	now := time.Date(2026, 7, 1, 10, 0, 0, 0, time.UTC)
+	notification, err := NewNotification("notification-id", "", "Hello", Channel{Type: ChannelSMS, Phone: "+393331234567"}, now)
+	if err != nil {
+		t.Fatalf("NewNotification() error = %v", err)
+	}
+	if notification.Title != "" {
+		t.Fatalf("Title = %q, want empty", notification.Title)
+	}
+}
+
+func TestNewNotificationRequiresContent(t *testing.T) {
+	now := time.Date(2026, 7, 1, 10, 0, 0, 0, time.UTC)
+	_, err := NewNotification("notification-id", "", "", Channel{Type: ChannelSMS, Phone: "+393331234567"}, now)
+	if err == nil {
+		t.Fatal("expected error")
+	}
+}
 func TestChannelValidation(t *testing.T) {
 	tests := []struct {
 		name    string
