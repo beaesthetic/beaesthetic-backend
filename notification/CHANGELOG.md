@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.2](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.1.1...notification-service-v2.1.2) (2026-07-02)
+
+
+### Code Refactoring
+
+* remove backfill command and related dependencies ([4fd7001](https://github.com/beaesthetic/beaesthetic-backend/commit/4fd70019fa44ded62c7177e7bb3fed16ef19e12c))
+
 ## [2.1.1](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.1.0...notification-service-v2.1.1) (2026-07-02)
 
 

@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/beaesthetic/beaesthetic-backend/compare/scheduler-service-v1.3.0...scheduler-service-v1.3.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* update RabbitMQ configuration in values.yaml ([2b089e3](https://github.com/beaesthetic/beaesthetic-backend/commit/2b089e3db21ff4bc952217f6bb9b16ab3dbb6f7f))
+
 ## [1.3.0](https://github.com/beaesthetic/beaesthetic-backend/compare/scheduler-service-v1.2.0...scheduler-service-v1.3.0) (2026-07-02)
 
 

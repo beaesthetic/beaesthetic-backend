@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.9.5...appointment-service-v1.10.0) (2026-07-02)
+
+
+### Features
+
+* add RabbitMQ external secret configuration and update application properties ([19c43fc](https://github.com/beaesthetic/beaesthetic-backend/commit/19c43fcafc25b410a1db84d1c4072f85e15b5da8))
+
 ## [1.9.5](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.9.4...appointment-service-v1.9.5) (2025-12-23)
 
 
