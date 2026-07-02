@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.3.0](https://github.com/beaesthetic/beaesthetic-backend/compare/scheduler-service-v1.2.0...scheduler-service-v1.3.0) (2026-07-02)
+
+
+### Features
+
+* add external secrets for PostgreSQL and RabbitMQ configuration ([9af1c75](https://github.com/beaesthetic/beaesthetic-backend/commit/9af1c75ab89514655c8c261347662cb5599c1281))
+* add golangci-lint configuration and update magefile for linting tools ([3072e99](https://github.com/beaesthetic/beaesthetic-backend/commit/3072e9932de3d7e3f01732b4270acb4de5d7d0f4))
+
+
+### Bug Fixes
+
+* update Dockerfile and workflow to use ubuntu-latest and improve build process ([fc3946a](https://github.com/beaesthetic/beaesthetic-backend/commit/fc3946a2918e84198d678633edbda93f620de96c))
+* update postgres-dsn in external secret to point to the correct database ([7aadb73](https://github.com/beaesthetic/beaesthetic-backend/commit/7aadb734c20be402b86bececf9705429abbd74bf))
+* update RabbitMQ configuration in values.yaml for correct credentials and host ([1a388ea](https://github.com/beaesthetic/beaesthetic-backend/commit/1a388ea6d792d2dd41b16234bcd112062584876f))
+
+
+### Code Refactoring
+
+* remove legacy Redis migration support and related configurations ([448277f](https://github.com/beaesthetic/beaesthetic-backend/commit/448277f017997ff51e45f809ea3abf45088c3b7f))
+
 ## [1.2.0](https://github.com/beaesthetic/beaesthetic-backend/compare/scheduler-service-v1.1.8...scheduler-service-v1.2.0) (2026-06-29)
 
 
