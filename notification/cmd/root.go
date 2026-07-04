@@ -11,12 +11,10 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/petretiandrea/beaesthetic-backend/notification/internal/config"
-	"github.com/petretiandrea/beaesthetic-backend/notification/internal/container"
-	"github.com/petretiandrea/beaesthetic-backend/notification/internal/infra/messaging"
-	httpport "github.com/petretiandrea/beaesthetic-backend/notification/internal/port/http"
+	"github.com/petretiandrea/beaesthetic-backend/notification/cmd/di"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 func NewRootCommand() *cobra.Command {
@@ -36,39 +34,49 @@ func appCommand(envFile *string) *cobra.Command {
 		Use:   "app",
 		Short: "Start the HTTP API and RabbitMQ consumer",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			c, err := container.Build(cmd.Context(), *envFile)
-			if err != nil {
-				return err
-			}
-			defer c.Close()
-
-			service := c.NotificationService()
-			router := httpport.NewRouter(httpport.NewServer(service, c.Log))
-			server := &nethttp.Server{Addr: c.Config.HTTP.Addr, Handler: router}
 			ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
 			defer stop()
 
-			errCh := make(chan error, 2)
-			go func() {
-				c.Log.Info("starting http server", zap.String("addr", c.Config.HTTP.Addr))
-				if err := server.ListenAndServe(); err != nil && !errors.Is(err, nethttp.ErrServerClosed) {
-					errCh <- err
-				}
-			}()
-			go func() {
-				errCh <- messaging.NewConsumer(c.Config.RabbitMQ.URL, c.Config.RabbitMQ.NotificationQueue, messaging.NewNotificationOutboxConsumer(service), c.Log).Run(ctx)
+			c, err := di.NewDiContainer(ctx, *envFile)
+			if err != nil {
+				return err
+			}
+			defer func() {
+				c.GetPostgresDatabase().Close()
+				_ = c.Log.Sync()
 			}()
 
-			select {
-			case <-ctx.Done():
-			case err := <-errCh:
-				if err != nil && !errors.Is(err, context.Canceled) {
-					return err
+			ginServer := c.GetGinHttpServer()
+			outboxConsumer := c.GetNotificationOutboxConsumer()
+			httpServer := &nethttp.Server{Addr: c.Config.HTTP.Addr, Handler: ginServer}
+
+			group, groupCtx := errgroup.WithContext(ctx)
+			group.Go(func() error {
+				c.Log.Info("starting http server", zap.String("addr", c.Config.HTTP.Addr))
+				if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, nethttp.ErrServerClosed) {
+					return fmt.Errorf("run http server: %w", err)
 				}
-			}
-			shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			return server.Shutdown(shutdownCtx)
+				return nil
+			})
+			group.Go(func() error {
+				<-groupCtx.Done()
+
+				shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+				if err := httpServer.Shutdown(shutdownCtx); err != nil {
+					return fmt.Errorf("shutdown http server: %w", err)
+				}
+				return nil
+			})
+			group.Go(func() error {
+				c.Log.Info("starting notification outbox consumer", zap.String("queue", c.Config.RabbitMQ.NotificationQueue))
+				if err := outboxConsumer.Run(groupCtx); err != nil && !errors.Is(err, context.Canceled) {
+					return fmt.Errorf("run notification outbox consumer: %w", err)
+				}
+				return nil
+			})
+
+			return group.Wait()
 		},
 	}
 }
@@ -79,14 +87,11 @@ func migrateCommand(envFile *string) *cobra.Command {
 		Short: "Run PostgreSQL migrations",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			cfg, err := config.Load(*envFile)
+			c, err := di.NewDiContainer(cmd.Context(), *envFile)
 			if err != nil {
 				return err
 			}
-			m, err := container.NewMigrator(cfg.Postgres.DSN)
-			if err != nil {
-				return err
-			}
+			m := c.GetMigrator()
 			defer m.Close()
 			switch args[0] {
 			case "up":
