@@ -25,7 +25,7 @@ func (d *DiContainer) GetHttpHandlers() *server.HttpHandlers {
 
 func (d *DiContainer) AppointmentHttpHandler() *server.Server {
 	return singleton(d, "appointmentHttpHandler", func() *server.Server {
-		return server.NewServer(d.GetAppointmentService(), d.Log)
+		return server.NewServer(d.GetAppointmentService(), d.GetServiceService(), d.Log)
 	})
 }
 

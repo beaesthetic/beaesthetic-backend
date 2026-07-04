@@ -18,7 +18,7 @@ func (s *Server) CreateAgendaActivity(ctx context.Context, request httpserver.Cr
 	if err != nil {
 		return httpserver.CreateAgendaActivity400JSONResponse(errorResponse(err.Error())), nil
 	}
-	event, err := s.service.CreateAgenda(ctx, typ, title, desc, start, end, attendee, services)
+	event, err := s.appointments.CreateAgenda(ctx, typ, title, desc, start, end, attendee, services)
 	if err != nil {
 		return httpserver.CreateAgendaActivity400JSONResponse(errorResponse(err.Error())), nil
 	}
@@ -27,7 +27,7 @@ func (s *Server) CreateAgendaActivity(ctx context.Context, request httpserver.Cr
 }
 
 func (s *Server) GetActivityById(ctx context.Context, request httpserver.GetActivityByIdRequestObject) (httpserver.GetActivityByIdResponseObject, error) {
-	event, err := s.service.GetAgenda(ctx, request.ActivityId.String())
+	event, err := s.appointments.GetAgenda(ctx, request.ActivityId.String())
 	if err != nil {
 		return nil, err
 	}
@@ -42,7 +42,7 @@ func (s *Server) GetAppointmentsByTimeRangeOrCustomer(ctx context.Context, reque
 	if request.Params.AttendeeId != nil {
 		attendee = *request.Params.AttendeeId
 	}
-	events, err := s.service.SearchAgenda(ctx, attendee, request.Params.Start, request.Params.End)
+	events, err := s.appointments.SearchAgenda(ctx, attendee, request.Params.Start, request.Params.End)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +64,7 @@ func (s *Server) UpdateActivity(ctx context.Context, request httpserver.UpdateAc
 			services = append(services, domain.AppointmentServiceRef{Name: name})
 		}
 	}
-	event, err := s.service.UpdateAgenda(ctx, request.ActivityId.String(), req.Title, req.Description, req.Start, req.End, services)
+	event, err := s.appointments.UpdateAgenda(ctx, request.ActivityId.String(), req.Title, req.Description, req.Start, req.End, services)
 	if err != nil {
 		return httpserver.UpdateActivity400JSONResponse(errorResponse(err.Error())), nil
 	}
@@ -79,7 +79,7 @@ func (s *Server) DeleteActivity(ctx context.Context, request httpserver.DeleteAc
 	if request.Params.Reason != nil && *request.Params.Reason == httpserver.CustomerCancel {
 		reason = domain.CancelReasonCustomer
 	}
-	event, err := s.service.DeleteAgenda(ctx, request.ActivityId.String(), reason)
+	event, err := s.appointments.DeleteAgenda(ctx, request.ActivityId.String(), reason)
 	if err != nil {
 		return httpserver.DeleteActivity400JSONResponse(errorResponse(err.Error())), nil
 	}
@@ -90,7 +90,7 @@ func (s *Server) DeleteActivity(ctx context.Context, request httpserver.DeleteAc
 }
 
 func (s *Server) ResendReminder(ctx context.Context, request httpserver.ResendReminderRequestObject) (httpserver.ResendReminderResponseObject, error) {
-	event, err := s.service.GetAgenda(ctx, request.ActivityId.String())
+	event, err := s.appointments.GetAgenda(ctx, request.ActivityId.String())
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (s *Server) CreateService(ctx context.Context, request httpserver.CreateSer
 	if request.Body.Tags != nil {
 		tags = *request.Body.Tags
 	}
-	svc, err := s.service.CreateService(ctx, request.Body.Name, float64(request.Body.Price), tags, request.Body.Color)
+	svc, err := s.services.CreateService(ctx, request.Body.Name, float64(request.Body.Price), tags, request.Body.Color)
 	if err != nil {
 		return httpserver.CreateService400JSONResponse(errorResponse(err.Error())), nil
 	}
@@ -128,7 +128,7 @@ func (s *Server) UpdateService(ctx context.Context, request httpserver.UpdateSer
 	if request.Body.Tags != nil {
 		tags = *request.Body.Tags
 	}
-	svc, err := s.service.UpdateService(ctx, request.ServiceId, price, tags, request.Body.Color)
+	svc, err := s.services.UpdateService(ctx, request.ServiceId, price, tags, request.Body.Color)
 	if err != nil {
 		return httpserver.UpdateService400JSONResponse(errorResponse(err.Error())), nil
 	}
@@ -139,7 +139,7 @@ func (s *Server) UpdateService(ctx context.Context, request httpserver.UpdateSer
 }
 
 func (s *Server) GetAllServices(ctx context.Context, request httpserver.GetAllServicesRequestObject) (httpserver.GetAllServicesResponseObject, error) {
-	services, err := s.service.AllServices(ctx)
+	services, err := s.services.AllServices(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +155,7 @@ func (s *Server) SearchService(ctx context.Context, request httpserver.SearchSer
 	if request.Params.Limit != nil {
 		limit = *request.Params.Limit
 	}
-	services, err := s.service.SearchServices(ctx, text, limit)
+	services, err := s.services.SearchServices(ctx, text, limit)
 	if err != nil {
 		return nil, err
 	}

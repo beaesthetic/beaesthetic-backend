@@ -22,12 +22,13 @@ func New(handlers *HttpHandlers) *gin.Engine {
 }
 
 type Server struct {
-	service *application.Service
-	log     *zap.Logger
+	appointments *application.AppointmentService
+	services     *application.ServiceService
+	log          *zap.Logger
 }
 
-func NewServer(service *application.Service, log *zap.Logger) *Server {
-	return &Server{service: service, log: log}
+func NewServer(appointments *application.AppointmentService, services *application.ServiceService, log *zap.Logger) *Server {
+	return &Server{appointments: appointments, services: services, log: log}
 }
 
 var _ httpserver.StrictServerInterface = (*Server)(nil)
