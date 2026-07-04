@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-const channelAppointmentLifecycle = "appointment.lifecycle"
+const ChannelAppointmentInternalJob = "beaesthetic.appointments.internal.job"
 
 type AppointmentLifecycleConsumer struct {
 	handler *application.AppointmentLifecycleHandler
@@ -43,7 +43,7 @@ func (consumer *AppointmentLifecycleConsumer) Process(ctx context.Context, deliv
 
 func appointmentLifecycleEventFromDelivery(delivery amqp.Delivery) (appointmentLifecycleEvent, error) {
 	message := outboxamqp.MessageFromDelivery(delivery)
-	if message.Channel != "" && string(message.Channel) != channelAppointmentLifecycle {
+	if message.Channel != "" && string(message.Channel) != ChannelAppointmentInternalJob {
 		return appointmentLifecycleEvent{}, fmt.Errorf("unsupported outbox channel %q", message.Channel)
 	}
 	var event appointmentLifecycleEvent

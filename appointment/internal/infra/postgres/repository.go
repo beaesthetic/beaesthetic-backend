@@ -14,7 +14,7 @@ import (
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
 )
 
-const channelAppointmentInternalJob = "beaesthetic.appointments.internal.job"
+const ChannelAppointmentInternalJob = "beaesthetic.appointments.internal.job"
 
 type Repository struct {
 	db        *ContextDB
@@ -204,7 +204,7 @@ func newOutboxMessage(event domain.LifecycleEvent) (outbox.Message, error) {
 	}
 	return outbox.Message{
 		ID:          uuid.NewString(),
-		Channel:     outbox.Channel(channelAppointmentInternalJob),
+		Channel:     outbox.Channel(ChannelAppointmentInternalJob),
 		AffinityKey: outbox.AffinityKey(event.AgendaEventID),
 		Payload:     payload,
 		Metadata:    outbox.Metadata{},
