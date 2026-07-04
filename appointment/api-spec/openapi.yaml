@@ -51,6 +51,8 @@ paths:
           description: Bad Request
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: Invalid date range or other validation error
     get:
@@ -78,15 +80,19 @@ paths:
             type: string
       responses:
         '200':
-          description: The agenda activity
+          description: The agenda activities
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ActivityResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActivityResponse'
         '400':
           description: Bad Request
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: Invalid parameters
 
@@ -118,6 +124,8 @@ paths:
           description: Bad Request
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: Invalid data or missing appointmentId
     delete:
@@ -148,12 +156,16 @@ paths:
           description: Bad Request
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: id is required
         '404':
           description: Not Found
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: Appointment not found
     get:
@@ -181,12 +193,16 @@ paths:
           description: Bad Request
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: id is required
         '404':
           description: Not Found
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: Appointment not found
 
@@ -215,12 +231,16 @@ paths:
           description: Bad Request
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: Invalid activityId or reminder cannot be resent
         '404':
           description: Not Found
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: Activity not found
 
@@ -293,6 +313,8 @@ paths:
           description: Bad Request
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: Invalid data or missing fields
 
@@ -321,6 +343,8 @@ paths:
           description: Bad Request
           content:
             application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
               example:
                 error: Invalid data or missing fields
 
@@ -373,6 +397,14 @@ paths:
 
 components:
   schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        error:
+          type: string
+      additionalProperties: true
     AppointmentEvent:
       x-implements: "it.beaesthetic.appointment.agenda.port.rest.CreateAgendaActivityMixin"
       type: object
@@ -410,6 +442,7 @@ components:
               type: number
               description: Minutes before the event to send a reminder
       required:
+        - eventType
         - start
         - end
         - title
@@ -442,6 +475,7 @@ components:
           format: uuid
           description: The ID of the attendee
       required:
+        - eventType
         - start
         - end
         - title
@@ -829,3 +863,6 @@ components:
                 default: [ ]
               color:
                 type: string
+
+
+

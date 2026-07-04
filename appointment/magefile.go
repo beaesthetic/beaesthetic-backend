@@ -12,14 +12,21 @@ import (
 const openAPIGenerator = "github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.7.1"
 
 func Generate() error {
+	if err := run(
+		"go", "run", openAPIGenerator,
+		"--config", "api/server.oapi-codegen.yaml",
+		"-o", "internal/port/http/server/generated/openapi.gen.go",
+		"api-spec/openapi.yaml",
+	); err != nil {
+		return err
+	}
 	return run(
 		"go", "run", openAPIGenerator,
-		"--config", "api/oapi-codegen.yaml",
-		"-o", "internal/api/openapi.gen.go",
-		"api-spec/openapi.yaml",
+		"--config", "api/customer-client.oapi-codegen.yaml",
+		"-o", "internal/port/http/client/customer.gen.go",
+		"api-spec/customer-api.yaml",
 	)
 }
-
 func Build() error {
 	if err := Generate(); err != nil {
 		return err
@@ -68,5 +75,7 @@ func binaryPath() string {
 	}
 	return "build/appointment"
 }
+
+
 
 

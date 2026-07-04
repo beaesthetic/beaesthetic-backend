@@ -11,12 +11,11 @@ import (
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/config"
-	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/container"
+	"github.com/petretiandrea/beaesthetic-backend/appointment/cmd/di"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/backfill"
-	httpport "github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 func NewRootCommand() *cobra.Command {
@@ -29,43 +28,49 @@ func NewRootCommand() *cobra.Command {
 
 func appCommand(envFile *string) *cobra.Command {
 	return &cobra.Command{Use: "app", Short: "Start HTTP API", RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := container.Build(cmd.Context(), *envFile)
+		ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
+		defer stop()
+
+		c, err := di.NewDiContainer(ctx, *envFile)
 		if err != nil {
 			return err
 		}
-		defer c.Close()
-		router := httpport.NewRouter(httpport.NewServer(c.AppService(), c.Log))
-		srv := &nethttp.Server{Addr: c.Config.HTTP.Addr, Handler: router}
-		ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
-		defer stop()
-		errCh := make(chan error, 1)
-		go func() {
-			c.Log.Info("starting http server", zap.String("addr", c.Config.HTTP.Addr))
-			if err := srv.ListenAndServe(); err != nil && !errors.Is(err, nethttp.ErrServerClosed) {
-				errCh <- err
-			}
+		defer func() {
+			c.GetPostgresDatabase().Close()
+			_ = c.Log.Sync()
 		}()
-		select {
-		case <-ctx.Done():
-		case err := <-errCh:
-			return err
-		}
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		return srv.Shutdown(shutdownCtx)
+
+		httpServer := c.GetHttpServer()
+		group, groupCtx := errgroup.WithContext(ctx)
+
+		group.Go(func() error {
+			c.Log.Info("starting http server", zap.String("addr", c.Config.HTTP.Addr))
+			if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, nethttp.ErrServerClosed) {
+				return fmt.Errorf("run http server: %w", err)
+			}
+			return nil
+		})
+		group.Go(func() error {
+			<-groupCtx.Done()
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if err := httpServer.Shutdown(shutdownCtx); err != nil {
+				return fmt.Errorf("shutdown http server: %w", err)
+			}
+			return nil
+		})
+
+		return group.Wait()
 	}}
 }
 
 func migrateCommand(envFile *string) *cobra.Command {
 	return &cobra.Command{Use: "migrate [up|down|version]", Short: "Run Postgres migrations", Args: cobra.ExactArgs(1), RunE: func(cmd *cobra.Command, args []string) error {
-		cfg, err := config.Load(*envFile)
+		c, err := di.NewDiContainer(cmd.Context(), *envFile)
 		if err != nil {
 			return err
 		}
-		m, err := container.NewMigrator(cfg.Postgres.DSN)
-		if err != nil {
-			return err
-		}
+		m := c.GetMigrator()
 		defer m.Close()
 		switch args[0] {
 		case "up":
@@ -91,12 +96,11 @@ func migrateCommand(envFile *string) *cobra.Command {
 
 func backfillCommand(envFile *string) *cobra.Command {
 	return &cobra.Command{Use: "backfill", Short: "Copy legacy Mongo data to Postgres", RunE: func(cmd *cobra.Command, args []string) error {
-		cfg, err := config.Load(*envFile)
+		c, err := di.NewDiContainer(cmd.Context(), *envFile)
 		if err != nil {
 			return err
 		}
-		log, _ := zap.NewProduction()
-		defer log.Sync()
-		return backfill.Run(cmd.Context(), cfg, log)
+		defer func() { _ = c.Log.Sync() }()
+		return backfill.Run(cmd.Context(), c.Config, c.Log)
 	}}
 }
