@@ -90,7 +90,7 @@ sidecar:
       tag: "v1.6.0"
       pullPolicy: IfNotPresent
     configMapRefs:
-      - notification-service-v2-config
+      - appointment-service-v2-outbox-config
     secretKeyRef:
       - name: POSTGRES_DSN
         secretRefName: appointment-secrets
