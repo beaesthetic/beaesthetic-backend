@@ -18,29 +18,32 @@ service:
 envConfig:
   OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
   REDIS_HOST: "redis-headless.common.svc.cluster.local:6379"
+
+  ENV_APP_NAME: "appointment-service-v2"
+
+  ENV_MONGO_DATABASE: "appointments-v2"
+
+  ENV_REMOTE_CUSTOMER__URL: "http://customer-service-v2:8080"
+  ENV_REMOTE_SCHEDULER__URL: "http://scheduler-service:8080"
+  ENV_REMOTE_NOTIFICATION__URL: "http://notification-service-v2:8080"
+
+  ENV_REMINDER_TRIGGER__BEFORE: "24h"
+  ENV_REMINDER_IMMEDIATE__SEND__THRESHOLD: "2m"
+  ENV_REMINDER_NO__SEND__THRESHOLD: "30m"
+
+  ENV_RABBITMQ_SCHEDULER__QUEUE: "reminders-times-up"
+  ENV_RABBITMQ_APPOINTMENT__INTERNAL__JOB__QUEUE: "beaesthetic.appointments.internal.job"
+  ENV_RABBITMQ_NOTIFICATION__CONFIRM__QUEUE: "NotificationConfirmQueue"
+
   SERVICES_CACHE_TTL: "1h"
   SERVICES_SEARCH_CACHE_TTL: "1h"
-  MONGO_DATABASE_NAME: "appointments-v2"
-  QUARKUS_REDIS_MAX_POOL_WAITING: "100"
-  QUARKUS_REDIS_RECONNECT_ATTEMPTS: "3"
-  CUSTOMER_SERVICE_BASEURL: "http://customer-service-v2:8080"
-  SCHEDULER_SERVICE_BASEURL: "http://scheduler-service:8080"
-  SCHEDULER_QUEUE_NAME: "reminders-times-up"
+
   MONITOR_REMINDERS_FAILED_FREQUENCY: "2h"
-
-  NOTIFICATION_SERVICE_BASEURL: "http://notification-service-v2:8080"
-  NOTIFICATION_CONFIRMED_QUEUE_NAME: "NotificationConfirmQueue"
-
-  RABBITMQ_HOST: "rabbitmq-v2.common.svc.cluster.local"
-  RABBITMQ_PORT: "5672"
-  RABBITMQ_USERNAME: "beaesthetic"
-
-  REMIND_BEFORE: "24h"
-  NO_SEND_THRESHOLD_DURATION: "30m"
-  IMMEDIATELY_SEND_DELAY: "2m"
   RECOVERY_ENABLED: "true"
 
-  NOTIFICATION_ATTENDEE_WHITELIST: "ce25d641-77b8-47af-b640-3ef97f0ee770,141824e7-6554-4714-8fb6-d433494382d7,01b5b783-6f89-4470-a78b-a8d733f6a4cc,b187a194-1a8e-49a8-a5b8-aa702d74a45a,fd04a565-f2ed-4071-80db-ab7743e5f991,1d134d29-40dd-47d0-b0c8-1e9269b6703b,608547d3-d90f-4630-a426-b025335a7add,a4bacdbd-1f08-461c-81c9-0498e19e04e7,d32356c3-fe52-4efe-93fe-ac13a62142c1,4262f0bf-2988-47a3-a275-b1deeb5fc960,1f8a0723-d599-4646-852c-1f2a13304489"
+initContainers:
+  migrate:
+    enabled: true
 
 resources:
   requests:
@@ -51,15 +54,15 @@ resources:
     cpu: "80m"
 
 secretKeyRef:
-  - name: MONGO_CONNECTION_STRING
+  - name: ENV_MONGO_URI
     secretRefName: appointment-secrets
     key: MONGO_DB_URI
-  - name: REDIS_PASSWORD
+  - name: ENV_POSTGRES_DSN
     secretRefName: appointment-secrets
-    key: REDIS_PASSWORD
-  - name: RABBITMQ_PASSWORD
-    secretRefName: appointment-rabbitmq-secrets
-    key: rabbitmq-password
+    key: postgres-dsn
+  - name: ENV_RABBITMQ_URL
+    secretRefName: appointment-secrets
+    key: rabbitmq-url
 
 readinessProbe:
   httpGet:
@@ -76,3 +79,29 @@ livenessProbe:
   initialDelaySeconds: 30
   failureThreshold: 10
   periodSeconds: 30
+
+sidecar:
+  outbox:
+    image:
+      repository: petretiandrea/outbox-forwarder
+      tag: "v1.6.0"
+      pullPolicy: IfNotPresent
+    configMapRefs:
+      - appointment-service-v2-outbox-config
+    secretKeyRef:
+      - name: POSTGRES_DSN
+        secretRefName: appointment-secrets
+        key: postgres-dsn
+      - name: RABBITMQ_DSN
+        secretRefName: appointment-secrets
+        key: rabbitmq-url
+    volumeMounts:
+      - name: outbox-config
+        mountPath: "/etc/outbox/outbox.yaml"
+        subPath: "outbox.yaml"
+        readOnly: true
+
+volumes:
+  - name: outbox-config
+    configMap:
+      name: appointment-service-v2-outbox-config

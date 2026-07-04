@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: "{{ .Values.name }}-outbox-config"
+  namespace: { { .Values.namespace } }
+  labels: { { - tpl (toYaml .Values.labels) . | nindent 4 } }
+data:
+  outbox.yaml: |-
+    source:
+      type: postgres
+      data:
+        dsn: ${POSTGRES_DSN}
+        table_name: outbox_messages
+        batch_size: 100
+        poll_interval: 1s
+        initialize_schema: true
+
+    channels:
+      - name: beaesthetic.appointments.internal.job
+        publisher:
+          type: rabbitmq
+          data:
+            url: ${RABBITMQ_DSN}
+            exchange: amq.direct
+            routing_key: "beaesthetic.appointments.internal.job"
+            content_type: application/json
