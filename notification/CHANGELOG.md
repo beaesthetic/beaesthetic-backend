@@ -1,5 +1,20 @@
 # Changelog
 
+## [2.2.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.1.2...notification-service-v2.2.0) (2026-07-04)
+
+
+### Features
+
+* add health check endpoint and SMS webhook handling ([2a11f5e](https://github.com/beaesthetic/beaesthetic-backend/commit/2a11f5e2cea086ff73919abfd47b5172117c94fc))
+* add OpenAPI specifications for notification and SMS webhook APIs ([ae279cf](https://github.com/beaesthetic/beaesthetic-backend/commit/ae279cf4f37fa74c602bbfeddec67a06157694fb))
+* implement dependency injection for notification service and HTTP server ([2a11f5e](https://github.com/beaesthetic/beaesthetic-backend/commit/2a11f5e2cea086ff73919abfd47b5172117c94fc))
+* refactor HTTP server initialization to use net/http package ([6fb425e](https://github.com/beaesthetic/beaesthetic-backend/commit/6fb425ea7db4442501cb3d8a1968568acd10ab6f))
+
+
+### Code Refactoring
+
+* restructure notification service and remove deprecated container code ([2a11f5e](https://github.com/beaesthetic/beaesthetic-backend/commit/2a11f5e2cea086ff73919abfd47b5172117c94fc))
+
 ## [2.1.2](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.1.1...notification-service-v2.1.2) (2026-07-02)
 
 
