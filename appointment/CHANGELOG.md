@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.10.1](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.10.0...appointment-service-v1.10.1) (2026-07-04)
+
+
+### Bug Fixes
+
+* delete appointment java ([b0dd160](https://github.com/beaesthetic/beaesthetic-backend/commit/b0dd160829e36196771e082d6b3f9963d1b45cf9))
+
 ## [1.10.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.9.5...appointment-service-v1.10.0) (2026-07-02)
 
 
