@@ -19,6 +19,7 @@ type Config struct {
 	Mongo    MongoConfig    `koanf:"mongo"`
 	Remote   RemoteConfig   `koanf:"remote"`
 	Reminder ReminderConfig `koanf:"reminder"`
+	RabbitMQ RabbitMQConfig `koanf:"rabbitmq"`
 }
 
 type AppConfig struct {
@@ -40,6 +41,12 @@ type RemoteConfig struct {
 	SchedulerURL    string `koanf:"scheduler_url"`
 	NotificationURL string `koanf:"notification_url"`
 }
+type RabbitMQConfig struct {
+	URL                      string `koanf:"url"`
+	SchedulerQueue           string `koanf:"scheduler_queue"`
+	NotificationConfirmQueue string `koanf:"notification_confirm_queue"`
+}
+
 type ReminderConfig struct {
 	TriggerBefore          time.Duration `koanf:"trigger_before"`
 	ImmediateSendThreshold time.Duration `koanf:"immediate_send_threshold"`
@@ -49,13 +56,16 @@ type ReminderConfig struct {
 func Load(envFile string) (Config, error) {
 	k := koanf.New(delim)
 	for key, value := range map[string]interface{}{
-		"app.name":                          "beaesthetic-agenda",
-		"app.env":                           "dev",
-		"http.addr":                         ":8080",
-		"mongo.database":                    "appointments-v2",
-		"reminder.trigger_before":           "24h",
-		"reminder.immediate_send_threshold": "2m",
-		"reminder.no_send_threshold":        "30m",
+		"app.name":                            "beaesthetic-agenda",
+		"app.env":                             "dev",
+		"http.addr":                           ":8080",
+		"mongo.database":                      "appointments-v2",
+		"reminder.trigger_before":             "24h",
+		"reminder.immediate_send_threshold":   "2m",
+		"reminder.no_send_threshold":          "30m",
+		"rabbitmq.url":                        "amqp://guest:guest@localhost:5672/",
+		"rabbitmq.scheduler_queue":            "reminders",
+		"rabbitmq.notification_confirm_queue": "NotificationConfirmQueue",
 	} {
 		if err := k.Set(key, value); err != nil {
 			return Config{}, err

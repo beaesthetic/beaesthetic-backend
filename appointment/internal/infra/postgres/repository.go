@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
+	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
 )
@@ -140,6 +141,23 @@ func (r *Repository) FindService(ctx context.Context, id string) (*domain.Appoin
 		return nil, err
 	}
 	return &services[0], nil
+}
+
+func (r *Repository) FindPendingNotification(ctx context.Context, notificationID string) (*application.PendingNotification, error) {
+	var pending application.PendingNotification
+	err := r.db.QueryRow(ctx, `SELECT notification_id, agenda_event_id, notification_type FROM pending_notifications WHERE notification_id=$1`, notificationID).Scan(&pending.NotificationID, &pending.AgendaEventID, &pending.Type)
+	if err == pgx.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &pending, nil
+}
+
+func (r *Repository) RemovePendingNotification(ctx context.Context, notificationID string) error {
+	_, err := r.db.Exec(ctx, `DELETE FROM pending_notifications WHERE notification_id=$1`, notificationID)
+	return err
 }
 
 func scanServices(rows pgx.Rows) ([]domain.AppointmentService, error) {

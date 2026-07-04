@@ -14,6 +14,14 @@ type AppointmentRepository interface {
 	SaveAgendaEvent(context.Context, *domain.AgendaEvent) error
 	FindAgendaEvent(context.Context, string) (*domain.AgendaEvent, error)
 	SearchAgendaEvents(context.Context, string, *time.Time, *time.Time) ([]domain.AgendaEvent, error)
+	FindPendingNotification(context.Context, string) (*PendingNotification, error)
+	RemovePendingNotification(context.Context, string) error
+}
+
+type PendingNotification struct {
+	NotificationID string
+	AgendaEventID  string
+	Type           string
 }
 
 type AppointmentService struct {
@@ -77,6 +85,7 @@ func (s *AppointmentService) UpdateAgenda(ctx context.Context, id string, title,
 	})
 	return event, err
 }
+
 func (s *AppointmentService) DeleteAgenda(ctx context.Context, id string, reason domain.CancelReason) (*domain.AgendaEvent, error) {
 	var event *domain.AgendaEvent
 	err := s.repo.Tx(ctx, func(ctx context.Context) error {
@@ -91,6 +100,51 @@ func (s *AppointmentService) DeleteAgenda(ctx context.Context, id string, reason
 	})
 	return event, err
 }
+
+func (s *AppointmentService) ProcessReminderTimesUp(ctx context.Context, eventID string) (*domain.AgendaEvent, error) {
+	var event *domain.AgendaEvent
+	err := s.repo.Tx(ctx, func(ctx context.Context) error {
+		e, err := s.repo.FindAgendaEvent(ctx, eventID)
+		if err != nil {
+			return err
+		}
+		if e == nil {
+			return fmt.Errorf("No event with id %s found", eventID)
+		}
+		e.MarkReminderSentRequested(s.clock.Now())
+		event = e
+		return s.repo.SaveAgendaEvent(ctx, e)
+	})
+	return event, err
+}
+
+func (s *AppointmentService) ConfirmNotification(ctx context.Context, notificationID string) (*domain.AgendaEvent, error) {
+	var event *domain.AgendaEvent
+	err := s.repo.Tx(ctx, func(ctx context.Context) error {
+		pending, err := s.repo.FindPendingNotification(ctx, notificationID)
+		if err != nil || pending == nil {
+			return err
+		}
+		if pending.Type != "reminder" && pending.Type != "Reminder" {
+			return s.repo.RemovePendingNotification(ctx, notificationID)
+		}
+		e, err := s.repo.FindAgendaEvent(ctx, pending.AgendaEventID)
+		if err != nil {
+			return err
+		}
+		if e == nil {
+			return fmt.Errorf("No event with id %s found", pending.AgendaEventID)
+		}
+		e.MarkReminderSent(s.clock.Now())
+		event = e
+		if err := s.repo.SaveAgendaEvent(ctx, e); err != nil {
+			return err
+		}
+		return s.repo.RemovePendingNotification(ctx, notificationID)
+	})
+	return event, err
+}
+
 func (s *AppointmentService) saveAgenda(ctx context.Context, event *domain.AgendaEvent) error {
 	return s.repo.Tx(ctx, func(ctx context.Context) error {
 		return s.repo.SaveAgendaEvent(ctx, event)

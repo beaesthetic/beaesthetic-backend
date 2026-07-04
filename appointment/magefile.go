@@ -20,11 +20,19 @@ func Generate() error {
 	); err != nil {
 		return err
 	}
-	return run(
+	if err := run(
 		"go", "run", openAPIGenerator,
 		"--config", "api/customer-client.oapi-codegen.yaml",
 		"-o", "internal/port/http/client/customer.gen.go",
 		"api-spec/customer-api.yaml",
+	); err != nil {
+		return err
+	}
+	return run(
+		"go", "run", openAPIGenerator,
+		"--config", "api/notification-client.oapi-codegen.yaml",
+		"-o", "internal/port/http/notificationclient/notification.gen.go",
+		"api-spec/notification-api.yaml",
 	)
 }
 func Build() error {
@@ -75,7 +83,3 @@ func binaryPath() string {
 	}
 	return "build/appointment"
 }
-
-
-
-

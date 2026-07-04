@@ -41,6 +41,9 @@ func appCommand(envFile *string) *cobra.Command {
 		}()
 
 		httpServer := c.GetHttpServer()
+		schedulerConsumer := c.GetSchedulerQueueConsumer()
+		notificationConfirmConsumer := c.GetNotificationConfirmQueueConsumer()
+
 		group, groupCtx := errgroup.WithContext(ctx)
 
 		group.Go(func() error {
@@ -56,6 +59,20 @@ func appCommand(envFile *string) *cobra.Command {
 			defer cancel()
 			if err := httpServer.Shutdown(shutdownCtx); err != nil {
 				return fmt.Errorf("shutdown http server: %w", err)
+			}
+			return nil
+		})
+		group.Go(func() error {
+			c.Log.Info("starting scheduler queue consumer", zap.String("queue", c.Config.RabbitMQ.SchedulerQueue))
+			if err := schedulerConsumer.Run(groupCtx); err != nil && !errors.Is(err, context.Canceled) {
+				return fmt.Errorf("run scheduler queue consumer: %w", err)
+			}
+			return nil
+		})
+		group.Go(func() error {
+			c.Log.Info("starting notification confirm queue consumer", zap.String("queue", c.Config.RabbitMQ.NotificationConfirmQueue))
+			if err := notificationConfirmConsumer.Run(groupCtx); err != nil && !errors.Is(err, context.Canceled) {
+				return fmt.Errorf("run notification confirm queue consumer: %w", err)
 			}
 			return nil
 		})

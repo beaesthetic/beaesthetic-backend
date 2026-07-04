@@ -52,3 +52,9 @@ func (d *DiContainer) GetPostgresRepository() *postgres.Repository {
 		return postgres.NewRepository(d.GetPostgresContextDB(), d.GetOutboxPublisher())
 	})
 }
+
+func (d *DiContainer) GetNotificationClient() *httpclient.NotificationClient {
+	return singletonWithError(d, "notificationClient", func() (*httpclient.NotificationClient, error) {
+		return httpclient.NewNotificationClient(d.Config.Remote.NotificationURL)
+	})
+}
