@@ -14,7 +14,7 @@ const openAPIGenerator = "github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codeg
 func Generate() error {
 	if err := run(
 		"go", "run", openAPIGenerator,
-		"--config", "api/server.oapi-codegen.yaml",
+		"--config", "internal/port/http/server/server.oapi-codegen.yaml",
 		"-o", "internal/port/http/server/generated/openapi.gen.go",
 		"api-spec/openapi.yaml",
 	); err != nil {
@@ -22,16 +22,16 @@ func Generate() error {
 	}
 	if err := run(
 		"go", "run", openAPIGenerator,
-		"--config", "api/customer-client.oapi-codegen.yaml",
-		"-o", "internal/port/http/client/customer.gen.go",
+		"--config", "internal/port/http/client/customer/customer-client.oapi-codegen.yaml",
+		"-o", "internal/port/http/client/customer/customer.gen.go",
 		"api-spec/customer-api.yaml",
 	); err != nil {
 		return err
 	}
 	return run(
 		"go", "run", openAPIGenerator,
-		"--config", "api/notification-client.oapi-codegen.yaml",
-		"-o", "internal/port/http/notificationclient/notification.gen.go",
+		"--config", "internal/port/http/client/notification/notification-client.oapi-codegen.yaml",
+		"-o", "internal/port/http/client/notification/notification.gen.go",
 		"api-spec/notification-api.yaml",
 	)
 }

@@ -1,19 +1,18 @@
-package httpclient
+package customer
 
 import (
 	"context"
 	"strings"
 
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
-	customerapi "github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/client"
 )
 
 type CustomerRegistry struct {
-	client *customerapi.ClientWithResponses
+	client *ClientWithResponses
 }
 
 func NewCustomerRegistry(baseURL string) (*CustomerRegistry, error) {
-	client, err := customerapi.NewClientWithResponses(baseURL)
+	client, err := NewClientWithResponses(baseURL)
 	if err != nil {
 		return nil, err
 	}

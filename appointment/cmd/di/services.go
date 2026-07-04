@@ -2,8 +2,9 @@ package di
 
 import (
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
-	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/httpclient"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/postgres"
+	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/client/customer"
+	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/client/notification"
 )
 
 func (d *DiContainer) GetAppointmentService() *application.AppointmentService {
@@ -31,7 +32,7 @@ func (d *DiContainer) GetClock() application.Clock {
 
 func (d *DiContainer) GetCustomerRegistry() application.CustomerRegistry {
 	return singletonWithError(d, "customerRegistry", func() (application.CustomerRegistry, error) {
-		return httpclient.NewCustomerRegistry(d.Config.Remote.CustomerURL)
+		return customer.NewCustomerRegistry(d.Config.Remote.CustomerURL)
 	})
 }
 
@@ -53,8 +54,8 @@ func (d *DiContainer) GetPostgresRepository() *postgres.Repository {
 	})
 }
 
-func (d *DiContainer) GetNotificationClient() *httpclient.NotificationClient {
-	return singletonWithError(d, "notificationClient", func() (*httpclient.NotificationClient, error) {
-		return httpclient.NewNotificationClient(d.Config.Remote.NotificationURL)
+func (d *DiContainer) GetNotificationClient() *notification.NotificationClient {
+	return singletonWithError(d, "notificationClient", func() (*notification.NotificationClient, error) {
+		return notification.NewNotificationClient(d.Config.Remote.NotificationURL)
 	})
 }

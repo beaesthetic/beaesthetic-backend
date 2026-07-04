@@ -1,4 +1,4 @@
-package: notificationclient
+package: notification
 generate:
   models: true
   client: true
