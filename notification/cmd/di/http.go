@@ -1,14 +1,16 @@
 package di
 
 import (
-	"github.com/gin-gonic/gin"
+	nethttp "net/http"
+
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/port/health"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/port/http"
 )
 
-func (d *DiContainer) GetGinHttpServer() *gin.Engine {
-	return singleton(d, "httpServer", func() *gin.Engine {
-		return http.New(d.GetHttpHandlers())
+func (d *DiContainer) GetHttpServer() *nethttp.Server {
+	return singleton(d, "httpServer", func() *nethttp.Server {
+		ginEngine := http.New(d.GetHttpHandlers())
+		return &nethttp.Server{Addr: d.Config.HTTP.Addr, Handler: ginEngine}
 	})
 }
 

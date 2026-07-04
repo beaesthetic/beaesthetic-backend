@@ -46,9 +46,8 @@ func appCommand(envFile *string) *cobra.Command {
 				_ = c.Log.Sync()
 			}()
 
-			ginServer := c.GetGinHttpServer()
+			httpServer := c.GetHttpServer()
 			outboxConsumer := c.GetNotificationOutboxConsumer()
-			httpServer := &nethttp.Server{Addr: c.Config.HTTP.Addr, Handler: ginServer}
 
 			group, groupCtx := errgroup.WithContext(ctx)
 			group.Go(func() error {
