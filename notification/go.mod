@@ -3,6 +3,7 @@ module github.com/petretiandrea/beaesthetic-backend/notification
 go 1.25.0
 
 require (
+	github.com/alexliesenfeld/health v0.8.1
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/google/uuid v1.6.0
@@ -16,6 +17,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.11.0
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/zap v1.27.0
+	golang.org/x/sync v0.19.0
 )
 
 require (
@@ -59,7 +61,6 @@ require (
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/net v0.48.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.32.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
