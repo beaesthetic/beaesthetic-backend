@@ -35,3 +35,5 @@ CREATE TABLE IF NOT EXISTS pending_notifications (
     notification_type TEXT NOT NULL,
     expires_at TIMESTAMPTZ NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_pending_notifications_agenda_event_id ON pending_notifications (agenda_event_id);
+CREATE INDEX IF NOT EXISTS idx_pending_notifications_expires_at ON pending_notifications (expires_at);

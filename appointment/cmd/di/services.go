@@ -5,6 +5,7 @@ import (
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/postgres"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/client/customer"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/client/notification"
+	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/client/scheduler"
 )
 
 func (d *DiContainer) GetAppointmentService() *application.AppointmentService {
@@ -21,6 +22,20 @@ func (d *DiContainer) GetAppointmentService() *application.AppointmentService {
 func (d *DiContainer) GetServiceService() *application.ServiceService {
 	return singleton(d, "serviceService", func() *application.ServiceService {
 		return application.NewServiceService(d.GetServiceRepository())
+	})
+}
+
+func (d *DiContainer) GetAppointmentLifecycleHandler() *application.AppointmentLifecycleHandler {
+	return singleton(d, "appointmentLifecycleHandler", func() *application.AppointmentLifecycleHandler {
+		return application.NewAppointmentLifecycleHandler(
+			d.GetAppointmentService(),
+			d.GetCustomerRegistry(),
+			d.GetReminderScheduler(),
+			d.GetNotificationClient(),
+			d.GetClock(),
+			d.Config.Reminder.NoSendThreshold,
+			d.Config.Reminder.ImmediateSendThreshold,
+		)
 	})
 }
 
@@ -57,5 +72,17 @@ func (d *DiContainer) GetPostgresRepository() *postgres.Repository {
 func (d *DiContainer) GetNotificationClient() *notification.NotificationClient {
 	return singletonWithError(d, "notificationClient", func() (*notification.NotificationClient, error) {
 		return notification.NewNotificationClient(d.Config.Remote.NotificationURL)
+	})
+}
+
+func (d *DiContainer) GetSchedulerClient() *scheduler.SchedulerClient {
+	return singletonWithError(d, "schedulerClient", func() (*scheduler.SchedulerClient, error) {
+		return scheduler.NewSchedulerClient(d.Config.Remote.SchedulerURL)
+	})
+}
+
+func (d *DiContainer) GetReminderScheduler() application.ReminderScheduler {
+	return singleton(d, "reminderScheduler", func() application.ReminderScheduler {
+		return scheduler.NewReminderScheduler(d.GetSchedulerClient(), d.Config.RabbitMQ.SchedulerQueue)
 	})
 }

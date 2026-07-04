@@ -16,6 +16,7 @@ type AppointmentRepository interface {
 	SearchAgendaEvents(context.Context, string, *time.Time, *time.Time) ([]domain.AgendaEvent, error)
 	FindPendingNotification(context.Context, string) (*PendingNotification, error)
 	RemovePendingNotification(context.Context, string) error
+	SavePendingNotification(context.Context, PendingNotification) error
 }
 
 type PendingNotification struct {
@@ -52,6 +53,10 @@ func (s *AppointmentService) CreateAgenda(ctx context.Context, typ domain.EventT
 
 func (s *AppointmentService) GetAgenda(ctx context.Context, id string) (*domain.AgendaEvent, error) {
 	return s.repo.FindAgendaEvent(ctx, id)
+}
+
+func (s *AppointmentService) SaveAgendaEvent(ctx context.Context, event *domain.AgendaEvent) error {
+	return s.repo.SaveAgendaEvent(ctx, event)
 }
 
 func (s *AppointmentService) SearchAgenda(ctx context.Context, attendee string, start, end *time.Time) ([]domain.AgendaEvent, error) {
@@ -116,6 +121,14 @@ func (s *AppointmentService) ProcessReminderTimesUp(ctx context.Context, eventID
 		return s.repo.SaveAgendaEvent(ctx, e)
 	})
 	return event, err
+}
+
+func (s *AppointmentService) TrackPendingNotification(ctx context.Context, notificationID, agendaEventID, notificationType string) error {
+	return s.repo.SavePendingNotification(ctx, PendingNotification{
+		NotificationID: notificationID,
+		AgendaEventID:  agendaEventID,
+		Type:           notificationType,
+	})
 }
 
 func (s *AppointmentService) ConfirmNotification(ctx context.Context, notificationID string) (*domain.AgendaEvent, error) {

@@ -39,9 +39,10 @@ type RemoteConfig struct {
 	NotificationURL string `koanf:"notification_url"`
 }
 type RabbitMQConfig struct {
-	URL                      string `koanf:"url"`
-	SchedulerQueue           string `koanf:"scheduler_queue"`
-	NotificationConfirmQueue string `koanf:"notification_confirm_queue"`
+	URL                         string `koanf:"url"`
+	SchedulerQueue              string `koanf:"scheduler_queue"`
+	AppointmentInternalJobQueue string `koanf:"appointment_internal_job_queue"`
+	NotificationConfirmQueue    string `koanf:"notification_confirm_queue"`
 }
 
 type ReminderConfig struct {

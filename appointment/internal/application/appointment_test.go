@@ -38,6 +38,10 @@ func (r *appointmentRepoStub) RemovePendingNotification(context.Context, string)
 	return nil
 }
 
+func (r *appointmentRepoStub) SavePendingNotification(context.Context, PendingNotification) error {
+	return nil
+}
+
 type customerRegistryStub struct {
 	customer *Customer
 	calls    int

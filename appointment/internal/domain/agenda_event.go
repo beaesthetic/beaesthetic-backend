@@ -85,6 +85,16 @@ func (event *AgendaEvent) record(lifecycleEvent LifecycleEvent) {
 	event.events = append(event.events, lifecycleEvent)
 }
 
+func (event *AgendaEvent) MarkReminderScheduled(now time.Time) {
+	event.ReminderStatus = ReminderScheduled
+	event.UpdatedAt = now.UTC()
+}
+
+func (event *AgendaEvent) MarkReminderUnprocessable(now time.Time) {
+	event.ReminderStatus = ReminderUnprocessable
+	event.UpdatedAt = now.UTC()
+}
+
 func (event *AgendaEvent) MarkReminderSentRequested(now time.Time) {
 	event.ReminderStatus = ReminderSentRequested
 	event.UpdatedAt = now.UTC()

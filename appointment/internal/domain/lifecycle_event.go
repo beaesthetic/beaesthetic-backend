@@ -1,8 +1,8 @@
 package domain
 
 type LifecycleEvent struct {
-	Type          string
-	AgendaEventID string
+	Type          string `json:"type"`
+	AgendaEventID string `json:"agendaEventId"`
 }
 
 func AgendaEventScheduled(agendaEventID string) LifecycleEvent {

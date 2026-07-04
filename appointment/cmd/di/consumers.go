@@ -7,7 +7,18 @@ func (d *DiContainer) GetSchedulerQueueConsumer() *messaging.Consumer {
 		return messaging.NewConsumer(
 			d.Config.RabbitMQ.URL,
 			d.Config.RabbitMQ.SchedulerQueue,
-			messaging.NewSchedulerQueueConsumer(d.GetAppointmentService(), d.Log),
+			messaging.NewSchedulerQueueConsumer(d.GetAppointmentService(), d.GetCustomerRegistry(), d.GetNotificationClient(), d.Log),
+			d.Log,
+		)
+	})
+}
+
+func (d *DiContainer) GetAppointmentLifecycleConsumer() *messaging.Consumer {
+	return singleton(d, "appointmentLifecycleConsumer", func() *messaging.Consumer {
+		return messaging.NewConsumer(
+			d.Config.RabbitMQ.URL,
+			d.Config.RabbitMQ.AppointmentInternalJobQueue,
+			messaging.NewAppointmentLifecycleConsumer(d.GetAppointmentLifecycleHandler(), d.Log),
 			d.Log,
 		)
 	})

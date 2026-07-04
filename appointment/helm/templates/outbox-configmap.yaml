@@ -16,11 +16,11 @@ data:
         initialize_schema: true
 
     channels:
-      - name: appointment.lifecycle
+      - name: beaesthetic.appointments.internal.job
         publisher:
           type: rabbitmq
           data:
             url: ${RABBITMQ_DSN}
             exchange: amq.direct
-            routing_key: "appointment.lifecycle"
+            routing_key: "beaesthetic.appointments.internal.job"
             content_type: application/json

@@ -41,6 +41,7 @@ func appCommand(envFile *string) *cobra.Command {
 		}()
 
 		httpServer := c.GetHttpServer()
+		appointmentLifecycleConsumer := c.GetAppointmentLifecycleConsumer()
 		schedulerConsumer := c.GetSchedulerQueueConsumer()
 		notificationConfirmConsumer := c.GetNotificationConfirmQueueConsumer()
 
@@ -59,6 +60,13 @@ func appCommand(envFile *string) *cobra.Command {
 			defer cancel()
 			if err := httpServer.Shutdown(shutdownCtx); err != nil {
 				return fmt.Errorf("shutdown http server: %w", err)
+			}
+			return nil
+		})
+		group.Go(func() error {
+			c.Log.Info("starting appointment lifecycle consumer", zap.String("queue", c.Config.RabbitMQ.AppointmentInternalJobQueue))
+			if err := appointmentLifecycleConsumer.Run(groupCtx); err != nil && !errors.Is(err, context.Canceled) {
+				return fmt.Errorf("run appointment lifecycle consumer: %w", err)
 			}
 			return nil
 		})

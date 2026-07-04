@@ -14,7 +14,7 @@ import (
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
 )
 
-const channelAppointmentLifecycle = "appointment.lifecycle"
+const channelAppointmentInternalJob = "beaesthetic.appointments.internal.job"
 
 type Repository struct {
 	db        *ContextDB
@@ -160,6 +160,11 @@ func (r *Repository) RemovePendingNotification(ctx context.Context, notification
 	return err
 }
 
+func (r *Repository) SavePendingNotification(ctx context.Context, pending application.PendingNotification) error {
+	_, err := r.db.Exec(ctx, `INSERT INTO pending_notifications (notification_id, agenda_event_id, notification_type, expires_at) VALUES ($1,$2,$3,$4) ON CONFLICT (notification_id) DO UPDATE SET agenda_event_id=$2, notification_type=$3, expires_at=$4`, pending.NotificationID, pending.AgendaEventID, pending.Type, time.Now().UTC().Add(24*time.Hour))
+	return err
+}
+
 func scanServices(rows pgx.Rows) ([]domain.AppointmentService, error) {
 	var out []domain.AppointmentService
 	for rows.Next() {
@@ -199,7 +204,7 @@ func newOutboxMessage(event domain.LifecycleEvent) (outbox.Message, error) {
 	}
 	return outbox.Message{
 		ID:          uuid.NewString(),
-		Channel:     outbox.Channel(channelAppointmentLifecycle),
+		Channel:     outbox.Channel(channelAppointmentInternalJob),
 		AffinityKey: outbox.AffinityKey(event.AgendaEventID),
 		Payload:     payload,
 		Metadata:    outbox.Metadata{},

@@ -28,11 +28,19 @@ func Generate() error {
 	); err != nil {
 		return err
 	}
-	return run(
+	if err := run(
 		"go", "run", openAPIGenerator,
 		"--config", "internal/port/http/client/notification/notification-client.oapi-codegen.yaml",
 		"-o", "internal/port/http/client/notification/notification.gen.go",
 		"api-spec/notification-api.yaml",
+	); err != nil {
+		return err
+	}
+	return run(
+		"go", "run", openAPIGenerator,
+		"--config", "api/scheduler-client.oapi-codegen.yaml",
+		"-o", "internal/port/http/client/scheduler/scheduler.gen.go",
+		"api-spec/scheduler-api.yaml",
 	)
 }
 func Build() error {
