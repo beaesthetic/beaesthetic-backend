@@ -2,8 +2,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "{{ .Values.name }}-outbox-config"
-  namespace: { { .Values.namespace } }
-  labels: { { - tpl (toYaml .Values.labels) . | nindent 4 } }
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- tpl (toYaml .Values.labels) . | nindent 4 }}
 data:
   outbox.yaml: |-
     source:
