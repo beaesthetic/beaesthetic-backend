@@ -10,9 +10,9 @@ RUN go run github.com/magefile/mage@v1.15.0 -v build
 FROM gcr.io/distroless/base-debian12:nonroot
 
 WORKDIR /app
-COPY --from=build /src/build/appointment /app
+COPY --from=build /src/build/appointment /app/appointment
 COPY --from=build /src/migrations /app/migrations
 
 EXPOSE 8080
-ENTRYPOINT ["/app"]
+ENTRYPOINT ["/app/appointment"]
 CMD ["app"]

@@ -43,10 +43,6 @@ envConfig:
 initContainers:
   migrate:
     enabled: true
-    command:
-      - /app
-      - migrate
-      - up
 
 resources:
   requests:
