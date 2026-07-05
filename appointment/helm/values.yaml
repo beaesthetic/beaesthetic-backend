@@ -66,7 +66,7 @@ secretKeyRef:
 
 readinessProbe:
   httpGet:
-    path: /q/health/ready
+    path: /health
     port: 8080
   initialDelaySeconds: 30
   failureThreshold: 10
@@ -74,7 +74,7 @@ readinessProbe:
 
 livenessProbe:
   httpGet:
-    path: /q/health/live
+    path: /health
     port: 8080
   initialDelaySeconds: 30
   failureThreshold: 10
