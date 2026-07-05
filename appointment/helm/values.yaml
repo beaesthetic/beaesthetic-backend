@@ -58,10 +58,10 @@ secretKeyRef:
     secretRefName: appointment-secrets
     key: MONGO_DB_URI
   - name: ENV_POSTGRES_DSN
-    secretRefName: appointment-secrets
+    secretRefName: appointment-secrets-v2
     key: postgres-dsn
   - name: ENV_RABBITMQ_URL
-    secretRefName: appointment-secrets
+    secretRefName: appointment-secrets-v2
     key: rabbitmq-url
 
 readinessProbe:
@@ -90,10 +90,10 @@ sidecar:
       - appointment-service-v2-outbox-config
     secretKeyRef:
       - name: POSTGRES_DSN
-        secretRefName: appointment-secrets
+        secretRefName: appointment-secrets-v2
         key: postgres-dsn
       - name: RABBITMQ_DSN
-        secretRefName: appointment-secrets
+        secretRefName: appointment-secrets-v2
         key: rabbitmq-url
     volumeMounts:
       - name: outbox-config
