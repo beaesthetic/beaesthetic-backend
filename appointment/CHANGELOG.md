@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.10.2](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.10.1...appointment-service-v1.10.2) (2026-07-05)
+
+
+### Bug Fixes
+
+* correct namespace and labels formatting in Helm templates ([d901560](https://github.com/beaesthetic/beaesthetic-backend/commit/d9015600edf89ecf2d7672e1248e174ccdae722a))
+* ijecting onyl new secrets ([7b6b840](https://github.com/beaesthetic/beaesthetic-backend/commit/7b6b840f9768bd9e05a8557a2c6116c6b63f4856))
+* migrator missing import ([5fb947d](https://github.com/beaesthetic/beaesthetic-backend/commit/5fb947df3aaa95df10b762a9e617b9e8ab2afdbc))
+
 ## [1.10.1](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.10.0...appointment-service-v1.10.1) (2026-07-04)
 
 
