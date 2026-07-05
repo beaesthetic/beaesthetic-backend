@@ -23,7 +23,7 @@ func Build() error {
 	if err := os.MkdirAll("build", 0755); err != nil {
 		return err
 	}
-	return run("go", "build", "-o", binaryPath(), "./cmd/notification")
+	return run("go", "build", "-o", binaryPath(), "./cmd")
 }
 
 func Test() error {
@@ -64,5 +64,4 @@ func binaryPath() string {
 	}
 	return "build/notification"
 }
-
 
