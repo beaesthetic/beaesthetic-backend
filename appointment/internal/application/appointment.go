@@ -170,7 +170,7 @@ func (s *AppointmentService) resolveAttendee(ctx context.Context, typ domain.Eve
 	}
 	customer, err := s.customerRegistry.FindByCustomerID(ctx, attendee.ID)
 	if err != nil {
-		return domain.Attendee{}, err
+		return domain.Attendee{}, fmt.Errorf("error getting customer: %w", err)
 	}
 	if customer == nil {
 		return domain.Attendee{}, fmt.Errorf("Unknown attendee %s", attendee.ID)

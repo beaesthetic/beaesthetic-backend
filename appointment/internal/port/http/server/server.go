@@ -1,6 +1,8 @@
 package server
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/health"
@@ -13,12 +15,52 @@ type HttpHandlers struct {
 	HealthChecker health.HealthCheckHandler
 }
 
-func New(handlers *HttpHandlers) *gin.Engine {
+func New(handlers *HttpHandlers, log *zap.Logger) *gin.Engine {
+	if log == nil {
+		log = zap.NewNop()
+	}
 	r := gin.New()
 	r.Use(gin.Recovery())
-	httpserver.RegisterHandlers(r, httpserver.NewStrictHandler(handlers.Appointment, nil))
+	r.Use(ginErrorLogger(log))
+	httpserver.RegisterHandlers(r, httpserver.NewStrictHandlerWithOptions(handlers.Appointment, nil, httpserver.StrictGinServerOptions{
+		RequestErrorHandlerFunc: func(ctx *gin.Context, err error) {
+			log.Warn("http request error", zap.Error(err), zap.String("method", ctx.Request.Method), zap.String("path", ctx.FullPath()))
+			ctx.JSON(400, gin.H{"msg": err.Error()})
+		},
+		ResponseErrorHandlerFunc: func(ctx *gin.Context, err error) {
+			log.Error("http response error", zap.Error(err), zap.String("method", ctx.Request.Method), zap.String("path", ctx.FullPath()))
+			ctx.JSON(500, gin.H{"msg": err.Error()})
+		},
+	}))
 	r.GET("/health", handlers.HealthChecker)
 	return r
+}
+
+func ginErrorLogger(log *zap.Logger) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		start := time.Now()
+		ctx.Next()
+
+		fields := []zap.Field{
+			zap.String("method", ctx.Request.Method),
+			zap.String("path", ctx.FullPath()),
+			zap.String("raw_path", ctx.Request.URL.Path),
+			zap.Int("status", ctx.Writer.Status()),
+			zap.Duration("latency", time.Since(start)),
+		}
+		if len(ctx.Errors) > 0 {
+			fields = append(fields, zap.String("gin_errors", ctx.Errors.String()))
+			log.Error("http request failed", fields...)
+			return
+		}
+		if ctx.Writer.Status() >= 500 {
+			log.Error("http request failed", fields...)
+			return
+		}
+		if ctx.Writer.Status() >= 400 {
+			log.Warn("http request returned client error", fields...)
+		}
+	}
 }
 
 type Server struct {
@@ -28,6 +70,9 @@ type Server struct {
 }
 
 func NewServer(appointments *application.AppointmentService, services *application.ServiceService, log *zap.Logger) *Server {
+	if log == nil {
+		log = zap.NewNop()
+	}
 	return &Server{appointments: appointments, services: services, log: log}
 }
 

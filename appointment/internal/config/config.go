@@ -4,7 +4,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/knadh/koanf/parsers/dotenv"
 	"github.com/knadh/koanf/providers/env/v2"
+	"github.com/knadh/koanf/providers/file"
 	"github.com/knadh/koanf/v2"
 )
 
@@ -53,6 +55,12 @@ type ReminderConfig struct {
 
 func Load(envFile string) (Config, error) {
 	k := koanf.New(".")
+
+	if strings.TrimSpace(envFile) != "" {
+		if err := k.Load(file.Provider(envFile), dotenv.ParserEnvWithValue(ENV_PREFIX, ".", trasnformFunction)); err != nil {
+			return Config{}, err
+		}
+	}
 
 	if err := k.Load(env.Provider(".", env.Opt{
 		Prefix:        ENV_PREFIX,

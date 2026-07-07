@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
 	httpserver "github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/server/generated"
+	"go.uber.org/zap"
 )
 
 func (s *Server) CreateAgendaActivity(ctx context.Context, request httpserver.CreateAgendaActivityRequestObject) (httpserver.CreateAgendaActivityResponseObject, error) {
@@ -16,10 +17,12 @@ func (s *Server) CreateAgendaActivity(ctx context.Context, request httpserver.Cr
 	}
 	typ, title, desc, start, end, attendee, services, err := parseCreate(*request.Body)
 	if err != nil {
+		s.logHandlerError("CreateAgendaActivity", err)
 		return httpserver.CreateAgendaActivity400JSONResponse(errorResponse(err.Error())), nil
 	}
 	event, err := s.appointments.CreateAgenda(ctx, typ, title, desc, start, end, attendee, services)
 	if err != nil {
+		s.logHandlerError("CreateAgendaActivity", err)
 		return httpserver.CreateAgendaActivity400JSONResponse(errorResponse(err.Error())), nil
 	}
 	id := uuid.MustParse(event.ID)
@@ -66,6 +69,7 @@ func (s *Server) UpdateActivity(ctx context.Context, request httpserver.UpdateAc
 	}
 	event, err := s.appointments.UpdateAgenda(ctx, request.ActivityId.String(), req.Title, req.Description, req.Start, req.End, services)
 	if err != nil {
+		s.logHandlerError("UpdateActivity", err)
 		return httpserver.UpdateActivity400JSONResponse(errorResponse(err.Error())), nil
 	}
 	if event == nil {
@@ -81,6 +85,7 @@ func (s *Server) DeleteActivity(ctx context.Context, request httpserver.DeleteAc
 	}
 	event, err := s.appointments.DeleteAgenda(ctx, request.ActivityId.String(), reason)
 	if err != nil {
+		s.logHandlerError("DeleteActivity", err)
 		return httpserver.DeleteActivity400JSONResponse(errorResponse(err.Error())), nil
 	}
 	if event == nil {
@@ -110,6 +115,7 @@ func (s *Server) CreateService(ctx context.Context, request httpserver.CreateSer
 	}
 	svc, err := s.services.CreateService(ctx, request.Body.Name, float64(request.Body.Price), tags, request.Body.Color)
 	if err != nil {
+		s.logHandlerError("CreateService", err)
 		return httpserver.CreateService400JSONResponse(errorResponse(err.Error())), nil
 	}
 	return httpserver.CreateService201JSONResponse(toService(svc)), nil
@@ -130,6 +136,7 @@ func (s *Server) UpdateService(ctx context.Context, request httpserver.UpdateSer
 	}
 	svc, err := s.services.UpdateService(ctx, request.ServiceId, price, tags, request.Body.Color)
 	if err != nil {
+		s.logHandlerError("UpdateService", err)
 		return httpserver.UpdateService400JSONResponse(errorResponse(err.Error())), nil
 	}
 	if svc.ID == "" {
@@ -273,6 +280,11 @@ func attendee(e domain.AgendaEvent) httpserver.Attendee {
 	return httpserver.Attendee{Id: uuid.MustParse(e.Attendee.ID), Name: name, Surname: surname}
 }
 
+func (s *Server) logHandlerError(operation string, err error) {
+	if s.log != nil {
+		s.log.Warn("http handler error", zap.String("operation", operation), zap.Error(err))
+	}
+}
 func errorResponse(message string) httpserver.ErrorResponse {
 	return httpserver.ErrorResponse{Message: &message}
 }

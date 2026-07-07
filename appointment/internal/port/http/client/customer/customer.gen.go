@@ -14,7 +14,6 @@ import (
 	"strings"
 
 	"github.com/oapi-codegen/runtime"
-	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
 // Defines values for GetCustomerByPageParamsDirection.
@@ -37,30 +36,30 @@ func (e GetCustomerByPageParamsDirection) Valid() bool {
 
 // CustomerCreate defines model for CustomerCreate.
 type CustomerCreate struct {
-	Email   *openapi_types.Email `json:"email,omitempty"`
-	Name    string               `json:"name"`
-	Note    *string              `json:"note,omitempty"`
-	Phone   *string              `json:"phone,omitempty"`
-	Surname *string              `json:"surname,omitempty"`
+	Email   *string `json:"email,omitempty"`
+	Name    string  `json:"name"`
+	Note    *string `json:"note,omitempty"`
+	Phone   *string `json:"phone,omitempty"`
+	Surname *string `json:"surname,omitempty"`
 }
 
 // CustomerResponse defines model for CustomerResponse.
 type CustomerResponse struct {
-	Email   *openapi_types.Email `json:"email,omitempty"`
-	Id      string               `json:"id"`
-	Name    string               `json:"name"`
-	Note    *string              `json:"note,omitempty"`
-	Phone   *string              `json:"phone,omitempty"`
-	Surname string               `json:"surname"`
+	Email   *string `json:"email,omitempty"`
+	Id      string  `json:"id"`
+	Name    string  `json:"name"`
+	Note    *string `json:"note,omitempty"`
+	Phone   *string `json:"phone,omitempty"`
+	Surname string  `json:"surname"`
 }
 
 // CustomerUpdate defines model for CustomerUpdate.
 type CustomerUpdate struct {
-	Email   *openapi_types.Email `json:"email,omitempty"`
-	Name    *string              `json:"name,omitempty"`
-	Note    *string              `json:"note,omitempty"`
-	Phone   *string              `json:"phone,omitempty"`
-	Surname *string              `json:"surname,omitempty"`
+	Email   *string `json:"email,omitempty"`
+	Name    *string `json:"name,omitempty"`
+	Note    *string `json:"note,omitempty"`
+	Phone   *string `json:"phone,omitempty"`
+	Surname *string `json:"surname,omitempty"`
 }
 
 // CustomersPaginated defines model for CustomersPaginated.

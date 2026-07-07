@@ -9,7 +9,7 @@ import (
 
 func (d *DiContainer) GetHttpServer() *nethttp.Server {
 	return singleton(d, "httpServer", func() *nethttp.Server {
-		ginEngine := server.New(d.GetHttpHandlers())
+		ginEngine := server.New(d.GetHttpHandlers(), d.Log)
 		return &nethttp.Server{Addr: d.Config.HTTP.Addr, Handler: ginEngine}
 	})
 }

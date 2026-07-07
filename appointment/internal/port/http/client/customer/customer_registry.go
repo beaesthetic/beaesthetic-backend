@@ -22,7 +22,7 @@ func NewCustomerRegistry(baseURL string) (*CustomerRegistry, error) {
 func (r *CustomerRegistry) FindByCustomerID(ctx context.Context, customerID string) (*application.Customer, error) {
 	response, err := r.client.GetCustomerByIdWithResponse(ctx, customerID)
 	if err != nil || response.JSON200 == nil {
-		return nil, nil
+		return nil, err
 	}
 	customer := response.JSON200
 	return &application.Customer{
