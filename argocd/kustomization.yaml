@@ -1,0 +1,3 @@
+resources:
+  - projects/beaesthetic.yaml
+  - applicationsets/beaesthetic-services.yaml
