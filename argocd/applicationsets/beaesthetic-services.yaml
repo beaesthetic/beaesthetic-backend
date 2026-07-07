@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: beaesthetic-services
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - matrix:
+        generators:
+          - list:
+              elements:
+                - service: appointment
+                  path: appointment/helm
+                - service: customer
+                  path: customer/helm
+                - service: scheduler
+                  path: scheduler/helm
+                - service: notification
+                  path: notification/helm
+          - list:
+              elements:
+                - environment: dev
+                  namespace: beaesthetic-dev
+                  valuesFile: values-dev.yaml
+                  targetRevision: HEAD
+  template:
+    metadata:
+      name: "{{.service}}-{{.environment}}"
+      labels:
+        app.kubernetes.io/part-of: beaesthetic
+        beaesthetic.io/environment: "{{.environment}}"
+        beaesthetic.io/service: "{{.service}}"
+    spec:
+      project: beaesthetic
+      source:
+        repoURL: https://github.com/beaesthetic/beaesthetic-backend.git
+        targetRevision: "{{.targetRevision}}"
+        path: "{{.path}}"
+        helm:
+          valueFiles:
+            - values.yaml
+            - "{{.valuesFile}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{.namespace}}"
+      syncPolicy:
+        automated:
+          prune: false
+          selfHeal: false
+        syncOptions:
+          - CreateNamespace=true

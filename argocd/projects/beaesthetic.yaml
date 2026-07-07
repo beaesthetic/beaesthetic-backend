@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: beaesthetic
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Beaesthetic services across environments
+  sourceRepos:
+    - https://github.com/beaesthetic/beaesthetic-backend.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: beaesthetic
+    - server: https://kubernetes.default.svc
+      namespace: beaesthetic-*
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+  namespaceResourceWhitelist:
+    - group: "*"
+      kind: "*"
+  orphanedResources:
+    warn: true

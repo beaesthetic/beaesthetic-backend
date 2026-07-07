@@ -1,0 +1,13 @@
+namespace: beaesthetic-dev
+replicaCount: 1
+
+envConfig:
+  MONGO_DATABASE_NAME: customer-v2-dev
+
+resources:
+  requests:
+    memory: 100Mi
+    cpu: 50m
+  limits:
+    memory: 128Mi
+    cpu: 100m
