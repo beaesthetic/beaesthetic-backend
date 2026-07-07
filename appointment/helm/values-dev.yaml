@@ -1,3 +1,4 @@
+environment: dev
 namespace: beaesthetic-dev
 replicaCount: 1
 
@@ -26,3 +27,4 @@ volumes:
   - name: outbox-config
     configMap:
       name: appointment-service-v2-outbox-config
+

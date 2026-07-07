@@ -1,3 +1,4 @@
+environment: ""
 namespace: "beaesthetic"
 name: "notification-service-v2"
 labels:
@@ -97,3 +98,7 @@ volumes:
   - name: outbox-config
     configMap:
       name: notification-service-v2-outbox-config
+
+postgres:
+  database: "notifications"
+

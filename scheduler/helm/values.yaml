@@ -1,3 +1,4 @@
+environment: ""
 namespace: "beaesthetic"
 name: "scheduler-service"
 labels:
@@ -21,6 +22,7 @@ envConfig:
   RABBIT_HOST:   "rabbitmq-v2.common.svc.cluster.local"
   RABBIT_PORT: "5672"
   RABBIT_USERNAME: "beaesthetic"
+  RABBIT_VHOST: '{{ include "scheduler.rabbitmqVhost" . }}'
   RABBIT_EXCHANGE: ""
 
   SCHEDULER_NAME: "reminders"
@@ -66,3 +68,7 @@ livenessProbe:
   initialDelaySeconds: 30
   failureThreshold: 10
   periodSeconds: 30
+
+postgres:
+  database: "scheduler"
+

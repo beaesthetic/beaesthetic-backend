@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
 
 	"github.com/beaesthetic/scheduler/internal/config"
 	"github.com/beaesthetic/scheduler/internal/domain"
@@ -17,7 +18,7 @@ type Publisher struct {
 }
 
 func NewPublisher(cfg config.RabbitMQConfig) (*Publisher, error) {
-	dsn := fmt.Sprintf("amqp://%s:%s@%s:%d/", cfg.Username, cfg.Password, cfg.Host, cfg.Port)
+	dsn := amqpURL(cfg)
 	conn, err := amqp.Dial(dsn)
 	if err != nil {
 		return nil, err
@@ -30,6 +31,20 @@ func NewPublisher(cfg config.RabbitMQConfig) (*Publisher, error) {
 	}
 
 	return &Publisher{connection: conn, channel: ch, exchange: cfg.Exchange}, nil
+}
+
+func amqpURL(cfg config.RabbitMQConfig) string {
+	vhost := cfg.VHost
+	if vhost == "" || vhost == "/" {
+		return fmt.Sprintf("amqp://%s:%s@%s:%d/", cfg.Username, cfg.Password, cfg.Host, cfg.Port)
+	}
+
+	return (&url.URL{
+		Scheme: "amqp",
+		User:   url.UserPassword(cfg.Username, cfg.Password),
+		Host:   fmt.Sprintf("%s:%d", cfg.Host, cfg.Port),
+		Path:   vhost,
+	}).String()
 }
 
 func (p *Publisher) Publish(ctx context.Context, job domain.ScheduleJob) error {

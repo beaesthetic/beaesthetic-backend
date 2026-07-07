@@ -8,7 +8,7 @@ metadata:
     {{- tpl (toYaml .Values.labels) . | nindent 4 }}
 data:
   {{- if .Values.envConfig -}}
-  {{- toYaml .Values.envConfig | nindent 2 }}
+  {{- tpl (toYaml .Values.envConfig) . | nindent 2 }}
   {{- end }}
 {{- end }}
 ---

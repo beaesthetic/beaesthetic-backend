@@ -39,6 +39,7 @@ type RabbitMQConfig struct {
 	Port     int    `koanf:"port"`
 	Username string `koanf:"username"`
 	Password string `koanf:"password"`
+	VHost    string `koanf:"vhost"`
 	Exchange string `koanf:"exchange"`
 }
 
@@ -83,6 +84,7 @@ func Load(configPath string) (*Config, error) {
 			Port:     5672,
 			Username: "guest",
 			Password: "guest",
+			VHost:    "/",
 			Exchange: "",
 		},
 		Otel: OtelConfig{
@@ -135,6 +137,7 @@ func transformEnv(name string) string {
 		"RABBIT_USER":                  "rabbitmq.username",
 		"RABBIT_USERNAME":              "rabbitmq.username",
 		"RABBIT_PASSWORD":              "rabbitmq.password",
+		"RABBIT_VHOST":                 "rabbitmq.vhost",
 		"RABBIT_EXCHANGE":              "rabbitmq.exchange",
 		"OTEL_COLLECTOR_GRPC_ENDPOINT": "otel.endpoint",
 		"OTEL_ENABLED":                 "otel.enabled",

@@ -1,3 +1,4 @@
+environment: dev
 namespace: beaesthetic-dev
 replicaCount: 1
 
@@ -22,3 +23,4 @@ volumes:
   - name: outbox-config
     configMap:
       name: notification-service-v2-outbox-config
+

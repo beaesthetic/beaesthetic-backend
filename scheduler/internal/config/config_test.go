@@ -14,6 +14,7 @@ func TestLoadMapsEnvironmentVariables(t *testing.T) {
 	t.Setenv("POSTGRES_DSN", "postgres://example")
 	t.Setenv("RABBIT_HOST", "rabbit")
 	t.Setenv("RABBIT_USERNAME", "user")
+	t.Setenv("RABBIT_VHOST", "beaesthetic-dev")
 	t.Setenv("RABBIT_EXCHANGE", "scheduler-exchange")
 
 	cfg, err := Load("")
@@ -44,6 +45,9 @@ func TestLoadMapsEnvironmentVariables(t *testing.T) {
 	}
 	if cfg.RabbitMQ.Username != "user" {
 		t.Fatalf("RabbitMQ.Username = %q", cfg.RabbitMQ.Username)
+	}
+	if cfg.RabbitMQ.VHost != "beaesthetic-dev" {
+		t.Fatalf("RabbitMQ.VHost = %q", cfg.RabbitMQ.VHost)
 	}
 	if cfg.RabbitMQ.Exchange != "scheduler-exchange" {
 		t.Fatalf("RabbitMQ.Exchange = %q", cfg.RabbitMQ.Exchange)
