@@ -18,3 +18,10 @@
 {{- printf "beaesthetic-%s" $env -}}
 {{- end -}}
 {{- end -}}
+{{- define "notification.renderEnvConfig" -}}
+{{- $environment := include "notification.environment" . -}}
+{{- $envConfig := toYaml .Values.envConfig -}}
+{{- $envConfig = replace "${environment}" $environment $envConfig -}}
+{{- tpl $envConfig . -}}
+{{- end -}}
+
