@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.3.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.2.0...notification-service-v2.3.0) (2026-07-07)
+
+
+### Features
+
+* add Helm templates and configuration for appointment, notification, and scheduler services ([121f6d2](https://github.com/beaesthetic/beaesthetic-backend/commit/121f6d2b8faa7e97cf10caa92570710213003b1b))
+* add Helm values files for appointment, customer, notification, and scheduler services ([611f314](https://github.com/beaesthetic/beaesthetic-backend/commit/611f31424ffe45ac75de9028cf1da9450fb54958))
+* add RabbitMQ vhost helpers and update configurations for appointment, notification, and scheduler services ([a2d8f6d](https://github.com/beaesthetic/beaesthetic-backend/commit/a2d8f6d7442c45be20315491438106fe0b846acb))
+* add renderEnvConfig helper for appointment, notification, and scheduler services ([cb048a7](https://github.com/beaesthetic/beaesthetic-backend/commit/cb048a75e659c8b7c116075ae10b096057339e36))
+* refactor Helm templates to use common labels and environment configurations for appointment, notification, and scheduler services ([5f8d8ab](https://github.com/beaesthetic/beaesthetic-backend/commit/5f8d8abff7de64687ac30c653ccf31839bd2efe6))
+* update database name formatting and add common labels for appointment, notification, and scheduler services ([1b1646e](https://github.com/beaesthetic/beaesthetic-backend/commit/1b1646e431d23b2e58f6b683cc95cb9288374a2b))
+
+
+### Bug Fixes
+
+* ensure file source is imported for database migrations ([0f8a9a8](https://github.com/beaesthetic/beaesthetic-backend/commit/0f8a9a8abc74a169726515e8c1c0babb57f6f6a4))
+* update build command to include all cmd subdirectories ([178542c](https://github.com/beaesthetic/beaesthetic-backend/commit/178542c6a5b7ee61c0857c4bf82df7ad17f8b4af))
+
 ## [2.2.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.1.2...notification-service-v2.2.0) (2026-07-04)
 
 

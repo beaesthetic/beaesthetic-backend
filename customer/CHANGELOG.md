@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.11.0](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.10.1...customer-service-v1.11.0) (2026-07-07)
+
+
+### Features
+
+* add Helm values files for appointment, customer, notification, and scheduler services ([611f314](https://github.com/beaesthetic/beaesthetic-backend/commit/611f31424ffe45ac75de9028cf1da9450fb54958))
+* update MongoDB database name to remove environment suffix in values-dev.yaml ([1c3106f](https://github.com/beaesthetic/beaesthetic-backend/commit/1c3106f4303cfe7ec89e52c353d809c6dd4ed896))
+
 ## [1.10.1](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.10.0...customer-service-v1.10.1) (2025-12-15)
 
 
