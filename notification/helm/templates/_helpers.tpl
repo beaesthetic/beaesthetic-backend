@@ -26,4 +26,11 @@ environment: {{ $environment | quote }}
 {{- end }}
 {{- end -}}
 
+{{- define "notification.rabbitmqVhost" -}}
+{{- $environment := include "notification.environment" . -}}
+{{- if $environment -}}
+{{- .Values.namespace -}}
+{{- end -}}
+{{- end -}}
+
 

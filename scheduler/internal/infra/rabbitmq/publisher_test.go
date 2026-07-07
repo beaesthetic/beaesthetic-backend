@@ -27,10 +27,10 @@ func TestAMQPURLUsesConfiguredVHost(t *testing.T) {
 		Port:     5672,
 		Username: "user",
 		Password: "pass",
-		VHost:    "dev",
+		VHost:    "beaesthetic-dev",
 	})
 
-	want := "amqp://user:pass@rabbitmq:5672/dev"
+	want := "amqp://user:pass@rabbitmq:5672/beaesthetic-dev"
 	if got != want {
 		t.Fatalf("amqpURL() = %q, want %q", got, want)
 	}

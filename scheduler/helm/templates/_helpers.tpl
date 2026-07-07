@@ -26,4 +26,11 @@ environment: {{ $environment | quote }}
 {{- end }}
 {{- end -}}
 
+{{- define "scheduler.rabbitmqVhost" -}}
+{{- $environment := include "scheduler.environment" . -}}
+{{- if $environment -}}
+{{- .Values.namespace -}}
+{{- end -}}
+{{- end -}}
+
 
