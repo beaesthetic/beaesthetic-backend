@@ -4,7 +4,7 @@ metadata:
   name: "{{ .Values.name }}-outbox-config"
   namespace: {{ .Values.namespace }}
   labels:
-    {{- tpl (toYaml .Values.labels) . | nindent 4 }}
+    {{- include "appointment.commonLabels" . | nindent 4 }}
 data:
   outbox.yaml: |-
     source:
@@ -25,3 +25,5 @@ data:
             exchange: amq.direct
             routing_key: "beaesthetic.appointments.internal.job"
             content_type: application/json
+
+

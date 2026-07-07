@@ -12,16 +12,18 @@
 {{- end -}}
 {{- end -}}
 
-{{- define "notification.rabbitmqVhost" -}}
-{{- $env := include "notification.environment" . -}}
-{{- if $env -}}
-{{- printf "beaesthetic-%s" $env -}}
-{{- end -}}
-{{- end -}}
 {{- define "notification.renderEnvConfig" -}}
 {{- $environment := include "notification.environment" . -}}
 {{- $envConfig := toYaml .Values.envConfig -}}
 {{- $envConfig = replace "${environment}" $environment $envConfig -}}
 {{- tpl $envConfig . -}}
 {{- end -}}
+{{- define "notification.commonLabels" -}}
+{{- tpl (toYaml .Values.labels) . }}
+{{- $environment := include "notification.environment" . -}}
+{{- if $environment }}
+environment: {{ $environment | quote }}
+{{- end }}
+{{- end -}}
+
 

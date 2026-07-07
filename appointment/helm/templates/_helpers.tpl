@@ -12,16 +12,18 @@
 {{- end -}}
 {{- end -}}
 
-{{- define "appointment.rabbitmqVhost" -}}
-{{- $env := include "appointment.environment" . -}}
-{{- if $env -}}
-{{- printf "beaesthetic-%s" $env -}}
-{{- end -}}
-{{- end -}}
 {{- define "appointment.renderEnvConfig" -}}
 {{- $environment := include "appointment.environment" . -}}
 {{- $envConfig := toYaml .Values.envConfig -}}
 {{- $envConfig = replace "${environment}" $environment $envConfig -}}
 {{- tpl $envConfig . -}}
 {{- end -}}
+{{- define "appointment.commonLabels" -}}
+{{- tpl (toYaml .Values.labels) . }}
+{{- $environment := include "appointment.environment" . -}}
+{{- if $environment }}
+environment: {{ $environment | quote }}
+{{- end }}
+{{- end -}}
+
 

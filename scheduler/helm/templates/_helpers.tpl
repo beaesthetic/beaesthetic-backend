@@ -12,16 +12,18 @@
 {{- end -}}
 {{- end -}}
 
-{{- define "scheduler.rabbitmqVhost" -}}
-{{- $env := include "scheduler.environment" . -}}
-{{- if $env -}}
-{{- printf "beaesthetic-%s" $env -}}
-{{- end -}}
-{{- end -}}
 {{- define "scheduler.renderEnvConfig" -}}
 {{- $environment := include "scheduler.environment" . -}}
 {{- $envConfig := toYaml .Values.envConfig -}}
 {{- $envConfig = replace "${environment}" $environment $envConfig -}}
 {{- tpl $envConfig . -}}
 {{- end -}}
+{{- define "scheduler.commonLabels" -}}
+{{- tpl (toYaml .Values.labels) . }}
+{{- $environment := include "scheduler.environment" . -}}
+{{- if $environment }}
+environment: {{ $environment | quote }}
+{{- end }}
+{{- end -}}
+
 

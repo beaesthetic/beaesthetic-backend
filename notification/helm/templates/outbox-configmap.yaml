@@ -4,7 +4,7 @@ metadata:
   name: "{{ .Values.name }}-outbox-config"
   namespace: {{ .Values.namespace }}
   labels:
-    {{- tpl (toYaml .Values.labels) . | nindent 4 }}
+    {{- include "notification.commonLabels" . | nindent 4 }}
 data:
   outbox.yaml: |-
     source:
@@ -33,3 +33,5 @@ data:
             exchange: notification-confirm-exchange
             routing_key: ${RABBITMQ__NOTIFICATION_CONFIRM_QUEUE}
             content_type: application/json
+
+

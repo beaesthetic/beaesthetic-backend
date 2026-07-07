@@ -5,10 +5,12 @@ metadata:
   name: "{{ .Values.name }}-config"
   namespace: {{ .Values.namespace }}
   labels:
-    {{- tpl (toYaml .Values.labels) . | nindent 4 }}
+    {{- include "notification.commonLabels" . | nindent 4 }}
 data:
   {{- if .Values.envConfig -}}
   {{- include "notification.renderEnvConfig" . | nindent 2 }}
   {{- end }}
 {{- end }}
 ---
+
+
