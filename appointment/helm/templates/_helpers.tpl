@@ -6,7 +6,7 @@
 {{- $base := .Values.postgres.database -}}
 {{- $env := include "appointment.environment" . -}}
 {{- if $env -}}
-{{- printf "%s_%s" $env $base -}}
+{{- printf "%s-%s" .Values.namespace $base -}}
 {{- else -}}
 {{- $base -}}
 {{- end -}}
@@ -18,6 +18,7 @@
 {{- $envConfig = replace "${environment}" $environment $envConfig -}}
 {{- tpl $envConfig . -}}
 {{- end -}}
+
 {{- define "appointment.commonLabels" -}}
 {{- tpl (toYaml .Values.labels) . }}
 {{- $environment := include "appointment.environment" . -}}
@@ -32,5 +33,3 @@ environment: {{ $environment | quote }}
 {{- .Values.namespace -}}
 {{- end -}}
 {{- end -}}
-
-
