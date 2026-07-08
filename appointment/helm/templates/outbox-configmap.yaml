@@ -2,8 +2,9 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: "{{ .Values.name }}-outbox-config"
-  namespace: { { .Values.namespace } }
-  labels: { { - include "appointment.commonLabels" . | nindent 4 } }
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "appointment.commonLabels" . | nindent 4 }}
 data:
   outbox.yaml: |-
     source:
@@ -24,3 +25,4 @@ data:
             exchange: beaesthetic.appointments
             routing_key: "beaesthetic.appointments.internal.job"
             content_type: application/json
+
