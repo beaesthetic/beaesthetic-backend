@@ -26,6 +26,10 @@ spec:
                   namespace: beaesthetic-dev
                   valuesFile: values-dev.yaml
                   targetRevision: HEAD
+                - environment: prod
+                  namespace: beaesthetic
+                  valuesFile: values.yaml
+                  targetRevision: HEAD
   template:
     metadata:
       name: "{{.service}}-{{.environment}}"
