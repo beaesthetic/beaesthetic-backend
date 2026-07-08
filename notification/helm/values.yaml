@@ -46,7 +46,7 @@ secretKeyRef:
     secretRefName: notification-service
     key: MONGO_DB_URI
   - name: SMS_GATEWAY__API_KEY
-    secretRefName: notification-service
+    secretRefName: notification-secrets
     key: SMS_GATEWAY_API_KEY
 
 initContainers:
