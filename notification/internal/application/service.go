@@ -2,12 +2,15 @@ package application
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/domain"
 )
+
+var ErrNotificationNotFound = errors.New("notification not found")
 
 type NotificationRepository interface {
 	FindByID(ctx context.Context, id string) (*domain.Notification, error)
@@ -50,7 +53,7 @@ func (service *NotificationService) SendNotification(ctx context.Context, id str
 		return err
 	}
 	if notification == nil {
-		return fmt.Errorf("notification %s not found", id)
+		return fmt.Errorf("%w: %s", ErrNotificationNotFound, id)
 	}
 	if !service.provider.Supports(*notification) {
 		return fmt.Errorf("provider for %s is not supported", notification.Channel.Type)
@@ -69,7 +72,7 @@ func (service *NotificationService) ConfirmNotificationSent(ctx context.Context,
 		return err
 	}
 	if notification == nil {
-		return fmt.Errorf("notification %s not found", id)
+		return fmt.Errorf("%w: %s", ErrNotificationNotFound, id)
 	}
 	notification.ConfirmSent(service.now())
 	return service.repository.Save(ctx, notification)

@@ -2,8 +2,10 @@ package http
 
 import (
 	"context"
+	"errors"
 
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/api/smswebhook"
+	"github.com/petretiandrea/beaesthetic-backend/notification/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/infra/provider"
 	"go.uber.org/zap"
 )
@@ -25,7 +27,21 @@ func (server *Server) SmsGatewayNotify(ctx context.Context, request smswebhook.S
 			return nil, badRequest("missing mandatory metadata")
 		}
 		if err := server.service.ConfirmNotificationSent(ctx, notificationID); err != nil {
-			server.log.Error("failed to confirm notification sent", zap.Error(err))
+			if errors.Is(err, application.ErrNotificationNotFound) {
+				server.log.Warn(
+					"notification not found while confirming sms delivery",
+					zap.String("notification_id", notificationID),
+					zap.String("event_type", string(*request.Body.EventType)),
+					zap.Error(err),
+				)
+				return smswebhook.SmsGatewayNotify200Response{}, nil
+			}
+			server.log.Error(
+				"failed to confirm notification sent",
+				zap.String("notification_id", notificationID),
+				zap.String("event_type", string(*request.Body.EventType)),
+				zap.Error(err),
+			)
 			return nil, err
 		}
 		server.log.Info(
