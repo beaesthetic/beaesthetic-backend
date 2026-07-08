@@ -4,12 +4,9 @@
 
 {{- define "appointment.databaseName" -}}
 {{- $base := .Values.postgres.database -}}
-{{- $env := include "appointment.environment" . -}}
-{{- if $env -}}
-{{- printf "%s-%s" .Values.namespace $base -}}
-{{- else -}}
-{{- $base -}}
-{{- end -}}
+{{- $environment := default "prod" (include "appointment.environment" .) -}}
+{{- $namespaceBase := trimSuffix (printf "-%s" $environment) .Values.namespace -}}
+{{- printf "%s-%s-%s" $namespaceBase $environment $base -}}
 {{- end -}}
 
 {{- define "appointment.renderEnvConfig" -}}
@@ -32,5 +29,4 @@ environment: {{ $environment | quote }}
 {{- $namespaceBase := trimSuffix (printf "-%s" $environment) .Values.namespace -}}
 {{- printf "%s-%s" $namespaceBase $environment -}}
 {{- end -}}
-
 

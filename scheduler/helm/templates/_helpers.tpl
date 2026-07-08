@@ -4,12 +4,9 @@
 
 {{- define "scheduler.databaseName" -}}
 {{- $base := .Values.postgres.database -}}
-{{- $env := include "scheduler.environment" . -}}
-{{- if $env -}}
-{{- printf "%s-%s" .Values.namespace $base -}}
-{{- else -}}
-{{- $base -}}
-{{- end -}}
+{{- $environment := default "prod" (include "scheduler.environment" .) -}}
+{{- $namespaceBase := trimSuffix (printf "-%s" $environment) .Values.namespace -}}
+{{- printf "%s-%s-%s" $namespaceBase $environment $base -}}
 {{- end -}}
 
 {{- define "scheduler.renderEnvConfig" -}}
@@ -32,5 +29,4 @@ environment: {{ $environment | quote }}
 {{- $namespaceBase := trimSuffix (printf "-%s" $environment) .Values.namespace -}}
 {{- printf "%s-%s" $namespaceBase $environment -}}
 {{- end -}}
-
 
