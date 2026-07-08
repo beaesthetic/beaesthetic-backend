@@ -21,6 +21,6 @@ data:
           type: rabbitmq
           data:
             url: ${RABBITMQ_DSN}
-            exchange: "beaesthetic.appointments"
+            exchange: beaesthetic.appointments
             routing_key: "beaesthetic.appointments.internal.job"
             content_type: application/json
