@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.11.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.10.2...appointment-service-v1.11.0) (2026-07-07)
+
+
+### Features
+
+* add Helm templates and configuration for appointment, notification, and scheduler services ([121f6d2](https://github.com/beaesthetic/beaesthetic-backend/commit/121f6d2b8faa7e97cf10caa92570710213003b1b))
+* add Helm values files for appointment, customer, notification, and scheduler services ([611f314](https://github.com/beaesthetic/beaesthetic-backend/commit/611f31424ffe45ac75de9028cf1da9450fb54958))
+* add RabbitMQ vhost helpers and update configurations for appointment, notification, and scheduler services ([a2d8f6d](https://github.com/beaesthetic/beaesthetic-backend/commit/a2d8f6d7442c45be20315491438106fe0b846acb))
+* add renderEnvConfig helper for appointment, notification, and scheduler services ([cb048a7](https://github.com/beaesthetic/beaesthetic-backend/commit/cb048a75e659c8b7c116075ae10b096057339e36))
+* refactor Helm templates to use common labels and environment configurations for appointment, notification, and scheduler services ([5f8d8ab](https://github.com/beaesthetic/beaesthetic-backend/commit/5f8d8abff7de64687ac30c653ccf31839bd2efe6))
+* update database name formatting and add common labels for appointment, notification, and scheduler services ([1b1646e](https://github.com/beaesthetic/beaesthetic-backend/commit/1b1646e431d23b2e58f6b683cc95cb9288374a2b))
+* update refresh policy to Periodic for external secrets in appointment service ([f93a7e5](https://github.com/beaesthetic/beaesthetic-backend/commit/f93a7e50cf993b168feb2d4cd7084e74de12e454))
+
+
+### Bug Fixes
+
+* add ENV_HTTP_ADDR to envConfig in values.yaml ([49328ad](https://github.com/beaesthetic/beaesthetic-backend/commit/49328ade09a42b0e5d9b72f299c0711611e49e8c))
+* enable postgres database migration by removing underscore import ([ef9d791](https://github.com/beaesthetic/beaesthetic-backend/commit/ef9d791453b3fc553c87cf1688ac994942b9e132))
+* enhance error handling and logging in various components ([6a1c8e5](https://github.com/beaesthetic/beaesthetic-backend/commit/6a1c8e5a5f5acb73aa85a238dd59eccdee92e724))
+* update readiness and liveness probe paths to /health ([e4fe078](https://github.com/beaesthetic/beaesthetic-backend/commit/e4fe078039150a0a96c13de683f52dec4dd257aa))
+
 ## [1.10.2](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.10.1...appointment-service-v1.10.2) (2026-07-05)
 
 
