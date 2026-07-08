@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+
 CREATE TABLE IF NOT EXISTS agenda_events (
     id UUID PRIMARY KEY,
     event_type TEXT NOT NULL,
@@ -26,8 +28,16 @@ CREATE TABLE IF NOT EXISTS appointment_services (
     price DOUBLE PRECISION NOT NULL,
     tags JSONB NOT NULL DEFAULT '[]'::jsonb,
     color_hex TEXT NULL,
-    search_grams TEXT NOT NULL DEFAULT ''
+    search_text TEXT GENERATED ALWAYS AS (
+        lower(
+            coalesce(name, '') || ' ' ||
+            coalesce(tags::text, '')
+        )
+    ) STORED
 );
+CREATE INDEX IF NOT EXISTS idx_appointment_services_search_text_trgm
+    ON appointment_services
+    USING GIN (search_text gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS pending_notifications (
     notification_id UUID PRIMARY KEY,

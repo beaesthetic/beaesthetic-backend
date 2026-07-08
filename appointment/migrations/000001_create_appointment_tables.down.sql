@@ -1,5 +1,9 @@
 DROP INDEX IF EXISTS idx_pending_notifications_expires_at;
 DROP INDEX IF EXISTS idx_pending_notifications_agenda_event_id;
 DROP TABLE IF EXISTS pending_notifications;
+DROP INDEX IF EXISTS idx_appointment_services_search_text_trgm;
 DROP TABLE IF EXISTS appointment_services;
+DROP INDEX IF EXISTS idx_agenda_events_reminder_status;
+DROP INDEX IF EXISTS idx_agenda_events_attendee;
+DROP INDEX IF EXISTS idx_agenda_events_time;
 DROP TABLE IF EXISTS agenda_events;

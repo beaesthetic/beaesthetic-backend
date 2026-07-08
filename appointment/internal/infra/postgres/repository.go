@@ -108,7 +108,7 @@ func (r *Repository) SearchAgendaEvents(ctx context.Context, attendeeID string, 
 
 func (r *Repository) SaveService(ctx context.Context, s domain.AppointmentService) (domain.AppointmentService, error) {
 	tags, _ := json.Marshal(s.Tags)
-	_, err := r.db.Exec(ctx, `INSERT INTO appointment_services (id,name,price,tags,color_hex,search_grams) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (id) DO UPDATE SET name=$2,price=$3,tags=$4,color_hex=$5,search_grams=$6`, s.ID, s.Name, s.Price, tags, s.Color, strings.ToLower(s.Name+" "+strings.Join(s.Tags, " ")))
+	_, err := r.db.Exec(ctx, `INSERT INTO appointment_services (id,name,price,tags,color_hex) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO UPDATE SET name=$2,price=$3,tags=$4,color_hex=$5`, s.ID, s.Name, s.Price, tags, s.Color)
 	return s, err
 }
 
@@ -122,7 +122,17 @@ func (r *Repository) FindServices(ctx context.Context) ([]domain.AppointmentServ
 }
 
 func (r *Repository) SearchServices(ctx context.Context, text string, limit int) ([]domain.AppointmentService, error) {
-	rows, err := r.db.Query(ctx, `SELECT id,name,price,tags,color_hex FROM appointment_services WHERE search_grams ILIKE '%' || $1 || '%' ORDER BY name LIMIT $2`, strings.ToLower(text), limit)
+	query := strings.TrimSpace(strings.ToLower(text))
+	if query == "" {
+		return r.FindServices(ctx)
+	}
+	rows, err := r.db.Query(ctx, `
+SELECT id,name,price,tags,color_hex
+FROM appointment_services
+WHERE search_text ILIKE '%' || $1 || '%'
+   OR search_text % $1
+ORDER BY similarity(search_text, $1) DESC, name
+LIMIT $2`, query, limit)
 	if err != nil {
 		return nil, err
 	}

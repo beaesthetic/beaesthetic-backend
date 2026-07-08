@@ -147,7 +147,7 @@ func backfillServices(ctx context.Context, db *pgxpool.Pool, col *mongo.Collecti
 			return count, err
 		}
 		tags, _ := json.Marshal(d.Tags)
-		_, err = db.Exec(ctx, `INSERT INTO appointment_services (id,name,price,tags,color_hex,search_grams) VALUES ($1,$2,$3,$4,$5,$6) ON CONFLICT (id) DO NOTHING`, d.ID, d.Name, d.Price, tags, d.ColorHex, d.SearchGrams)
+		_, err = db.Exec(ctx, `INSERT INTO appointment_services (id,name,price,tags,color_hex) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO NOTHING`, d.ID, d.Name, d.Price, tags, d.ColorHex)
 		if err != nil {
 			return count, fmt.Errorf("insert service %s: %w", d.ID, err)
 		}
