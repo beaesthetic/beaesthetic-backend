@@ -28,8 +28,9 @@ environment: {{ $environment | quote }}
 {{- end -}}
 
 {{- define "notification.rabbitmqVhost" -}}
-{{- $environment := include "notification.environment" . -}}
-{{- if $environment -}}
-{{- .Values.namespace -}}
+{{- $environment := default "prod" (include "notification.environment" .) -}}
+{{- $namespaceBase := trimSuffix (printf "-%s" $environment) .Values.namespace -}}
+{{- printf "%s-%s" $namespaceBase $environment -}}
 {{- end -}}
-{{- end -}}
+
+

@@ -28,8 +28,9 @@ environment: {{ $environment | quote }}
 {{- end -}}
 
 {{- define "scheduler.rabbitmqVhost" -}}
-{{- $environment := include "scheduler.environment" . -}}
-{{- if $environment -}}
-{{- .Values.namespace -}}
+{{- $environment := default "prod" (include "scheduler.environment" .) -}}
+{{- $namespaceBase := trimSuffix (printf "-%s" $environment) .Values.namespace -}}
+{{- printf "%s-%s" $namespaceBase $environment -}}
 {{- end -}}
-{{- end -}}
+
+
