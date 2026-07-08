@@ -231,7 +231,7 @@ func appointmentReminderStatus(status domain.ReminderStatus) httpserver.Appointm
 	switch status {
 	case domain.ReminderSent:
 		return httpserver.AppointmentEventResponseReminderStatusSENT
-	case domain.ReminderScheduled, domain.ReminderSentRequested:
+	case domain.ReminderSentRequested:
 		return httpserver.AppointmentEventResponseReminderStatusSENDINPROGRESS
 	default:
 		return httpserver.AppointmentEventResponseReminderStatusNOTSENT
@@ -242,7 +242,7 @@ func eventReminderStatus(status domain.ReminderStatus) httpserver.EventResponseR
 	switch status {
 	case domain.ReminderSent:
 		return httpserver.EventResponseReminderStatusSENT
-	case domain.ReminderScheduled, domain.ReminderSentRequested:
+	case domain.ReminderSentRequested:
 		return httpserver.EventResponseReminderStatusSENDINPROGRESS
 	default:
 		return httpserver.EventResponseReminderStatusNOTSENT
