@@ -22,7 +22,7 @@ func NewRootCommand() *cobra.Command {
 	var envFile string
 	root := &cobra.Command{Use: "appointment", Short: "Appointment service", SilenceUsage: true}
 	root.PersistentFlags().StringVar(&envFile, "env-file", "", "optional dotenv file")
-	root.AddCommand(appCommand(&envFile), migrateCommand(&envFile), backfillCommand(&envFile))
+	root.AddCommand(appCommand(&envFile), migrateCommand(&envFile), backfillCommand(&envFile), scheduleFutureRemindersCommand(&envFile))
 	return root
 }
 
@@ -128,4 +128,72 @@ func backfillCommand(envFile *string) *cobra.Command {
 		defer func() { _ = c.Log.Sync() }()
 		return backfill.Run(cmd.Context(), c.Config, c.Log)
 	}}
+}
+
+func scheduleFutureRemindersCommand(envFile *string) *cobra.Command {
+	var dryRun bool
+	var from string
+	cmd := &cobra.Command{Use: "schedule-future-reminders", Short: "Schedule reminders for future appointments after a manual backfill", RunE: func(cmd *cobra.Command, args []string) error {
+		c, err := di.NewDiContainer(cmd.Context(), *envFile)
+		if err != nil {
+			return err
+		}
+		defer func() {
+			c.GetPostgresDatabase().Close()
+			_ = c.Log.Sync()
+		}()
+
+		fromTime := c.GetClock().Now().UTC()
+		if from != "" {
+			parsedFrom, err := parseScheduleFutureRemindersFrom(from)
+			if err != nil {
+				return err
+			}
+			fromTime = parsedFrom
+		}
+
+		appointments, err := c.GetAppointmentService().FutureAppointments(cmd.Context(), fromTime)
+		if err != nil {
+			return fmt.Errorf("find future appointments: %w", err)
+		}
+
+		log := c.Log.Named("manual_schedule_future_reminders")
+		log.Info("found future appointments", zap.Int("count", len(appointments)), zap.Time("from", fromTime), zap.Bool("dry_run", dryRun))
+
+		var scheduled int
+		var failed int
+		for i := range appointments {
+			appointment := &appointments[i]
+			if dryRun {
+				log.Info("would schedule appointment reminder", zap.String("event_id", appointment.ID), zap.Time("start_at", appointment.Start), zap.Duration("remind_before", appointment.RemindBefore), zap.String("reminder_status", string(appointment.ReminderStatus)))
+				continue
+			}
+			if err := c.GetAppointmentLifecycleHandler().ScheduleReminder(cmd.Context(), appointment); err != nil {
+				failed++
+				log.Error("failed to schedule appointment reminder", zap.String("event_id", appointment.ID), zap.Time("start_at", appointment.Start), zap.Error(err))
+				continue
+			}
+			scheduled++
+		}
+
+		log.Info("manual future reminder scheduling completed", zap.Int("found", len(appointments)), zap.Int("scheduled", scheduled), zap.Int("failed", failed), zap.Bool("dry_run", dryRun))
+		if failed > 0 {
+			return fmt.Errorf("failed to schedule %d future reminders", failed)
+		}
+		return nil
+	}}
+	cmd.Flags().BoolVar(&dryRun, "dry-run", false, "log future appointments without scheduling reminders")
+	cmd.Flags().StringVar(&from, "from", "", "schedule only appointments starting from this date/time (YYYY-MM-DD or RFC3339)")
+	return cmd
+}
+
+func parseScheduleFutureRemindersFrom(value string) (time.Time, error) {
+	if parsed, err := time.Parse(time.RFC3339, value); err == nil {
+		return parsed.UTC(), nil
+	}
+	parsedDate, err := time.Parse("2006-01-02", value)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("invalid --from %q: use YYYY-MM-DD or RFC3339", value)
+	}
+	return parsedDate.UTC(), nil
 }

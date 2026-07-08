@@ -106,6 +106,29 @@ func (r *Repository) SearchAgendaEvents(ctx context.Context, attendeeID string, 
 	return out, rows.Err()
 }
 
+func (r *Repository) FindFutureAppointments(ctx context.Context, from time.Time) ([]domain.AgendaEvent, error) {
+	rows, err := r.db.Query(ctx, `SELECT id FROM agenda_events WHERE cancel_reason IS NULL AND event_type=$1 AND start_at >= $2 ORDER BY start_at ASC`, string(domain.EventTypeAppointment), from.UTC())
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var out []domain.AgendaEvent
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		e, err := r.FindAgendaEvent(ctx, id)
+		if err != nil {
+			return nil, err
+		}
+		if e != nil {
+			out = append(out, *e)
+		}
+	}
+	return out, rows.Err()
+}
 func (r *Repository) SaveService(ctx context.Context, s domain.AppointmentService) (domain.AppointmentService, error) {
 	tags, _ := json.Marshal(s.Tags)
 	_, err := r.db.Exec(ctx, `INSERT INTO appointment_services (id,name,price,tags,color_hex) VALUES ($1,$2,$3,$4,$5) ON CONFLICT (id) DO UPDATE SET name=$2,price=$3,tags=$4,color_hex=$5`, s.ID, s.Name, s.Price, tags, s.Color)

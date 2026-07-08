@@ -30,6 +30,9 @@ func (r *appointmentRepoStub) SearchAgendaEvents(context.Context, string, *time.
 	return nil, nil
 }
 
+func (r *appointmentRepoStub) FindFutureAppointments(context.Context, time.Time) ([]domain.AgendaEvent, error) {
+	return nil, nil
+}
 func (r *appointmentRepoStub) FindPendingNotification(context.Context, string) (*PendingNotification, error) {
 	return nil, nil
 }

@@ -14,6 +14,7 @@ type AppointmentRepository interface {
 	SaveAgendaEvent(context.Context, *domain.AgendaEvent) error
 	FindAgendaEvent(context.Context, string) (*domain.AgendaEvent, error)
 	SearchAgendaEvents(context.Context, string, *time.Time, *time.Time) ([]domain.AgendaEvent, error)
+	FindFutureAppointments(context.Context, time.Time) ([]domain.AgendaEvent, error)
 	FindPendingNotification(context.Context, string) (*PendingNotification, error)
 	RemovePendingNotification(context.Context, string) error
 	SavePendingNotification(context.Context, PendingNotification) error
@@ -61,6 +62,10 @@ func (s *AppointmentService) SaveAgendaEvent(ctx context.Context, event *domain.
 
 func (s *AppointmentService) SearchAgenda(ctx context.Context, attendee string, start, end *time.Time) ([]domain.AgendaEvent, error) {
 	return s.repo.SearchAgendaEvents(ctx, attendee, start, end)
+}
+
+func (s *AppointmentService) FutureAppointments(ctx context.Context, from time.Time) ([]domain.AgendaEvent, error) {
+	return s.repo.FindFutureAppointments(ctx, from)
 }
 
 func (s *AppointmentService) UpdateAgenda(ctx context.Context, id string, title, description *string, start, end *time.Time, services []domain.AppointmentServiceRef) (*domain.AgendaEvent, error) {

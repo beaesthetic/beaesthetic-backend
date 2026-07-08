@@ -83,6 +83,12 @@ func (h *AppointmentLifecycleHandler) Handle(ctx context.Context, eventType, eve
 	}
 }
 
+func (h *AppointmentLifecycleHandler) ScheduleReminder(ctx context.Context, agendaEvent *domain.AgendaEvent) error {
+	if agendaEvent == nil {
+		return nil
+	}
+	return h.scheduleReminder(ctx, agendaEvent)
+}
 func (h *AppointmentLifecycleHandler) handleScheduled(ctx context.Context, agendaEvent *domain.AgendaEvent, isRescheduled bool) error {
 	h.log.Info("processing scheduled appointment lifecycle", zap.String("event_id", agendaEvent.ID), zap.Bool("rescheduled", isRescheduled))
 	reminderErr := h.scheduleReminder(ctx, agendaEvent)
