@@ -227,6 +227,27 @@ func toService(s domain.AppointmentService) httpserver.Service {
 	return httpserver.Service{Id: s.ID, Name: s.Name, Price: float32(s.Price), Tags: s.Tags, Color: s.Color}
 }
 
+func appointmentReminderStatus(status domain.ReminderStatus) httpserver.AppointmentEventResponseReminderStatus {
+	switch status {
+	case domain.ReminderSent:
+		return httpserver.AppointmentEventResponseReminderStatusSENT
+	case domain.ReminderScheduled, domain.ReminderSentRequested:
+		return httpserver.AppointmentEventResponseReminderStatusSENDINPROGRESS
+	default:
+		return httpserver.AppointmentEventResponseReminderStatusNOTSENT
+	}
+}
+
+func eventReminderStatus(status domain.ReminderStatus) httpserver.EventResponseReminderStatus {
+	switch status {
+	case domain.ReminderSent:
+		return httpserver.EventResponseReminderStatusSENT
+	case domain.ReminderScheduled, domain.ReminderSentRequested:
+		return httpserver.EventResponseReminderStatusSENDINPROGRESS
+	default:
+		return httpserver.EventResponseReminderStatusNOTSENT
+	}
+}
 func toActivityResponse(e domain.AgendaEvent) httpserver.ActivityResponse {
 	if e.Type == domain.EventTypeAppointment {
 		services := []string{}
@@ -238,7 +259,7 @@ func toActivityResponse(e domain.AgendaEvent) httpserver.ActivityResponse {
 		title := e.Title
 		r.Title = &title
 		mins := int(e.RemindBefore.Minutes())
-		status := httpserver.AppointmentEventResponseReminderStatusNOTSENT
+		status := appointmentReminderStatus(e.ReminderStatus)
 		r.Reminder.ReminderMinutes = &mins
 		r.Reminder.Status = &status
 		if e.CancelReason != nil {
@@ -255,7 +276,7 @@ func toActivityResponse(e domain.AgendaEvent) httpserver.ActivityResponse {
 	r.Title = &title
 	r.Description = &desc
 	mins := int(e.RemindBefore.Minutes())
-	status := httpserver.EventResponseReminderStatusNOTSENT
+	status := eventReminderStatus(e.ReminderStatus)
 	r.Reminder.ReminderMinutes = &mins
 	r.Reminder.Status = &status
 	if e.CancelReason != nil {
