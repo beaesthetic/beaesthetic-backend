@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
+	"go.uber.org/zap"
 )
 
 const (
@@ -28,9 +29,13 @@ type AppointmentLifecycleHandler struct {
 	clock                  Clock
 	noSendThreshold        time.Duration
 	immediateSendThreshold time.Duration
+	log                    *zap.Logger
 }
 
-func NewAppointmentLifecycleHandler(service *AppointmentService, customers CustomerRegistry, scheduler ReminderScheduler, notifications NotificationSender, clock Clock, noSendThreshold time.Duration, immediateSendThreshold time.Duration) *AppointmentLifecycleHandler {
+func NewAppointmentLifecycleHandler(service *AppointmentService, customers CustomerRegistry, scheduler ReminderScheduler, notifications NotificationSender, clock Clock, noSendThreshold time.Duration, immediateSendThreshold time.Duration, log *zap.Logger) *AppointmentLifecycleHandler {
+	if log == nil {
+		log = zap.NewNop()
+	}
 	return &AppointmentLifecycleHandler{
 		service:                service,
 		customers:              customers,
@@ -39,16 +44,25 @@ func NewAppointmentLifecycleHandler(service *AppointmentService, customers Custo
 		clock:                  clock,
 		noSendThreshold:        noSendThreshold,
 		immediateSendThreshold: immediateSendThreshold,
+		log:                    log.Named("appointment_lifecycle_handler"),
 	}
 }
 
 func (h *AppointmentLifecycleHandler) Handle(ctx context.Context, eventType, eventID string) error {
 	if eventID == "" {
+		h.log.Debug("skipping appointment lifecycle event without event id", zap.String("type", eventType))
 		return nil
 	}
+
+	h.log.Info("handling appointment lifecycle event", zap.String("type", eventType), zap.String("event_id", eventID))
 	agendaEvent, err := h.service.GetAgenda(ctx, eventID)
-	if err != nil || agendaEvent == nil {
+	if err != nil {
+		h.log.Error("failed to load agenda event for lifecycle event", zap.String("type", eventType), zap.String("event_id", eventID), zap.Error(err))
 		return err
+	}
+	if agendaEvent == nil {
+		h.log.Warn("appointment lifecycle event references missing agenda event", zap.String("type", eventType), zap.String("event_id", eventID))
+		return nil
 	}
 
 	switch eventType {
@@ -57,13 +71,20 @@ func (h *AppointmentLifecycleHandler) Handle(ctx context.Context, eventType, eve
 	case "AgendaEventRescheduled":
 		return h.handleScheduled(ctx, agendaEvent, true)
 	case "AgendaEventDeleted":
-		return h.scheduler.UnscheduleReminder(ctx, agendaEvent.ID)
+		if err := h.scheduler.UnscheduleReminder(ctx, agendaEvent.ID); err != nil {
+			h.log.Error("failed to unschedule appointment reminder", zap.String("event_id", agendaEvent.ID), zap.Error(err))
+			return err
+		}
+		h.log.Info("unscheduled appointment reminder", zap.String("event_id", agendaEvent.ID))
+		return nil
 	default:
+		h.log.Debug("ignoring unsupported appointment lifecycle event", zap.String("type", eventType), zap.String("event_id", eventID))
 		return nil
 	}
 }
 
 func (h *AppointmentLifecycleHandler) handleScheduled(ctx context.Context, agendaEvent *domain.AgendaEvent, isRescheduled bool) error {
+	h.log.Info("processing scheduled appointment lifecycle", zap.String("event_id", agendaEvent.ID), zap.Bool("rescheduled", isRescheduled))
 	reminderErr := h.scheduleReminder(ctx, agendaEvent)
 	confirmationErr := h.sendConfirmationNotification(ctx, agendaEvent, isRescheduled)
 	if reminderErr != nil {
@@ -76,12 +97,15 @@ func (h *AppointmentLifecycleHandler) scheduleReminder(ctx context.Context, agen
 	now := h.clock.Now().UTC()
 	sendAt, ok := computeReminderSendAt(now, agendaEvent.Start, agendaEvent.RemindBefore, h.noSendThreshold, h.immediateSendThreshold)
 	if !ok {
+		h.log.Info("appointment reminder is not sendable", zap.String("event_id", agendaEvent.ID), zap.Time("start_at", agendaEvent.Start), zap.Duration("remind_before", agendaEvent.RemindBefore))
 		agendaEvent.MarkReminderUnprocessable(now)
 		return h.service.SaveAgendaEvent(ctx, agendaEvent)
 	}
 	if err := h.scheduler.ScheduleReminder(ctx, agendaEvent.ID, *sendAt); err != nil {
+		h.log.Error("failed to schedule appointment reminder", zap.String("event_id", agendaEvent.ID), zap.Time("send_at", *sendAt), zap.Error(err))
 		return err
 	}
+	h.log.Info("scheduled appointment reminder", zap.String("event_id", agendaEvent.ID), zap.Time("send_at", *sendAt))
 	agendaEvent.MarkReminderScheduled(now)
 	return h.service.SaveAgendaEvent(ctx, agendaEvent)
 }
@@ -89,18 +113,26 @@ func (h *AppointmentLifecycleHandler) scheduleReminder(ctx context.Context, agen
 func (h *AppointmentLifecycleHandler) sendConfirmationNotification(ctx context.Context, agendaEvent *domain.AgendaEvent, isRescheduled bool) error {
 	customer, err := h.customers.FindByCustomerID(ctx, agendaEvent.Attendee.ID)
 	if err != nil {
+		h.log.Error("failed to load attendee for confirmation notification", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID), zap.Error(err))
 		return err
 	}
 	if customer == nil || customer.PhoneNumber == nil {
+		h.log.Info("attendee has no valid contacts, not sending confirmation", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID))
 		return nil
 	}
 
 	title, content := confirmationNotificationPayload(agendaEvent, isRescheduled)
 	notificationID, err := h.notifications.Send(ctx, title, content, *customer.PhoneNumber)
 	if err != nil {
+		h.log.Error("failed to send appointment confirmation", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID), zap.Bool("rescheduled", isRescheduled), zap.Error(err))
 		return err
 	}
-	return h.service.TrackPendingNotification(ctx, notificationID, agendaEvent.ID, NotificationTypeConfirmation)
+	if err := h.service.TrackPendingNotification(ctx, notificationID, agendaEvent.ID, NotificationTypeConfirmation); err != nil {
+		h.log.Error("failed to track appointment confirmation", zap.String("event_id", agendaEvent.ID), zap.String("notification_id", notificationID), zap.Error(err))
+		return err
+	}
+	h.log.Info("sent appointment confirmation", zap.String("event_id", agendaEvent.ID), zap.String("notification_id", notificationID), zap.Bool("rescheduled", isRescheduled))
+	return nil
 }
 
 func computeReminderSendAt(now time.Time, eventAt time.Time, sendBefore time.Duration, noSendThreshold time.Duration, immediateSendThreshold time.Duration) (*time.Time, bool) {

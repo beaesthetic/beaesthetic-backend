@@ -31,13 +31,16 @@ func (consumer *AppointmentLifecycleConsumer) Process(ctx context.Context, deliv
 		return err
 	}
 	if event.AgendaEventID == "" {
-		consumer.log.Debug("unhandled lifecycle event without event id")
+		consumer.log.Debug("unhandled lifecycle event without event id", zap.String("type", event.Type))
 		return nil
 	}
 
+	consumer.log.Info("received appointment lifecycle event", zap.String("event_id", event.AgendaEventID), zap.String("type", event.Type))
 	if err := consumer.handler.Handle(ctx, event.Type, event.AgendaEventID); err != nil {
 		consumer.log.Error("failed to handle appointment lifecycle event", zap.String("event_id", event.AgendaEventID), zap.String("type", event.Type), zap.Error(err))
+		return nil
 	}
+	consumer.log.Info("processed appointment lifecycle event", zap.String("event_id", event.AgendaEventID), zap.String("type", event.Type))
 	return nil
 }
 

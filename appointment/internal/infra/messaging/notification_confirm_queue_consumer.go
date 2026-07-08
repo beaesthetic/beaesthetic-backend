@@ -3,6 +3,7 @@ package messaging
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -24,14 +25,17 @@ func NewNotificationConfirmQueueConsumer(service *application.AppointmentService
 func (consumer *NotificationConfirmQueueConsumer) Process(ctx context.Context, delivery amqp.Delivery) error {
 	var event notificationConfirmedEvent
 	if err := json.Unmarshal(delivery.Body, &event); err != nil {
-		return err
+		return fmt.Errorf("parse notification confirm event: %w", err)
 	}
 	if event.NotificationID == "" {
 		consumer.log.Warn("notification confirm message does not contain notificationId")
 		return nil
 	}
+
+	consumer.log.Info("received notification confirmation", zap.String("notification_id", event.NotificationID))
 	agendaEvent, err := consumer.service.ConfirmNotification(ctx, event.NotificationID)
 	if err != nil {
+		consumer.log.Error("failed to confirm notification", zap.String("notification_id", event.NotificationID), zap.Error(err))
 		return err
 	}
 	if agendaEvent == nil {

@@ -35,6 +35,7 @@ func (d *DiContainer) GetAppointmentLifecycleHandler() *application.AppointmentL
 			d.GetClock(),
 			d.Config.Reminder.NoSendThreshold,
 			d.Config.Reminder.ImmediateSendThreshold,
+			d.Log,
 		)
 	})
 }

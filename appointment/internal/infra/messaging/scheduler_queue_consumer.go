@@ -38,8 +38,11 @@ func (consumer *SchedulerQueueConsumer) Process(ctx context.Context, delivery am
 		consumer.log.Debug("unhandled reminder event without event id")
 		return nil
 	}
+
+	consumer.log.Info("received reminder times up event", zap.String("event_id", event.EventID))
 	agendaEvent, err := consumer.service.GetAgenda(ctx, event.EventID)
 	if err != nil {
+		consumer.log.Error("failed to load agenda event for reminder", zap.String("event_id", event.EventID), zap.Error(err))
 		return err
 	}
 	if agendaEvent == nil {
@@ -49,6 +52,7 @@ func (consumer *SchedulerQueueConsumer) Process(ctx context.Context, delivery am
 
 	customer, err := consumer.customers.FindByCustomerID(ctx, agendaEvent.Attendee.ID)
 	if err != nil {
+		consumer.log.Error("failed to load attendee for reminder", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID), zap.Error(err))
 		return err
 	}
 	if customer == nil || customer.PhoneNumber == nil {
@@ -59,12 +63,15 @@ func (consumer *SchedulerQueueConsumer) Process(ctx context.Context, delivery am
 	title, content := application.ReminderNotificationPayload(agendaEvent)
 	notificationID, err := consumer.notifications.Send(ctx, title, content, *customer.PhoneNumber)
 	if err != nil {
+		consumer.log.Error("failed to send reminder notification", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID), zap.Error(err))
 		return err
 	}
 	if err := consumer.service.TrackPendingNotification(ctx, notificationID, agendaEvent.ID, notificationTypeReminder); err != nil {
+		consumer.log.Error("failed to track reminder notification", zap.String("event_id", agendaEvent.ID), zap.String("notification_id", notificationID), zap.Error(err))
 		return err
 	}
 	if _, err := consumer.service.ProcessReminderTimesUp(ctx, event.EventID); err != nil {
+		consumer.log.Error("failed to mark reminder as processed", zap.String("event_id", event.EventID), zap.String("notification_id", notificationID), zap.Error(err))
 		return err
 	}
 

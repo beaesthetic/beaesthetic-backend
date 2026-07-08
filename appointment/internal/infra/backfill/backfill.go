@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -25,7 +27,12 @@ func Run(ctx context.Context, cfg config.Config, log *zap.Logger) error {
 		return fmt.Errorf("connect mongo: %w", err)
 	}
 	defer client.Disconnect(ctx)
-	mongoDB := client.Database(cfg.Mongo.Database)
+	mongoDatabase, err := mongoDatabaseName(cfg.Mongo.URI, cfg.Mongo.Database)
+	if err != nil {
+		return err
+	}
+	log.Info("starting appointment backfill", zap.String("mongo_database", mongoDatabase))
+	mongoDB := client.Database(mongoDatabase)
 	agenda, err := backfillAgenda(ctx, db, mongoDB.Collection("agenda"))
 	if err != nil {
 		return err
@@ -36,6 +43,22 @@ func Run(ctx context.Context, cfg config.Config, log *zap.Logger) error {
 	}
 	log.Info("backfill completed", zap.Int("agenda", agenda), zap.Int("services", services))
 	return nil
+}
+
+func mongoDatabaseName(uri string, configured string) (string, error) {
+	configured = strings.TrimSpace(configured)
+	if configured != "" {
+		return configured, nil
+	}
+
+	parsed, err := url.Parse(uri)
+	if err == nil {
+		if db := strings.Trim(strings.TrimSpace(parsed.Path), "/"); db != "" {
+			return db, nil
+		}
+	}
+
+	return "", fmt.Errorf("mongo database is required: set ENV_MONGO_DATABASE or include a database path in ENV_MONGO_URI")
 }
 
 type agendaDoc struct {
