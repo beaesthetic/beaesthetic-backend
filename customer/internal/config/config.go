@@ -13,6 +13,7 @@ type Config struct {
 	App      AppConfig      `koanf:"app"`
 	HTTP     HTTPConfig     `koanf:"http"`
 	Postgres PostgresConfig `koanf:"postgres"`
+	Mongo    MongoConfig    `koanf:"mongo"`
 }
 
 type AppConfig struct {
@@ -28,6 +29,11 @@ type PostgresConfig struct {
 	DSN string `koanf:"dsn"`
 }
 
+type MongoConfig struct {
+	URI      string `koanf:"uri"`
+	Database string `koanf:"database"`
+}
+
 const (
 	keyDelimiter = "."
 	envPrefix    = "ENV_"
@@ -38,6 +44,8 @@ func Load(envFile string) (Config, error) {
 	_ = k.Set("app.name", "beaesthetic-customers")
 	_ = k.Set("app.env", "local")
 	_ = k.Set("http.addr", ":8080")
+	_ = k.Set("mongo.uri", "mongodb://localhost:27017")
+	_ = k.Set("mongo.database", "customer")
 	if envFile != "" {
 		if err := k.Load(file.Provider(envFile), dotenv.ParserEnv(envPrefix, keyDelimiter, normalizeEnvKey)); err != nil {
 			return Config{}, err

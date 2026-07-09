@@ -27,7 +27,7 @@ func NewRootCommand() *cobra.Command {
 	var envFile string
 	root := &cobra.Command{Use: "customer", Short: "Customer service", SilenceUsage: true}
 	root.PersistentFlags().StringVar(&envFile, "env-file", "", "optional dotenv file")
-	root.AddCommand(appCommand(&envFile), migrateCommand(&envFile))
+	root.AddCommand(appCommand(&envFile), migrateCommand(&envFile), backfillMongoCommand(&envFile))
 	return root
 }
 
