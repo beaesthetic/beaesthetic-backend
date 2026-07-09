@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.4.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.3.0...notification-service-v2.4.0) (2026-07-09)
+
+
+### Features
+
+* enhance notification error handling and add unit test for SMS gateway notification ([ef28dd7](https://github.com/beaesthetic/beaesthetic-backend/commit/ef28dd74c9610ad6035437d587e2fb3fc2c182d9))
+* refactor database name generation in helm templates for appointment, notification, and scheduler ([e952752](https://github.com/beaesthetic/beaesthetic-backend/commit/e952752b1f73d4d60522e57e2da64ac82197b2b1))
+* set default environment for rabbitmqVhost in helm templates ([277c8ce](https://github.com/beaesthetic/beaesthetic-backend/commit/277c8cee2e68524a2abf6eaae1f6b6b49e485a76))
+* update external secret configuration for SMS gateway API key ([58573c2](https://github.com/beaesthetic/beaesthetic-backend/commit/58573c2e4df377c68fe7385491112078248301f7))
+
 ## [2.3.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.2.0...notification-service-v2.3.0) (2026-07-07)
 
 

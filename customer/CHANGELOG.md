@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.12.0](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.11.0...customer-service-v1.12.0) (2026-07-09)
+
+
+### Features
+
+* add backfill command for MongoDB data to PostgreSQL and update config for MongoDB settings ([bfad929](https://github.com/beaesthetic/beaesthetic-backend/commit/bfad92972d5c639374be24828a9ec0c00cc71aa6))
+* integrate Redis caching for customer data and update related configurations ([ceec999](https://github.com/beaesthetic/beaesthetic-backend/commit/ceec9999dbb77709f430b646d1c2e15affb926b4))
+
 ## [1.11.0](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.10.1...customer-service-v1.11.0) (2026-07-07)
 
 

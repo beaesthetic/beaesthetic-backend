@@ -1,5 +1,28 @@
 # Changelog
 
+## [1.12.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.11.0...appointment-service-v1.12.0) (2026-07-09)
+
+
+### Features
+
+* add appointment and event reminder status functions with corresponding tests ([752c937](https://github.com/beaesthetic/beaesthetic-backend/commit/752c9379dc5ed6ae44dadf93cf5efeb040f7cea8))
+* add command to schedule future appointment reminders and implement related repository methods ([de31306](https://github.com/beaesthetic/beaesthetic-backend/commit/de3130660608e2a2454eb6e1206632ef5b6c9ce3))
+* add search_text column generation and related function for appointment_services ([720c389](https://github.com/beaesthetic/beaesthetic-backend/commit/720c389b9c2a8cad8ed9959b92e179b20853fd12))
+* enhance logging in appointment lifecycle and messaging components ([7134861](https://github.com/beaesthetic/beaesthetic-backend/commit/7134861e20f0319190267958250387fb2d78f6a7))
+* refactor database name generation in helm templates for appointment, notification, and scheduler ([e952752](https://github.com/beaesthetic/beaesthetic-backend/commit/e952752b1f73d4d60522e57e2da64ac82197b2b1))
+* set default environment for rabbitmqVhost in helm templates ([277c8ce](https://github.com/beaesthetic/beaesthetic-backend/commit/277c8cee2e68524a2abf6eaae1f6b6b49e485a76))
+* update MongoDB database name to remove environment suffix in values-dev.yaml ([ca15265](https://github.com/beaesthetic/beaesthetic-backend/commit/ca1526589a9cea90b90d9a5e93227c36af625585))
+* update reminder status handling and enhance related tests for appointments and events ([7e07790](https://github.com/beaesthetic/beaesthetic-backend/commit/7e07790ede47829d95f7f5b9aee0afcdd4fb42b4))
+
+
+### Bug Fixes
+
+* correct formatting of namespace and labels in outbox-configmap.yaml ([2662eca](https://github.com/beaesthetic/beaesthetic-backend/commit/2662ecafd01183466dab74bbeb78d3ae1acdc97c))
+* correct namespace and labels formatting in outbox-configmap.yaml ([4d6726c](https://github.com/beaesthetic/beaesthetic-backend/commit/4d6726cc394d37f77e07322879d88c454d325431))
+* remove quotes from exchange name in outbox-configmap.yaml ([a4b8c9f](https://github.com/beaesthetic/beaesthetic-backend/commit/a4b8c9fb543163964ec9354491327850c5b2f68d))
+* update appointment_services table schema and indexing for search optimization ([cbb6654](https://github.com/beaesthetic/beaesthetic-backend/commit/cbb665483409e6d22dedff82e056735acd169573))
+* update routing_key format in outbox-configmap.yaml ([61d3fe2](https://github.com/beaesthetic/beaesthetic-backend/commit/61d3fe2e98849316ccef0fc25a263ff2526ef3e0))
+
 ## [1.11.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.10.2...appointment-service-v1.11.0) (2026-07-07)
 
 

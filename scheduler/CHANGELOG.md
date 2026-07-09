@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://github.com/beaesthetic/beaesthetic-backend/compare/scheduler-service-v1.4.0...scheduler-service-v1.5.0) (2026-07-09)
+
+
+### Features
+
+* refactor database name generation in helm templates for appointment, notification, and scheduler ([e952752](https://github.com/beaesthetic/beaesthetic-backend/commit/e952752b1f73d4d60522e57e2da64ac82197b2b1))
+* set default environment for rabbitmqVhost in helm templates ([277c8ce](https://github.com/beaesthetic/beaesthetic-backend/commit/277c8cee2e68524a2abf6eaae1f6b6b49e485a76))
+
 ## [1.4.0](https://github.com/beaesthetic/beaesthetic-backend/compare/scheduler-service-v1.3.1...scheduler-service-v1.4.0) (2026-07-07)
 
 
