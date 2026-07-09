@@ -26,6 +26,6 @@ func (d *DiContainer) GetHttpHandlers() *server.HttpHandlers {
 
 func (d *DiContainer) CustomerHttpHandler() *server.Server {
 	return singleton(d, "customerHttpHandler", func() *server.Server {
-		return server.NewServer(d.GetCustomerService(), d.GetFidelityService(), d.GetWalletService(), d.Log)
+		return server.NewServer(d.GetCustomerService(), d.GetFidelityService(), d.GetWalletService(), d.GetCustomerCache(), server.CustomerCacheTTL{Customers: d.Config.Redis.CustomersTTL, CustomersSearch: d.Config.Redis.CustomersSearchTTL}, d.Log)
 	})
 }

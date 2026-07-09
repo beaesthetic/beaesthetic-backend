@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/petretiandrea/beaesthetic-backend/customer/internal/application"
+	cacheinfra "github.com/petretiandrea/beaesthetic-backend/customer/internal/infra/cache"
 	customerapi "github.com/petretiandrea/beaesthetic-backend/customer/internal/port/http/server/customer"
 	fidelityapi "github.com/petretiandrea/beaesthetic-backend/customer/internal/port/http/server/fidelity"
 	walletapi "github.com/petretiandrea/beaesthetic-backend/customer/internal/port/http/server/wallet"
@@ -119,18 +120,25 @@ func isNotFound(err error) bool {
 	return errors.Is(err, application.ErrNotFound) || strings.Contains(strings.ToLower(err.Error()), "not found")
 }
 
+type CustomerCacheTTL struct {
+	Customers       time.Duration
+	CustomersSearch time.Duration
+}
+
 type Server struct {
 	customers *application.CustomerService
 	fidelity  *application.FidelityService
 	wallet    *application.WalletService
+	cache     *cacheinfra.Cache
+	cacheTTL  CustomerCacheTTL
 	log       *zap.Logger
 }
 
-func NewServer(customers *application.CustomerService, fidelity *application.FidelityService, wallet *application.WalletService, log *zap.Logger) *Server {
+func NewServer(customers *application.CustomerService, fidelity *application.FidelityService, wallet *application.WalletService, cache *cacheinfra.Cache, cacheTTL CustomerCacheTTL, log *zap.Logger) *Server {
 	if log == nil {
 		log = zap.NewNop()
 	}
-	return &Server{customers: customers, fidelity: fidelity, wallet: wallet, log: log}
+	return &Server{customers: customers, fidelity: fidelity, wallet: wallet, cache: cache, cacheTTL: cacheTTL, log: log}
 }
 
 var _ customerapi.StrictServerInterface = (*Server)(nil)

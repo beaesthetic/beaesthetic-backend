@@ -5,15 +5,27 @@ import (
 
 	openapi_types "github.com/oapi-codegen/runtime/types"
 	customerdomain "github.com/petretiandrea/beaesthetic-backend/customer/internal/domain/customer"
+	cacheinfra "github.com/petretiandrea/beaesthetic-backend/customer/internal/infra/cache"
 	customerapi "github.com/petretiandrea/beaesthetic-backend/customer/internal/port/http/server/customer"
 )
 
+const (
+	customerCacheName       = "customers"
+	customerSearchCacheName = "customers-search"
+)
+
 func (s *Server) GetAllCustomers(ctx context.Context, request customerapi.GetAllCustomersRequestObject) (customerapi.GetAllCustomersResponseObject, error) {
-	items, err := s.customers.Search(ctx, stringValue(request.Params.Filter), intValue(request.Params.Limit, 50))
+	responses, err := cacheinfra.GetOrLoad(ctx, s.cache, customerSearchCacheName, s.cacheTTL.CustomersSearch, customerSearchKeys(request.Params.Limit, request.Params.Filter), func() ([]customerapi.CustomerResponse, error) {
+		items, err := s.customers.Search(ctx, stringValue(request.Params.Filter), intValue(request.Params.Limit, 50))
+		if err != nil {
+			return nil, err
+		}
+		return customerResponses(items), nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	return customerapi.GetAllCustomers200JSONResponse(customerResponses(items)), nil
+	return customerapi.GetAllCustomers200JSONResponse(responses), nil
 }
 
 func (s *Server) CreateCustomer(ctx context.Context, request customerapi.CreateCustomerRequestObject) (customerapi.CreateCustomerResponseObject, error) {
@@ -51,40 +63,61 @@ func (s *Server) DeleteCustomer(ctx context.Context, request customerapi.DeleteC
 	if !deleted {
 		return nil, errNotFound("customer")
 	}
+	if s.cache != nil {
+		s.cache.InvalidateKey(ctx, customerCacheName, request.CustomerId)
+	}
 	return customerapi.DeleteCustomer204Response{}, nil
 }
 
 func (s *Server) GetCustomerById(ctx context.Context, request customerapi.GetCustomerByIdRequestObject) (customerapi.GetCustomerByIdResponseObject, error) {
-	customer, err := s.customers.Get(ctx, request.CustomerId)
+	response, err := cacheinfra.GetOrLoad(ctx, s.cache, customerCacheName, s.cacheTTL.Customers, []any{request.CustomerId}, func() (customerapi.CustomerResponse, error) {
+		customer, err := s.customers.Get(ctx, request.CustomerId)
+		if err != nil {
+			return customerapi.CustomerResponse{}, err
+		}
+		if customer == nil {
+			return customerapi.CustomerResponse{}, errNotFound("customer")
+		}
+		return customerResponse(*customer), nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	if customer == nil {
-		return nil, errNotFound("customer")
-	}
-	return customerapi.GetCustomerById200JSONResponse(customerResponse(*customer)), nil
+	return customerapi.GetCustomerById200JSONResponse(response), nil
 }
 
 func (s *Server) UpdateCustomerById(ctx context.Context, request customerapi.UpdateCustomerByIdRequestObject) (customerapi.UpdateCustomerByIdResponseObject, error) {
 	if request.Body == nil {
 		return nil, errMissingBody
 	}
-	customer, err := s.customers.Update(ctx, request.CustomerId, request.Body.Name, request.Body.Surname, emailPtrToStringPtr(request.Body.Email), request.Body.Phone, request.Body.Note)
+	response, err := cacheinfra.LoadAndInvalidate(ctx, s.cache, customerCacheName, []any{request.CustomerId}, func() (customerapi.CustomerResponse, error) {
+		customer, err := s.customers.Update(ctx, request.CustomerId, request.Body.Name, request.Body.Surname, emailPtrToStringPtr(request.Body.Email), request.Body.Phone, request.Body.Note)
+		if err != nil {
+			return customerapi.CustomerResponse{}, err
+		}
+		if customer == nil {
+			return customerapi.CustomerResponse{}, errNotFound("customer")
+		}
+		return customerResponse(*customer), nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	if customer == nil {
-		return nil, errNotFound("customer")
-	}
-	return customerapi.UpdateCustomerById200JSONResponse(customerResponse(*customer)), nil
+	return customerapi.UpdateCustomerById200JSONResponse(response), nil
 }
 
 func (s *Server) SearchCustomer(ctx context.Context, request customerapi.SearchCustomerRequestObject) (customerapi.SearchCustomerResponseObject, error) {
-	items, err := s.customers.Search(ctx, stringValue(request.Params.Filter), intValue(request.Params.Limit, 50))
+	responses, err := cacheinfra.GetOrLoad(ctx, s.cache, customerSearchCacheName, s.cacheTTL.CustomersSearch, customerSearchKeys(request.Params.Limit, request.Params.Filter), func() ([]customerapi.CustomerResponse, error) {
+		items, err := s.customers.Search(ctx, stringValue(request.Params.Filter), intValue(request.Params.Limit, 50))
+		if err != nil {
+			return nil, err
+		}
+		return customerResponses(items), nil
+	})
 	if err != nil {
 		return nil, err
 	}
-	return customerapi.SearchCustomer200JSONResponse(customerResponses(items)), nil
+	return customerapi.SearchCustomer200JSONResponse(responses), nil
 }
 
 func (s *Server) SearchCustomerByPhone(ctx context.Context, request customerapi.SearchCustomerByPhoneRequestObject) (customerapi.SearchCustomerByPhoneResponseObject, error) {
@@ -118,6 +151,17 @@ func customerResponses(items []customerdomain.Customer) []customerapi.CustomerRe
 		out = append(out, customerResponse(item))
 	}
 	return out
+}
+
+func customerSearchKeys(limit *int, filter *string) []any {
+	keys := make([]any, 0, 2)
+	if limit != nil {
+		keys = append(keys, *limit)
+	}
+	if filter != nil {
+		keys = append(keys, *filter)
+	}
+	return keys
 }
 
 func emailPtrToStringPtr(value *openapi_types.Email) *string {

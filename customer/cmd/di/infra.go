@@ -1,13 +1,16 @@
 package di
 
 import (
+	"context"
 	"database/sql"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
+	cacheinfra "github.com/petretiandrea/beaesthetic-backend/customer/internal/infra/cache"
 	postgresinfra "github.com/petretiandrea/beaesthetic-backend/customer/internal/infra/postgres"
+	"github.com/redis/go-redis/v9"
 )
 
 func (d *DiContainer) GetPostgresDatabase() *sql.DB {
@@ -17,6 +20,23 @@ func (d *DiContainer) GetPostgresDatabase() *sql.DB {
 			return nil, err
 		}
 		return db, db.Ping()
+	})
+}
+
+func (d *DiContainer) GetRedisClient() redis.UniversalClient {
+	return singletonWithError(d, "redisClient", func() (redis.UniversalClient, error) {
+		options, err := redis.ParseURL(d.Config.Redis.URI)
+		if err != nil {
+			return nil, err
+		}
+		client := redis.NewClient(options)
+		return client, client.Ping(context.Background()).Err()
+	})
+}
+
+func (d *DiContainer) GetCustomerCache() *cacheinfra.Cache {
+	return singleton(d, "customerCache", func() *cacheinfra.Cache {
+		return cacheinfra.New(d.GetRedisClient(), d.Log)
 	})
 }
 

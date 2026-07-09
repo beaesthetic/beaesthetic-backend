@@ -2,6 +2,7 @@ package config
 
 import (
 	"strings"
+	"time"
 
 	"github.com/knadh/koanf/parsers/dotenv"
 	"github.com/knadh/koanf/providers/env"
@@ -14,6 +15,7 @@ type Config struct {
 	HTTP     HTTPConfig     `koanf:"http"`
 	Postgres PostgresConfig `koanf:"postgres"`
 	Mongo    MongoConfig    `koanf:"mongo"`
+	Redis    RedisConfig    `koanf:"redis"`
 }
 
 type AppConfig struct {
@@ -34,6 +36,12 @@ type MongoConfig struct {
 	Database string `koanf:"database"`
 }
 
+type RedisConfig struct {
+	URI                string        `koanf:"uri"`
+	CustomersTTL       time.Duration `koanf:"customers_ttl"`
+	CustomersSearchTTL time.Duration `koanf:"customers_search_ttl"`
+}
+
 const (
 	keyDelimiter = "."
 	envPrefix    = "ENV_"
@@ -46,6 +54,9 @@ func Load(envFile string) (Config, error) {
 	_ = k.Set("http.addr", ":8080")
 	_ = k.Set("mongo.uri", "mongodb://localhost:27017")
 	_ = k.Set("mongo.database", "customer")
+	_ = k.Set("redis.uri", "redis://localhost:6379")
+	_ = k.Set("redis.customers_ttl", "1h")
+	_ = k.Set("redis.customers_search_ttl", "5m")
 	if envFile != "" {
 		if err := k.Load(file.Provider(envFile), dotenv.ParserEnv(envPrefix, keyDelimiter, normalizeEnvKey)); err != nil {
 			return Config{}, err
