@@ -1,0 +1,5 @@
+package: fidelityapi
+generate:
+  models: true
+  gin-server: true
+  strict-server: true

@@ -212,6 +212,8 @@ components:
       x-implements: "it.beaesthetic.fidelity.http.serialization.VoucherItemMixin"
       type: object
       properties:
+        type:
+          type: string
         id:
           $ref: "#/components/schemas/FidelityCardId"
         issuedAt:
@@ -221,10 +223,13 @@ components:
           type: boolean
         treatment:
           $ref: "#/components/schemas/SupportedVoucherTreatment"
+      required: [type]
     DiscountVoucher:
       x-implements: "it.beaesthetic.fidelity.http.serialization.VoucherItemMixin"
       type: object
       properties:
+        type:
+          type: string
         id:
           $ref: "#/components/schemas/FidelityCardId"
         issuedAt:
@@ -234,10 +239,13 @@ components:
           type: boolean
         amount:
           type: number
+      required: [type]
     TreatmentDiscountVoucher:
       x-implements: "it.beaesthetic.fidelity.http.serialization.VoucherItemMixin"
       type: object
       properties:
+        type:
+          type: string
         id:
           $ref: "#/components/schemas/FidelityCardId"
         issuedAt:
@@ -249,7 +257,7 @@ components:
           $ref: "#/components/schemas/SupportedVoucherTreatment"
         amount:
           type: number
-
+      required: [type]
     SupportedVoucherTreatment:
       type: string
       enum:

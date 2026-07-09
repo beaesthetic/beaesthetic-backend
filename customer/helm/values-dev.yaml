@@ -1,8 +1,9 @@
 namespace: beaesthetic-dev
+environment: dev
 replicaCount: 1
 
 envConfig:
-  MONGO_DATABASE_NAME: customer-v2
+  ENV_APP_ENV: "dev"
 
 resources:
   requests:

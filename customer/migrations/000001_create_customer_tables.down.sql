@@ -1,0 +1,10 @@
+DROP INDEX IF EXISTS idx_wallets_owner;
+DROP TABLE IF EXISTS wallets;
+DROP INDEX IF EXISTS idx_fidelity_cards_vouchers;
+DROP INDEX IF EXISTS idx_fidelity_cards_customer_id;
+DROP TABLE IF EXISTS fidelity_cards;
+DROP TABLE IF EXISTS deleted_customers;
+DROP INDEX IF EXISTS idx_customers_name;
+DROP INDEX IF EXISTS idx_customers_phone;
+DROP INDEX IF EXISTS idx_customers_search_text_trgm;
+DROP TABLE IF EXISTS customers;

@@ -4,7 +4,7 @@ metadata:
   name: {{ .Values.name }}
   namespace: {{ .Values.namespace }}
   labels:
-    {{- tpl (toYaml .Values.labels) . | nindent 4 }}
+    {{- include "customer.commonLabels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
   selector:
@@ -14,8 +14,33 @@ spec:
     metadata:
       name: {{ .Values.name }}
       labels:
-        {{- tpl (toYaml .Values.labels) . | nindent 8 }}
+        {{- include "customer.commonLabels" . | nindent 8 }}
     spec:
+      {{- if and .Values.initContainers .Values.initContainers.migrate.enabled }}
+      initContainers:
+        - name: migrate
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /app/customer
+            - migrate
+            - up
+          env:
+            {{- range $key, $val := .Values.envConfig }}
+            - name: {{ $key }}
+              valueFrom:
+                configMapKeyRef:
+                  name: "{{ $.Values.name }}-config"
+                  key: {{ $key }}
+            {{- end }}
+            {{- range .Values.secretKeyRef }}
+            - name: {{ .name }}
+              valueFrom:
+                secretKeyRef:
+                  key: {{ .key }}
+                  name: {{ .secretRefName }}
+            {{- end}}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -41,14 +66,16 @@ spec:
                   key: {{ .key }}
                   name: {{ .secretRefName }}
             {{- end}}
+          {{- if or .Values.configMapRefs .Values.secretsRefs }}
           envFrom:
-          {{- range .Values.configMapRefs }}
+            {{- range .Values.configMapRefs }}
             - configMapRef:
                 name: {{ . }}
-          {{- end }}
-          {{- range .Values.secretsRefs }}
+            {{- end }}
+            {{- range .Values.secretsRefs }}
             - secretRef:
                 name: {{ . }}
+            {{- end }}
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -70,17 +97,3 @@ spec:
             failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
             periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
           {{- end }}
-        {{- range $key, $val := .Values.sidecar }}
-        - name: {{ $key }}
-          image: "{{ $val.image.repository }}:{{ $val.image.tag }}"
-          imagePullPolicy: {{ $val.image.pullPolicy }}
-          envFrom:
-            {{- range $val.configMapRefs }}
-            - configMapRef:
-                name: {{ . }}
-            {{- end }}
-            {{- range $val.secretsRefs }}
-            - secretRef:
-                name: {{ . }}
-            {{- end }}
-        {{- end}}
