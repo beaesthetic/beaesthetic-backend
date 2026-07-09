@@ -8,11 +8,13 @@ on:
 env:
   TARGET_PLATFORMS: linux/arm64
   DOCKER_API_VERSION: 1.43
+  REGISTRY: docker.io
+  IMAGE_NAME: petretiandrea/customer-service-v2
 
 jobs:
   build:
-#    runs-on: "gha-beaesthetic-scaler"
-    runs-on: ubuntu-24.04-arm
+    #    runs-on: "gha-beaesthetic-scaler"
+    runs-on: ubuntu-latest
     name: "Build and Push Docker image"
     # Only run if this is a manual dispatch OR if the release tag matches this service
     if: github.event_name == 'workflow_dispatch' || startsWith(github.event.release.tag_name, 'customer-service-v')
@@ -20,22 +22,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Extract version from release
+      - name: Extract version
         id: version
         run: |
-          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
-            VERSION=$(cat customer/gradle.properties | grep "^version=" | cut -d'=' -f2)
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION=$(jq -r '."customer"' .release-please-manifest.json)
           else
-            # Extract version from release tag (e.g., customer-service-v1.10.0 -> 1.10.0)
             TAG_NAME="${{ github.event.release.tag_name }}"
             if [[ "$TAG_NAME" =~ customer-service-v(.*) ]]; then
               VERSION="${BASH_REMATCH[1]}"
             else
-              echo "Error: Tag name doesn't match expected pattern"
+              echo "Error: Tag name doesn't match expected pattern customer-service-v*"
               exit 1
             fi
           fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Version: $VERSION"
 
       - name: Login to DockerHub
@@ -60,14 +61,16 @@ jobs:
             type=semver,pattern={{version}},value=${{ steps.version.outputs.version }}
             type=semver,pattern={{major}}.{{minor}},value=${{ steps.version.outputs.version }}
             type=semver,pattern={{major}},value=${{ steps.version.outputs.version }}
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest
 
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          file: ./customer/src/main/docker/Dockerfile
-          context: .
+          context: ./customer
+          file: ./customer/Dockerfile
           push: true
+          platforms: ${{ env.TARGET_PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          platforms: ${{ env.TARGET_PLATFORMS }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
