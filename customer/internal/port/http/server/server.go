@@ -24,30 +24,46 @@ type HttpHandlers struct {
 }
 
 func New(handlers *HttpHandlers, log *zap.Logger) *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
 	if log == nil {
 		log = zap.NewNop()
 	}
 	r := gin.New()
+	r.RedirectTrailingSlash = false
 	r.Use(gin.Recovery())
 	r.Use(ginErrorLogger(log))
 
-	customerapi.RegisterHandlers(r, customerapi.NewStrictHandlerWithOptions(handlers.Customer, nil, customerapi.StrictGinServerOptions{
+	customerHandler := customerapi.NewStrictHandlerWithOptions(handlers.Customer, nil, customerapi.StrictGinServerOptions{
 		RequestErrorHandlerFunc:  requestErrorHandler(log),
 		HandlerErrorFunc:         handlerErrorHandler(log),
 		ResponseErrorHandlerFunc: responseErrorHandler(log),
-	}))
-	fidelityapi.RegisterHandlers(r, fidelityapi.NewStrictHandlerWithOptions(handlers.Fidelity, nil, fidelityapi.StrictGinServerOptions{
+	})
+	fidelityHandler := fidelityapi.NewStrictHandlerWithOptions(handlers.Fidelity, nil, fidelityapi.StrictGinServerOptions{
 		RequestErrorHandlerFunc:  requestErrorHandler(log),
 		HandlerErrorFunc:         handlerErrorHandler(log),
 		ResponseErrorHandlerFunc: responseErrorHandler(log),
-	}))
-	walletapi.RegisterHandlers(r, walletapi.NewStrictHandlerWithOptions(handlers.Wallet, nil, walletapi.StrictGinServerOptions{
+	})
+	walletHandler := walletapi.NewStrictHandlerWithOptions(handlers.Wallet, nil, walletapi.StrictGinServerOptions{
 		RequestErrorHandlerFunc:  requestErrorHandler(log),
 		HandlerErrorFunc:         handlerErrorHandler(log),
 		ResponseErrorHandlerFunc: responseErrorHandler(log),
-	}))
+	})
+
+	customerapi.RegisterHandlers(r, customerHandler)
+	fidelityapi.RegisterHandlers(r, fidelityHandler)
+	walletapi.RegisterHandlers(r, walletHandler)
+	registerTrailingSlashAliases(r, fidelityHandler, walletHandler)
 	r.GET("/health", healthCheck(handlers.DB))
 	return r
+}
+
+func registerTrailingSlashAliases(r gin.IRouter, fidelityHandler fidelityapi.ServerInterface, walletHandler walletapi.ServerInterface) {
+	r.GET("/admin/fidelity-cards/", fidelityHandler.GetFidelityCards)
+	r.POST("/admin/fidelity-cards/", fidelityHandler.CreateFidelityCard)
+	r.GET("/admin/wallets/", func(ctx *gin.Context) {
+		walletHandler.GetWallets(ctx, walletapi.GetWalletsParams{Filter: stringPtrIfNotEmpty(ctx.Query("filter"))})
+	})
+	r.POST("/admin/wallets/giftCard/", walletHandler.AddGiftCard)
 }
 
 func healthCheck(db *sql.DB) gin.HandlerFunc {
