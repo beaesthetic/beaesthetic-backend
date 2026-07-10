@@ -35,11 +35,11 @@ func (e GetCustomerByPageParamsDirection) Valid() bool {
 
 // CustomerCreate defines model for CustomerCreate.
 type CustomerCreate struct {
-	Email   *openapi_types.Email `json:"email,omitempty"`
-	Name    string               `json:"name"`
-	Note    *string              `json:"note,omitempty"`
-	Phone   *string              `json:"phone,omitempty"`
-	Surname *string              `json:"surname,omitempty"`
+	Email   *string `json:"email,omitempty"`
+	Name    string  `json:"name"`
+	Note    *string `json:"note,omitempty"`
+	Phone   *string `json:"phone,omitempty"`
+	Surname *string `json:"surname,omitempty"`
 }
 
 // CustomerResponse defines model for CustomerResponse.
@@ -54,11 +54,11 @@ type CustomerResponse struct {
 
 // CustomerUpdate defines model for CustomerUpdate.
 type CustomerUpdate struct {
-	Email   *openapi_types.Email `json:"email,omitempty"`
-	Name    *string              `json:"name,omitempty"`
-	Note    *string              `json:"note,omitempty"`
-	Phone   *string              `json:"phone,omitempty"`
-	Surname *string              `json:"surname,omitempty"`
+	Email   *string `json:"email,omitempty"`
+	Name    *string `json:"name,omitempty"`
+	Note    *string `json:"note,omitempty"`
+	Phone   *string `json:"phone,omitempty"`
+	Surname *string `json:"surname,omitempty"`
 }
 
 // CustomersPaginated defines model for CustomersPaginated.

@@ -164,12 +164,8 @@ func customerSearchKeys(limit *int, filter *string) []any {
 	return keys
 }
 
-func emailPtrToStringPtr(value *openapi_types.Email) *string {
-	if value == nil {
-		return nil
-	}
-	out := string(*value)
-	return &out
+func emailPtrToStringPtr(value *string) *string {
+	return value
 }
 
 func emailStringPtr(value *string) *openapi_types.Email {
