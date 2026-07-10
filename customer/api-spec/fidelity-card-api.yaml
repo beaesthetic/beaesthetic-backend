@@ -28,7 +28,7 @@ info:
 servers:
   - url: https://agenda.beaesthetic.it/customer-service/
 paths:
-  /admin/fidelity-cards/:
+  /admin/fidelity-cards:
     post:
       tags:
         - fidelity-cards-admin

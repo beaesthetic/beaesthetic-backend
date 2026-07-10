@@ -230,10 +230,10 @@ func (t *Voucher) UnmarshalJSON(b []byte) error {
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 
-	// (GET /admin/fidelity-cards/)
+	// (GET /admin/fidelity-cards)
 	GetFidelityCards(c *gin.Context)
 
-	// (POST /admin/fidelity-cards/)
+	// (POST /admin/fidelity-cards)
 	CreateFidelityCard(c *gin.Context)
 
 	// (GET /admin/fidelity-cards/customers/{customerId})
@@ -411,8 +411,8 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 		ErrorHandler:       errorHandler,
 	}
 
-	router.GET(options.BaseURL+"/admin/fidelity-cards/", wrapper.GetFidelityCards)
-	router.POST(options.BaseURL+"/admin/fidelity-cards/", wrapper.CreateFidelityCard)
+	router.GET(options.BaseURL+"/admin/fidelity-cards", wrapper.GetFidelityCards)
+	router.POST(options.BaseURL+"/admin/fidelity-cards", wrapper.CreateFidelityCard)
 	router.GET(options.BaseURL+"/admin/fidelity-cards/customers/:customerId", wrapper.GetFidelityCardsByCustomerId)
 	router.DELETE(options.BaseURL+"/admin/fidelity-cards/vouchers/:voucherId", wrapper.UseVoucher)
 	router.GET(options.BaseURL+"/admin/fidelity-cards/:cardId", wrapper.GetFidelityCardById)
@@ -588,10 +588,10 @@ func (response NotifyPurchase201Response) VisitNotifyPurchaseResponse(w http.Res
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 
-	// (GET /admin/fidelity-cards/)
+	// (GET /admin/fidelity-cards)
 	GetFidelityCards(ctx context.Context, request GetFidelityCardsRequestObject) (GetFidelityCardsResponseObject, error)
 
-	// (POST /admin/fidelity-cards/)
+	// (POST /admin/fidelity-cards)
 	CreateFidelityCard(ctx context.Context, request CreateFidelityCardRequestObject) (CreateFidelityCardResponseObject, error)
 
 	// (GET /admin/fidelity-cards/customers/{customerId})
