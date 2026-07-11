@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -37,6 +38,7 @@ type GiftCardMoneyCreditedEvent struct {
 	At         *time.Time  `json:"at,omitempty"`
 	ExpireAt   *time.Time  `json:"expireAt,omitempty"`
 	GiftCardId *GiftCardId `json:"giftCardId,omitempty"`
+	Type       string      `json:"type"`
 }
 
 // GiftCardMoneyExpiredEvent defines model for GiftCardMoneyExpiredEvent.
@@ -44,18 +46,21 @@ type GiftCardMoneyExpiredEvent struct {
 	Amount     *float32    `json:"amount,omitempty"`
 	At         *time.Time  `json:"at,omitempty"`
 	GiftCardId *GiftCardId `json:"giftCardId,omitempty"`
+	Type       string      `json:"type"`
 }
 
 // MoneyChargedEvent defines model for MoneyChargedEvent.
 type MoneyChargedEvent struct {
 	Amount *float32   `json:"amount,omitempty"`
 	At     *time.Time `json:"at,omitempty"`
+	Type   string     `json:"type"`
 }
 
 // MoneyCreditedEvent defines model for MoneyCreditedEvent.
 type MoneyCreditedEvent struct {
 	Amount *float32   `json:"amount,omitempty"`
 	At     *time.Time `json:"at,omitempty"`
+	Type   string     `json:"type"`
 }
 
 // Wallet defines model for Wallet.
@@ -108,6 +113,7 @@ func (t WalletOperation) AsMoneyCreditedEvent() (MoneyCreditedEvent, error) {
 
 // FromMoneyCreditedEvent overwrites any union data inside the WalletOperation as the provided MoneyCreditedEvent
 func (t *WalletOperation) FromMoneyCreditedEvent(v MoneyCreditedEvent) error {
+	v.Type = "MoneyCredited"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -115,6 +121,7 @@ func (t *WalletOperation) FromMoneyCreditedEvent(v MoneyCreditedEvent) error {
 
 // MergeMoneyCreditedEvent performs a merge with any union data inside the WalletOperation, using the provided MoneyCreditedEvent
 func (t *WalletOperation) MergeMoneyCreditedEvent(v MoneyCreditedEvent) error {
+	v.Type = "MoneyCredited"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -134,6 +141,7 @@ func (t WalletOperation) AsMoneyChargedEvent() (MoneyChargedEvent, error) {
 
 // FromMoneyChargedEvent overwrites any union data inside the WalletOperation as the provided MoneyChargedEvent
 func (t *WalletOperation) FromMoneyChargedEvent(v MoneyChargedEvent) error {
+	v.Type = "MoneyCharged"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -141,6 +149,7 @@ func (t *WalletOperation) FromMoneyChargedEvent(v MoneyChargedEvent) error {
 
 // MergeMoneyChargedEvent performs a merge with any union data inside the WalletOperation, using the provided MoneyChargedEvent
 func (t *WalletOperation) MergeMoneyChargedEvent(v MoneyChargedEvent) error {
+	v.Type = "MoneyCharged"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -160,6 +169,7 @@ func (t WalletOperation) AsGiftCardMoneyCreditedEvent() (GiftCardMoneyCreditedEv
 
 // FromGiftCardMoneyCreditedEvent overwrites any union data inside the WalletOperation as the provided GiftCardMoneyCreditedEvent
 func (t *WalletOperation) FromGiftCardMoneyCreditedEvent(v GiftCardMoneyCreditedEvent) error {
+	v.Type = "GiftCardMoneyCredited"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -167,6 +177,7 @@ func (t *WalletOperation) FromGiftCardMoneyCreditedEvent(v GiftCardMoneyCredited
 
 // MergeGiftCardMoneyCreditedEvent performs a merge with any union data inside the WalletOperation, using the provided GiftCardMoneyCreditedEvent
 func (t *WalletOperation) MergeGiftCardMoneyCreditedEvent(v GiftCardMoneyCreditedEvent) error {
+	v.Type = "GiftCardMoneyCredited"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -186,6 +197,7 @@ func (t WalletOperation) AsGiftCardMoneyExpiredEvent() (GiftCardMoneyExpiredEven
 
 // FromGiftCardMoneyExpiredEvent overwrites any union data inside the WalletOperation as the provided GiftCardMoneyExpiredEvent
 func (t *WalletOperation) FromGiftCardMoneyExpiredEvent(v GiftCardMoneyExpiredEvent) error {
+	v.Type = "GiftCardMoneyExpired"
 	b, err := json.Marshal(v)
 	t.union = b
 	return err
@@ -193,6 +205,7 @@ func (t *WalletOperation) FromGiftCardMoneyExpiredEvent(v GiftCardMoneyExpiredEv
 
 // MergeGiftCardMoneyExpiredEvent performs a merge with any union data inside the WalletOperation, using the provided GiftCardMoneyExpiredEvent
 func (t *WalletOperation) MergeGiftCardMoneyExpiredEvent(v GiftCardMoneyExpiredEvent) error {
+	v.Type = "GiftCardMoneyExpired"
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -201,6 +214,33 @@ func (t *WalletOperation) MergeGiftCardMoneyExpiredEvent(v GiftCardMoneyExpiredE
 	merged, err := runtime.JSONMerge(t.union, b)
 	t.union = merged
 	return err
+}
+
+func (t WalletOperation) Discriminator() (string, error) {
+	var discriminator struct {
+		Discriminator string `json:"type"`
+	}
+	err := json.Unmarshal(t.union, &discriminator)
+	return discriminator.Discriminator, err
+}
+
+func (t WalletOperation) ValueByDiscriminator() (interface{}, error) {
+	discriminator, err := t.Discriminator()
+	if err != nil {
+		return nil, err
+	}
+	switch discriminator {
+	case "GiftCardMoneyCredited":
+		return t.AsGiftCardMoneyCreditedEvent()
+	case "GiftCardMoneyExpired":
+		return t.AsGiftCardMoneyExpiredEvent()
+	case "MoneyCharged":
+		return t.AsMoneyChargedEvent()
+	case "MoneyCredited":
+		return t.AsMoneyCreditedEvent()
+	default:
+		return nil, errors.New("unknown discriminator value: " + discriminator)
+	}
 }
 
 func (t WalletOperation) MarshalJSON() ([]byte, error) {

@@ -196,21 +196,33 @@ components:
         - $ref: '#/components/schemas/MoneyChargedEvent'
         - $ref: '#/components/schemas/GiftCardMoneyCreditedEvent'
         - $ref: '#/components/schemas/GiftCardMoneyExpiredEvent'
+      discriminator:
+        propertyName: type
+        mapping:
+          MoneyCredited: '#/components/schemas/MoneyCreditedEvent'
+          MoneyCharged: '#/components/schemas/MoneyChargedEvent'
+          GiftCardMoneyCredited: '#/components/schemas/GiftCardMoneyCreditedEvent'
+          GiftCardMoneyExpired: '#/components/schemas/GiftCardMoneyExpiredEvent'
 
     MoneyCreditedEvent:
       x-implements: it.beaesthetic.wallet.http.serialization.WalletEventDtoMixin
       type: object
       properties:
+        type:
+          type: string
         amount:
           type: number
         at:
           type: string
           format: date-time
+      required: [type]
 
     GiftCardMoneyCreditedEvent:
       x-implements: it.beaesthetic.wallet.http.serialization.WalletEventDtoMixin
       type: object
       properties:
+        type:
+          type: string
         giftCardId:
           $ref: '#/components/schemas/GiftCardId'
         amount:
@@ -221,11 +233,14 @@ components:
         expireAt:
           type: string
           format: date-time
+      required: [type]
 
     GiftCardMoneyExpiredEvent:
       x-implements: it.beaesthetic.wallet.http.serialization.WalletEventDtoMixin
       type: object
       properties:
+        type:
+          type: string
         giftCardId:
           $ref: '#/components/schemas/GiftCardId'
         at:
@@ -233,13 +248,17 @@ components:
           format: date-time
         amount:
           type: number
+      required: [type]
 
     MoneyChargedEvent:
       x-implements: it.beaesthetic.wallet.http.serialization.WalletEventDtoMixin
       type: object
       properties:
+        type:
+          type: string
         amount:
           type: number
         at:
           type: string
           format: date-time
+      required: [type]
