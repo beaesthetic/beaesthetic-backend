@@ -20,7 +20,6 @@
       "include-component-in-tag": true,
       "component": "customer-service",
       "extra-files": [
-        "gradle.properties",
         {
           "type": "yaml",
           "path": "helm/Chart.yaml",
