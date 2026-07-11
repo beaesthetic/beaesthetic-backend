@@ -37,10 +37,6 @@ spec:
         app.kubernetes.io/part-of: beaesthetic
         beaesthetic.io/environment: "{{.environment}}"
         beaesthetic.io/service: "{{.service}}"
-        notifications.argoproj.io/subscribe.on-health-degraded.telegram: "-1004385477490" # beaesthetic monitoring channel
-        notifications.argoproj.io/subscribe.on-sync-succeeded.telegram: "-1004385477490"
-        notifications.argoproj.io/subscribe.on-sync-failed.telegram: "-1004385477490"
-        notifications.argoproj.io/subscribe.on-deployed.telegram: "-1004385477490"
     spec:
       project: beaesthetic
       source:
@@ -57,3 +53,12 @@ spec:
       syncPolicy:
         syncOptions:
           - CreateNamespace=true
+  templatePatch: |
+    {{- if eq .environment "prod" }}
+    metadata:
+      annotations:
+        notifications.argoproj.io/subscribe.on-health-degraded.telegram: "-1004385477490" # beaesthetic monitoring channel
+        notifications.argoproj.io/subscribe.on-sync-succeeded.telegram: "-1004385477490"
+        notifications.argoproj.io/subscribe.on-sync-failed.telegram: "-1004385477490"
+        notifications.argoproj.io/subscribe.on-deployed.telegram: "-1004385477490"
+    {{- end }}
