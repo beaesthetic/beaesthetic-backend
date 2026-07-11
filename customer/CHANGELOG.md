@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.13.0](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.12.0...customer-service-v1.13.0) (2026-07-11)
+
+
+### Features
+
+* add discriminator type to wallet events and implement related tests ([2164093](https://github.com/beaesthetic/beaesthetic-backend/commit/2164093696c16a17f2a7a86c1fadd89b7a76aebd))
+* add redis URI to external secrets and update values.yaml for secret reference ([3f3cc58](https://github.com/beaesthetic/beaesthetic-backend/commit/3f3cc5823a25da04e889aa7f13a1a416d2a77f80))
+* normalize trailing slash handling and add route aliases for fidelity and wallet APIs ([59ee46d](https://github.com/beaesthetic/beaesthetic-backend/commit/59ee46d07c6ca67e390ab21ee3a5f5d345f1e479))
+* update email field type to string in customer models and adjust related tests ([888646f](https://github.com/beaesthetic/beaesthetic-backend/commit/888646f1e9472fefd0cdaab363c9d2c91e579fd0))
+
+
+### Bug Fixes
+
+* update fidelity card API endpoints to remove trailing slashes ([1eee7b5](https://github.com/beaesthetic/beaesthetic-backend/commit/1eee7b55c2295dc5e7d5e506a723bb940bfe61c7))
+
 ## [1.12.0](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.11.0...customer-service-v1.12.0) (2026-07-09)
 
 

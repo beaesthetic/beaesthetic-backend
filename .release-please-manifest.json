@@ -1,6 +1,6 @@
 {
   "appointment": "1.12.0",
-  "customer": "1.12.0",
+  "customer": "1.13.0",
   "gateway": "1.4.0",
   "notification": "2.4.0",
   "scheduler": "1.5.0",
