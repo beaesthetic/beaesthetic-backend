@@ -1,0 +1,4 @@
+package: customerapi
+generate:
+  models: true
+  client: true

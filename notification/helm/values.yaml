@@ -24,6 +24,9 @@ envConfig:
   SMS_GATEWAY__FROM_NUMBER: "+393515253634"
   RABBITMQ__NOTIFICATION_QUEUE: "NotificationQueue"
   RABBITMQ__NOTIFICATION_CONFIRM_QUEUE: "NotificationConfirmQueue"
+  RABBITMQ__CUSTOMER_NOTIFICATION_QUEUE: "customer.notifications"
+  CUSTOMER_SERVICE__URL: "http://customer-service.beaesthetic.svc.cluster.local:80"
+  TEMPLATES__PATH: "/app/templates"
   MONGO__DATABASE: "notifications-v2"
   MONGO__COLLECTION: "notifications"
 

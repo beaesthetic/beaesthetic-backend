@@ -13,7 +13,10 @@ func Generate() error {
 	if err := run("go", "run", "github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.7.1", "--config", "api-spec/oapi-notification.yaml", "-o", "internal/api/notification.gen.go", "api-spec/notification-api.yaml"); err != nil {
 		return err
 	}
-	return run("go", "run", "github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.7.1", "--config", "api-spec/oapi-sms-webhook.yaml", "-o", "internal/api/smswebhook/sms_webhook.gen.go", "api-spec/sms-gateway-webhook.yaml")
+	if err := run("go", "run", "github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.7.1", "--config", "api-spec/oapi-sms-webhook.yaml", "-o", "internal/api/smswebhook/sms_webhook.gen.go", "api-spec/sms-gateway-webhook.yaml"); err != nil {
+		return err
+	}
+	return run("go", "run", "github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.7.1", "--config", "api-spec/oapi-customer.yaml", "-o", "internal/api/customer/customer.gen.go", "api-spec/customer-api.yaml")
 }
 
 func Build() error {

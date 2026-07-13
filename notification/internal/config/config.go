@@ -12,12 +12,14 @@ import (
 const keyDelimiter = "."
 
 type Config struct {
-	App        AppConfig        `koanf:"app"`
-	HTTP       HTTPConfig       `koanf:"http"`
-	Postgres   PostgresConfig   `koanf:"postgres"`
-	Mongo      MongoConfig      `koanf:"mongo"`
-	RabbitMQ   RabbitMQConfig   `koanf:"rabbitmq"`
-	SMSGateway SMSGatewayConfig `koanf:"sms_gateway"`
+	App             AppConfig             `koanf:"app"`
+	HTTP            HTTPConfig            `koanf:"http"`
+	Postgres        PostgresConfig        `koanf:"postgres"`
+	Mongo           MongoConfig           `koanf:"mongo"`
+	RabbitMQ        RabbitMQConfig        `koanf:"rabbitmq"`
+	SMSGateway      SMSGatewayConfig      `koanf:"sms_gateway"`
+	CustomerService CustomerServiceConfig `koanf:"customer_service"`
+	Templates       TemplatesConfig       `koanf:"templates"`
 }
 
 type AppConfig struct {
@@ -40,9 +42,10 @@ type MongoConfig struct {
 }
 
 type RabbitMQConfig struct {
-	URL                      string `koanf:"url"`
-	NotificationQueue        string `koanf:"notification_queue"`
-	NotificationConfirmQueue string `koanf:"notification_confirm_queue"`
+	URL                       string `koanf:"url"`
+	NotificationQueue         string `koanf:"notification_queue"`
+	NotificationConfirmQueue  string `koanf:"notification_confirm_queue"`
+	CustomerNotificationQueue string `koanf:"customer_notification_queue"`
 }
 
 type SMSGatewayConfig struct {
@@ -50,6 +53,14 @@ type SMSGatewayConfig struct {
 	APIKey     string `koanf:"api_key"`
 	FromNumber string `koanf:"from_number"`
 	WebhookURL string `koanf:"webhook_url"`
+}
+
+type CustomerServiceConfig struct {
+	URL string `koanf:"url"`
+}
+
+type TemplatesConfig struct {
+	Path string `koanf:"path"`
 }
 
 func Load(envFile string) (Config, error) {

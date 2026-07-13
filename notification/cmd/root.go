@@ -48,6 +48,12 @@ func appCommand(envFile *string) *cobra.Command {
 
 			httpServer := c.GetHttpServer()
 			outboxConsumer := c.GetNotificationOutboxConsumer()
+			var customerNotificationConsumer interface {
+				Run(context.Context) error
+			}
+			if c.Config.RabbitMQ.CustomerNotificationQueue != "" {
+				customerNotificationConsumer = c.GetCustomerNotificationConsumer()
+			}
 
 			group, groupCtx := errgroup.WithContext(ctx)
 			group.Go(func() error {
@@ -74,6 +80,15 @@ func appCommand(envFile *string) *cobra.Command {
 				}
 				return nil
 			})
+			if customerNotificationConsumer != nil {
+				group.Go(func() error {
+					c.Log.Info("starting customer notification consumer", zap.String("queue", c.Config.RabbitMQ.CustomerNotificationQueue))
+					if err := customerNotificationConsumer.Run(groupCtx); err != nil && !errors.Is(err, context.Canceled) {
+						return fmt.Errorf("run customer notification consumer: %w", err)
+					}
+					return nil
+				})
+			}
 
 			return group.Wait()
 		},
