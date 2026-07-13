@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package beaesthetic.notification.v1;
+
+import "google/protobuf/struct.proto";
+
+option go_package = "github.com/petretiandrea/beaesthetic-backend/core-contracts/notification;notification";
+
+enum NotificationChannel {
+  NOTIFICATION_CHANNEL_UNSPECIFIED = 0;
+  NOTIFICATION_CHANNEL_SMS = 1;
+  NOTIFICATION_CHANNEL_EMAIL = 2;
+}
+
+message CustomerNotificationRequested {
+  string idempotency_key = 1 [json_name = "idempotencyKey"];
+  repeated string customer_ids = 2 [json_name = "customerIds"];
+  NotificationChannel notification_channel = 3 [json_name = "notificationChannel"];
+  string notification_type = 4 [json_name = "notificationType"];
+  google.protobuf.Struct body = 5 [json_name = "body"];
+}
+

@@ -2,12 +2,13 @@ package messaging
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
+	notification "github.com/petretiandrea/beaesthetic-backend/core-contracts/notification"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/application"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 type CustomerNotificationConsumer struct {
@@ -40,12 +41,36 @@ func (consumer *CustomerNotificationConsumer) Process(ctx context.Context, deliv
 }
 
 func customerNotificationCommandFromDelivery(delivery amqp.Delivery) (application.CustomerNotificationCommand, error) {
-	var command application.CustomerNotificationCommand
-	if err := json.Unmarshal(delivery.Body, &command); err != nil {
+	var message notification.CustomerNotificationRequested
+	if err := protojson.Unmarshal(delivery.Body, &message); err != nil {
 		return application.CustomerNotificationCommand{}, fmt.Errorf("decode customer notification command: %w", err)
 	}
-	if command.Body == nil {
-		command.Body = map[string]any{}
+	channel, err := notificationChannelToDomain(message.GetNotificationChannel())
+	if err != nil {
+		return application.CustomerNotificationCommand{}, err
 	}
-	return command, nil
+	body := map[string]any{}
+	if message.GetBody() != nil {
+		body = message.GetBody().AsMap()
+	}
+	return application.CustomerNotificationCommand{
+		IdempotencyKey:      message.GetIdempotencyKey(),
+		CustomerIDs:         message.GetCustomerIds(),
+		NotificationChannel: channel,
+		NotificationType:    message.GetNotificationType(),
+		Body:                body,
+	}, nil
+}
+
+func notificationChannelToDomain(channel notification.NotificationChannel) (string, error) {
+	switch channel {
+	case notification.NotificationChannel_NOTIFICATION_CHANNEL_SMS:
+		return "sms", nil
+	case notification.NotificationChannel_NOTIFICATION_CHANNEL_EMAIL:
+		return "email", nil
+	case notification.NotificationChannel_NOTIFICATION_CHANNEL_UNSPECIFIED:
+		return "", fmt.Errorf("notificationChannel is required")
+	default:
+		return "", fmt.Errorf("unsupported notificationChannel enum: %s", channel.String())
+	}
 }

@@ -75,6 +75,8 @@ jobs:
         with:
           context: ./notification
           file: ./notification/Dockerfile
+          build-contexts: |
+            core-contracts=./core-contracts
           push: true
           platforms: ${{ env.TARGET_PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}
