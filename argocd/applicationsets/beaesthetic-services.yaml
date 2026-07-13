@@ -33,6 +33,8 @@ spec:
   template:
     metadata:
       name: "{{.service}}-{{.environment}}"
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
       labels:
         app.kubernetes.io/part-of: beaesthetic
         beaesthetic.io/environment: "{{.environment}}"
