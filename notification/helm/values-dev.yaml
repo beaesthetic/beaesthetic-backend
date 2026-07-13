@@ -2,6 +2,10 @@ environment: dev
 namespace: beaesthetic-dev
 replicaCount: 1
 
+image:
+  tag: ""
+  pullPolicy: Always
+
 envConfig:
   APP__ENV: dev
   MONGO__DATABASE: notifications-v2-dev

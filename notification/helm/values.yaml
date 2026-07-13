@@ -8,6 +8,7 @@ replicaCount: 1
 
 image:
   repository: petretiandrea/notification-service-v2
+  tag: ""
   pullPolicy: IfNotPresent
 
 service:

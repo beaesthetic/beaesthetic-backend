@@ -64,3 +64,11 @@ spec:
         notifications.argoproj.io/subscribe.on-sync-failed.telegram: "-1004385477490"
         notifications.argoproj.io/subscribe.on-deployed.telegram: "-1004385477490"
     {{- end }}
+    {{- if and (eq .service "notification") (eq .environment "dev") }}
+    spec:
+      source:
+        helm:
+          parameters:
+            - name: image.tag
+              value: $ARGOCD_APP_REVISION_SHORT
+    {{- end }}
