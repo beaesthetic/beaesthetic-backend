@@ -25,4 +25,11 @@ data:
             exchange: beaesthetic.appointments
             routing_key: "appointments.internal.job"
             content_type: application/json
-
+      - name: customer.notifications
+        publisher:
+          type: rabbitmq
+          data:
+            url: ${RABBITMQ_DSN}
+            exchange: beaesthetic.notifications
+            routing_key: "{{ .Values.envConfig.ENV_RABBITMQ_CUSTOMER__NOTIFICATION__QUEUE }}"
+            content_type: application/json

@@ -9,7 +9,9 @@ import (
 )
 
 const (
-	NotificationTypeConfirmation = "confirmation"
+	NotificationTypeAppointmentConfirmation = "appointment_confirmation"
+	NotificationTypeAppointmentReminder     = "appointment_reminder"
+	NotificationTypeAppointmentRescheduled  = "appointment_rescheduled"
 )
 
 type ReminderScheduler interface {
@@ -18,7 +20,9 @@ type ReminderScheduler interface {
 }
 
 type NotificationSender interface {
-	Send(ctx context.Context, title, content, phoneNumber string) (string, error)
+	SendAppointmentReminder(ctx context.Context, agendaEvent *domain.AgendaEvent) (string, error)
+	SendAppointmentConfirmation(ctx context.Context, agendaEvent *domain.AgendaEvent) (string, error)
+	SendAppointmentRescheduled(ctx context.Context, agendaEvent *domain.AgendaEvent) (string, error)
 }
 
 type AppointmentLifecycleHandler struct {
@@ -127,18 +131,30 @@ func (h *AppointmentLifecycleHandler) sendConfirmationNotification(ctx context.C
 		return nil
 	}
 
-	title, content := confirmationNotificationPayload(agendaEvent, isRescheduled)
-	notificationID, err := h.notifications.Send(ctx, title, content, *customer.PhoneNumber)
+	notificationType := confirmationNotificationType(isRescheduled)
+	var notificationID string
+	if isRescheduled {
+		notificationID, err = h.notifications.SendAppointmentRescheduled(ctx, agendaEvent)
+	} else {
+		notificationID, err = h.notifications.SendAppointmentConfirmation(ctx, agendaEvent)
+	}
 	if err != nil {
 		h.log.Error("failed to send appointment confirmation", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID), zap.Bool("rescheduled", isRescheduled), zap.Error(err))
 		return err
 	}
-	if err := h.service.TrackPendingNotification(ctx, notificationID, agendaEvent.ID, NotificationTypeConfirmation); err != nil {
+	if err := h.service.TrackPendingNotification(ctx, notificationID, agendaEvent.ID, notificationType); err != nil {
 		h.log.Error("failed to track appointment confirmation", zap.String("event_id", agendaEvent.ID), zap.String("notification_id", notificationID), zap.Error(err))
 		return err
 	}
 	h.log.Info("sent appointment confirmation", zap.String("event_id", agendaEvent.ID), zap.String("notification_id", notificationID), zap.Bool("rescheduled", isRescheduled))
 	return nil
+}
+
+func confirmationNotificationType(isRescheduled bool) string {
+	if isRescheduled {
+		return NotificationTypeAppointmentRescheduled
+	}
+	return NotificationTypeAppointmentConfirmation
 }
 
 func computeReminderSendAt(now time.Time, eventAt time.Time, sendBefore time.Duration, noSendThreshold time.Duration, immediateSendThreshold time.Duration) (*time.Time, bool) {

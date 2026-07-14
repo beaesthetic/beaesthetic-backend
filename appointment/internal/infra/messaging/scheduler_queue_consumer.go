@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
-	notificationclient "github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/client/notification"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
 )
@@ -17,16 +16,15 @@ const (
 
 type SchedulerQueueConsumer struct {
 	service       *application.AppointmentService
-	customers     application.CustomerRegistry
-	notifications *notificationclient.NotificationClient
+	notifications application.NotificationSender
 	log           *zap.Logger
 }
 
-func NewSchedulerQueueConsumer(service *application.AppointmentService, customers application.CustomerRegistry, notifications *notificationclient.NotificationClient, log *zap.Logger) *SchedulerQueueConsumer {
+func NewSchedulerQueueConsumer(service *application.AppointmentService, notifications application.NotificationSender, log *zap.Logger) *SchedulerQueueConsumer {
 	if log == nil {
 		log = zap.NewNop()
 	}
-	return &SchedulerQueueConsumer{service: service, customers: customers, notifications: notifications, log: log.Named("scheduler_queue_consumer")}
+	return &SchedulerQueueConsumer{service: service, notifications: notifications, log: log.Named("scheduler_queue_consumer")}
 }
 
 func (consumer *SchedulerQueueConsumer) Process(ctx context.Context, delivery amqp.Delivery) error {
@@ -50,18 +48,7 @@ func (consumer *SchedulerQueueConsumer) Process(ctx context.Context, delivery am
 		return nil
 	}
 
-	customer, err := consumer.customers.FindByCustomerID(ctx, agendaEvent.Attendee.ID)
-	if err != nil {
-		consumer.log.Error("failed to load attendee for reminder", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID), zap.Error(err))
-		return err
-	}
-	if customer == nil || customer.PhoneNumber == nil {
-		consumer.log.Info("attendee has no valid contacts, not sending reminder", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID))
-		return nil
-	}
-
-	title, content := application.ReminderNotificationPayload(agendaEvent)
-	notificationID, err := consumer.notifications.Send(ctx, title, content, *customer.PhoneNumber)
+	notificationID, err := consumer.notifications.SendAppointmentReminder(ctx, agendaEvent)
 	if err != nil {
 		consumer.log.Error("failed to send reminder notification", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID), zap.Error(err))
 		return err
