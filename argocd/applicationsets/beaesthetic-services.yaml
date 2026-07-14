@@ -74,9 +74,6 @@ spec:
     {{- if and (or (eq .service "appointment") (eq .service "notification")) (eq .environment "prod") }}
     spec:
       syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
         syncOptions:
           - CreateNamespace=true
     {{- end }}
