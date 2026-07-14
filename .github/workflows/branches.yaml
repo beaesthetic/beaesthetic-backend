@@ -1,0 +1,120 @@
+name: Branches
+
+on:
+  push:
+    branches-ignore:
+      - main
+    paths:
+      - "appointment/**"
+      - "notification/**"
+      - "core-contracts/**"
+      - ".github/workflows/branches.yaml"
+  pull_request:
+    paths:
+      - "appointment/**"
+      - "notification/**"
+      - "core-contracts/**"
+      - ".github/workflows/branches.yaml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  TARGET_PLATFORMS: linux/arm64
+  REGISTRY: docker.io
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      appointment: ${{ steps.filter.outputs.appointment }}
+      notification: ${{ steps.filter.outputs.notification }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Detect changed services
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            appointment:
+              - 'appointment/**'
+              - '.github/workflows/branches.yaml'
+            notification:
+              - 'notification/**'
+              - 'core-contracts/**'
+              - '.github/workflows/branches.yaml'
+
+  build:
+    needs: changes
+    runs-on: ubuntu-latest
+    name: Build ${{ matrix.key }} dev image
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - key: appointment
+            image: petretiandrea/appointment-service-v2
+            context: ./appointment
+            dockerfile: ./appointment/Dockerfile
+            build_contexts: ""
+          - key: notification
+            image: petretiandrea/notification-service-v2
+            context: ./notification
+            dockerfile: ./notification/Dockerfile
+            build_contexts: |
+              core-contracts=./core-contracts
+    steps:
+      - name: Checkout repository
+        if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Run tests
+        if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
+        run: go run github.com/magefile/mage@v1.15.0 -v test
+        working-directory: ${{ matrix.context }}
+
+      - name: Extract Docker metadata
+        if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ matrix.image }}
+          tags: |
+            type=raw,value=${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: Set up QEMU
+        if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          build-contexts: ${{ matrix.build_contexts }}
+          push: true
+          platforms: ${{ env.TARGET_PLATFORMS }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.key }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.key }}

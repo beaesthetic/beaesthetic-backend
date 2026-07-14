@@ -4,6 +4,13 @@ metadata:
   name: beaesthetic-services
   namespace: argocd
 spec:
+  ignoreApplicationDifferences:
+    - name: appointment-dev
+      jsonPointers:
+        - /spec/source/targetRevision
+    - name: notification-dev
+      jsonPointers:
+        - /spec/source/targetRevision
   goTemplate: true
   goTemplateOptions:
     - missingkey=error
@@ -64,11 +71,20 @@ spec:
         notifications.argoproj.io/subscribe.on-sync-failed.telegram: "-1004385477490"
         notifications.argoproj.io/subscribe.on-deployed.telegram: "-1004385477490"
     {{- end }}
-    {{- if and (eq .service "notification") (eq .environment "dev") }}
+    {{- if and (or (eq .service "appointment") (eq .service "notification")) (eq .environment "prod") }}
+    spec:
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+    {{- end }}
+    {{- if and (or (eq .service "appointment") (eq .service "notification")) (eq .environment "dev") }}
     spec:
       source:
         helm:
           parameters:
             - name: image.tag
-              value: $ARGOCD_APP_REVISION_SHORT
+              value: $ARGOCD_APP_REVISION
     {{- end }}

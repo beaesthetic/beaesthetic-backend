@@ -8,7 +8,7 @@ replicaCount: 1
 
 image:
   repository: petretiandrea/notification-service-v2
-  tag: ""
+  tag: "2.4.0"
   pullPolicy: IfNotPresent
 
 service:
@@ -105,4 +105,3 @@ volumes:
 
 postgres:
   database: "notifications"
-
