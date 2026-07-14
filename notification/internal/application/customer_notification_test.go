@@ -5,20 +5,18 @@ import (
 	"errors"
 	"testing"
 	"time"
-
-	"github.com/petretiandrea/beaesthetic-backend/notification/internal/domain"
 )
 
 func TestCustomerNotificationServiceProcessSendsSms(t *testing.T) {
-	repo := newFakeNotificationRepository()
-	provider := &fakeNotificationProvider{}
-	notifications := NewNotificationService(repo, provider)
+	provider := &fakeSMSDispatcher{}
 	templates := &fakeTemplateRenderer{content: "hello Ada"}
+	customerNotifications := newFakeCustomerNotificationRepository()
+	customerNotifications.dispatcher = provider
 	service := NewCustomerNotificationService(
 		fakeCustomerReader{"customer-1": {ID: "customer-1", Name: "Ada", Surname: "Lovelace", Phone: "+393331234567"}},
 		templates,
-		newFakeIdempotencyRepository(),
-		notifications,
+		customerNotifications,
+		provider,
 	)
 	service.now = func() time.Time { return time.Date(2026, 7, 13, 10, 0, 0, 0, time.UTC) }
 
@@ -35,8 +33,17 @@ func TestCustomerNotificationServiceProcessSendsSms(t *testing.T) {
 	if provider.sent != 1 {
 		t.Fatalf("sent notifications = %d, want 1", provider.sent)
 	}
-	if len(repo.notifications) != 1 {
-		t.Fatalf("saved notifications = %d, want 1", len(repo.notifications))
+	if !customerNotifications.createdBeforeSend {
+		t.Fatal("customer notification should be created before sending to provider")
+	}
+	if customerNotifications.created == nil {
+		t.Fatal("customer notification should be stored")
+	}
+	if customerNotifications.created.TemplateValues["date"] != "2026-07-20" {
+		t.Fatalf("stored template date = %v, want 2026-07-20", customerNotifications.created.TemplateValues["date"])
+	}
+	if _, ok := customerNotifications.created.TemplateValues["name"]; ok {
+		t.Fatal("stored template values should come from queue body, not customer enrichment")
 	}
 	if templates.data.Values["name"] != "Ada" {
 		t.Fatalf("template name = %v, want Ada", templates.data.Values["name"])
@@ -47,15 +54,14 @@ func TestCustomerNotificationServiceProcessSendsSms(t *testing.T) {
 }
 
 func TestCustomerNotificationServiceSkipsExistingIdempotencyKey(t *testing.T) {
-	repo := newFakeNotificationRepository()
-	provider := &fakeNotificationProvider{}
-	idempotency := newFakeIdempotencyRepository()
-	idempotency.keys["external-key:customer-1:sms:appointment_reminder"] = true
+	provider := &fakeSMSDispatcher{}
+	customerNotifications := newFakeCustomerNotificationRepository()
+	customerNotifications.keys["external-key:customer-1:sms:appointment_reminder"] = true
 	service := NewCustomerNotificationService(
 		fakeCustomerReader{"customer-1": {ID: "customer-1", Phone: "+393331234567"}},
 		&fakeTemplateRenderer{content: "hello"},
-		idempotency,
-		NewNotificationService(repo, provider),
+		customerNotifications,
+		provider,
 	)
 
 	err := service.Process(context.Background(), CustomerNotificationCommand{
@@ -76,8 +82,8 @@ func TestCustomerNotificationServiceRequiresPhone(t *testing.T) {
 	service := NewCustomerNotificationService(
 		fakeCustomerReader{"customer-1": {ID: "customer-1"}},
 		&fakeTemplateRenderer{content: "hello"},
-		newFakeIdempotencyRepository(),
-		NewNotificationService(newFakeNotificationRepository(), &fakeNotificationProvider{}),
+		newFakeCustomerNotificationRepository(),
+		&fakeSMSDispatcher{},
 	)
 
 	err := service.Process(context.Background(), CustomerNotificationCommand{
@@ -143,46 +149,46 @@ func (renderer *fakeTemplateRenderer) Render(ctx context.Context, data CustomerN
 	return renderer.content, nil
 }
 
-type fakeIdempotencyRepository struct{ keys map[string]bool }
-
-func newFakeIdempotencyRepository() *fakeIdempotencyRepository {
-	return &fakeIdempotencyRepository{keys: map[string]bool{}}
+type fakeCustomerNotificationRepository struct {
+	keys              map[string]bool
+	createdBeforeSend bool
+	dispatcher        *fakeSMSDispatcher
+	created           *CustomerNotificationRecord
 }
 
-func (repo *fakeIdempotencyRepository) Exists(ctx context.Context, idempotencyKey string) (bool, error) {
+func newFakeCustomerNotificationRepository() *fakeCustomerNotificationRepository {
+	return &fakeCustomerNotificationRepository{keys: map[string]bool{}}
+}
+
+func (repo *fakeCustomerNotificationRepository) Exists(ctx context.Context, idempotencyKey string) (bool, error) {
 	return repo.keys[idempotencyKey], nil
 }
 
-func (repo *fakeIdempotencyRepository) Save(ctx context.Context, delivery CustomerNotificationDelivery) error {
+func (repo *fakeCustomerNotificationRepository) CreatePending(ctx context.Context, delivery CustomerNotificationRecord) (bool, error) {
 	repo.keys[delivery.IdempotencyKey] = true
+	copy := delivery
+	repo.created = &copy
+	if repo.dispatcher != nil && repo.dispatcher.sent == 0 {
+		repo.createdBeforeSend = true
+	}
+	return true, nil
+}
+
+func (repo *fakeCustomerNotificationRepository) SaveSMSGatewayDispatch(ctx context.Context, dispatch SMSGatewayDispatch) error {
 	return nil
 }
 
-type fakeNotificationRepository struct {
-	notifications map[string]*domain.Notification
-}
-
-func newFakeNotificationRepository() *fakeNotificationRepository {
-	return &fakeNotificationRepository{notifications: map[string]*domain.Notification{}}
-}
-
-func (repo *fakeNotificationRepository) FindByID(ctx context.Context, id string) (*domain.Notification, error) {
-	return repo.notifications[id], nil
-}
-
-func (repo *fakeNotificationRepository) Save(ctx context.Context, notification *domain.Notification) error {
-	copy := *notification
-	repo.notifications[notification.ID] = &copy
+func (repo *fakeCustomerNotificationRepository) MarkSentBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, sentAt time.Time) error {
 	return nil
 }
 
-type fakeNotificationProvider struct{ sent int }
-
-func (provider *fakeNotificationProvider) Supports(notification domain.Notification) bool {
-	return notification.Channel.Type == domain.ChannelSMS
+func (repo *fakeCustomerNotificationRepository) MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, failedAt time.Time) error {
+	return nil
 }
 
-func (provider *fakeNotificationProvider) Send(ctx context.Context, notification domain.Notification) (domain.ChannelMetadata, error) {
-	provider.sent++
-	return domain.ChannelMetadata{ProviderResourceID: "provider-id"}, nil
+type fakeSMSDispatcher struct{ sent int }
+
+func (dispatcher *fakeSMSDispatcher) Send(ctx context.Context, messageID, phone, content string) (string, error) {
+	dispatcher.sent++
+	return "provider-id", nil
 }

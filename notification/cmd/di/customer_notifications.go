@@ -4,6 +4,7 @@ import (
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/application"
 	infracustomer "github.com/petretiandrea/beaesthetic-backend/notification/internal/infra/customer"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/infra/postgres"
+	"github.com/petretiandrea/beaesthetic-backend/notification/internal/infra/provider"
 	notificationtemplate "github.com/petretiandrea/beaesthetic-backend/notification/internal/infra/template"
 )
 
@@ -12,8 +13,8 @@ func (d *DiContainer) GetCustomerNotificationService() *application.CustomerNoti
 		return application.NewCustomerNotificationService(
 			d.GetCustomerClient(),
 			d.GetCustomerNotificationTemplateRenderer(),
-			d.GetCustomerNotificationIdempotencyRepository(),
-			d.GetNotificationService(),
+			d.GetCustomerNotificationRepository(),
+			d.GetCustomerNotificationSMSDispatcher(),
 		)
 	})
 }
@@ -30,8 +31,14 @@ func (d *DiContainer) GetCustomerNotificationTemplateRenderer() application.Cust
 	})
 }
 
-func (d *DiContainer) GetCustomerNotificationIdempotencyRepository() application.CustomerNotificationIdempotencyRepository {
-	return singleton(d, "customerNotificationIdempotencyRepository", func() application.CustomerNotificationIdempotencyRepository {
-		return postgres.NewCustomerNotificationDeliveryRepository(d.GetPostgresDatabase())
+func (d *DiContainer) GetCustomerNotificationRepository() application.CustomerNotificationRepository {
+	return singleton(d, "customerNotificationIdempotencyRepository", func() application.CustomerNotificationRepository {
+		return postgres.NewCustomerNotificationRepository(d.GetPostgresDatabase())
+	})
+}
+
+func (d *DiContainer) GetCustomerNotificationSMSDispatcher() application.CustomerNotificationSMSDispatcher {
+	return singleton(d, "customerNotificationSMSDispatcher", func() application.CustomerNotificationSMSDispatcher {
+		return provider.NewCustomerNotificationSMSDispatcher(d.Config.SMSGateway)
 	})
 }

@@ -26,13 +26,13 @@ func (d *DiContainer) GetHttpHandlers() *http.HttpHandlers {
 
 func (d *DiContainer) SmsHttpHandler() *http.Server {
 	return singleton(d, "smsHttpHandler", func() *http.Server {
-		return http.NewSmsHandler(d.GetNotificationService(), d.Log)
+		return http.NewSmsHandlerWithCustomerNotifications(d.GetNotificationService(), d.GetCustomerNotificationService(), d.Log)
 	})
 }
 
 func (d *DiContainer) SmsWebhookHttpHandler() *http.Server {
 	return singleton(d, "smsWebhookHttpHandler", func() *http.Server {
-		return http.NewSmsHandler(d.GetNotificationService(), d.Log)
+		return http.NewSmsHandlerWithCustomerNotifications(d.GetNotificationService(), d.GetCustomerNotificationService(), d.Log)
 	})
 }
 
