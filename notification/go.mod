@@ -20,6 +20,8 @@ require (
 	golang.org/x/sync v0.19.0
 )
 
+require github.com/goodsign/monday v1.0.2
+
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
