@@ -56,13 +56,11 @@ jobs:
             image: petretiandrea/appointment-service-v2
             context: ./appointment
             dockerfile: ./appointment/Dockerfile
-            build_contexts: ""
           - key: notification
             image: petretiandrea/notification-service-v2
             context: ./notification
             dockerfile: ./notification/Dockerfile
-            build_contexts: |
-              core-contracts=./core-contracts
+            
     steps:
       - name: Checkout repository
         if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
@@ -111,7 +109,8 @@ jobs:
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
-          build-contexts: ${{ matrix.build_contexts }}
+          build-contexts: |
+            core-contracts=./core-contracts
           push: true
           platforms: ${{ env.TARGET_PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}
