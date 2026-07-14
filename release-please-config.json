@@ -10,6 +10,11 @@
           "type": "yaml",
           "path": "helm/Chart.yaml",
           "jsonpath": "$.appVersion"
+        },
+        {
+          "type": "yaml",
+          "path": "helm/values.yaml",
+          "jsonpath": "$.image.tag"
         }
       ],
       "changelog-path": "CHANGELOG.md"
@@ -53,6 +58,11 @@
           "type": "yaml",
           "path": "helm/Chart.yaml",
           "jsonpath": "$.appVersion"
+        },
+        {
+          "type": "yaml",
+          "path": "helm/values.yaml",
+          "jsonpath": "$.image.tag"
         }
       ],
       "changelog-path": "CHANGELOG.md"
