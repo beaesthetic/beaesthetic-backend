@@ -2,6 +2,9 @@ environment: dev
 namespace: beaesthetic-dev
 replicaCount: 1
 
+image:
+  pullPolicy: Always
+
 envConfig:
   ENV_APP_NAME: appointment-service-v2
   ENV_REMOTE_CUSTOMER__URL: http://customer-service-v2:8080
@@ -27,4 +30,3 @@ volumes:
   - name: outbox-config
     configMap:
       name: appointment-service-v2-outbox-config
-
