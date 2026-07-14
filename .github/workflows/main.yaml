@@ -115,5 +115,5 @@ jobs:
           platforms: ${{ env.TARGET_PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha,scope=${{ matrix.key }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.key }}
+          cache-from: type=gha,scope=main-${{ matrix.key }}
+          cache-to: type=gha,mode=max,scope=main-${{ matrix.key }}
