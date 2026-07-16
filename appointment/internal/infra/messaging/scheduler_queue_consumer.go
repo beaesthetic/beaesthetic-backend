@@ -48,21 +48,21 @@ func (consumer *SchedulerQueueConsumer) Process(ctx context.Context, delivery am
 		return nil
 	}
 
-	notificationID, err := consumer.notifications.SendAppointmentReminder(ctx, agendaEvent)
+	correlationKey, err := consumer.notifications.SendAppointmentReminder(ctx, agendaEvent)
 	if err != nil {
 		consumer.log.Error("failed to send reminder notification", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID), zap.Error(err))
 		return err
 	}
-	if err := consumer.service.TrackPendingNotification(ctx, notificationID, agendaEvent.ID, notificationTypeReminder); err != nil {
-		consumer.log.Error("failed to track reminder notification", zap.String("event_id", agendaEvent.ID), zap.String("notification_id", notificationID), zap.Error(err))
+	if err := consumer.service.TrackPendingNotification(ctx, correlationKey, agendaEvent.ID, notificationTypeReminder); err != nil {
+		consumer.log.Error("failed to track reminder notification", zap.String("event_id", agendaEvent.ID), zap.String("correlation_key", correlationKey), zap.Error(err))
 		return err
 	}
 	if _, err := consumer.service.ProcessReminderTimesUp(ctx, event.EventID); err != nil {
-		consumer.log.Error("failed to mark reminder as processed", zap.String("event_id", event.EventID), zap.String("notification_id", notificationID), zap.Error(err))
+		consumer.log.Error("failed to mark reminder as processed", zap.String("event_id", event.EventID), zap.String("correlation_key", correlationKey), zap.Error(err))
 		return err
 	}
 
-	consumer.log.Info("sent reminder notification", zap.String("event_id", agendaEvent.ID), zap.String("notification_id", notificationID))
+	consumer.log.Info("sent reminder notification", zap.String("event_id", agendaEvent.ID), zap.String("correlation_key", correlationKey))
 	return nil
 }
 

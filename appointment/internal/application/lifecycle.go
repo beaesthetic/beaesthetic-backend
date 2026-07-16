@@ -132,21 +132,21 @@ func (h *AppointmentLifecycleHandler) sendConfirmationNotification(ctx context.C
 	}
 
 	notificationType := confirmationNotificationType(isRescheduled)
-	var notificationID string
+	var correlationKey string
 	if isRescheduled {
-		notificationID, err = h.notifications.SendAppointmentRescheduled(ctx, agendaEvent)
+		correlationKey, err = h.notifications.SendAppointmentRescheduled(ctx, agendaEvent)
 	} else {
-		notificationID, err = h.notifications.SendAppointmentConfirmation(ctx, agendaEvent)
+		correlationKey, err = h.notifications.SendAppointmentConfirmation(ctx, agendaEvent)
 	}
 	if err != nil {
 		h.log.Error("failed to send appointment confirmation", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID), zap.Bool("rescheduled", isRescheduled), zap.Error(err))
 		return err
 	}
-	if err := h.service.TrackPendingNotification(ctx, notificationID, agendaEvent.ID, notificationType); err != nil {
-		h.log.Error("failed to track appointment confirmation", zap.String("event_id", agendaEvent.ID), zap.String("notification_id", notificationID), zap.Error(err))
+	if err := h.service.TrackPendingNotification(ctx, correlationKey, agendaEvent.ID, notificationType); err != nil {
+		h.log.Error("failed to track appointment confirmation", zap.String("event_id", agendaEvent.ID), zap.String("correlation_key", correlationKey), zap.Error(err))
 		return err
 	}
-	h.log.Info("sent appointment confirmation", zap.String("event_id", agendaEvent.ID), zap.String("notification_id", notificationID), zap.Bool("rescheduled", isRescheduled))
+	h.log.Info("sent appointment confirmation", zap.String("event_id", agendaEvent.ID), zap.String("correlation_key", correlationKey), zap.Bool("rescheduled", isRescheduled))
 	return nil
 }
 

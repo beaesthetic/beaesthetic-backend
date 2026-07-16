@@ -27,25 +27,25 @@ func (consumer *NotificationConfirmQueueConsumer) Process(ctx context.Context, d
 	if err := json.Unmarshal(delivery.Body, &event); err != nil {
 		return fmt.Errorf("parse notification confirm event: %w", err)
 	}
-	if event.NotificationID == "" {
+	if event.CorrelationKey == "" {
 		consumer.log.Warn("notification confirm message does not contain notificationId")
 		return nil
 	}
 
-	consumer.log.Info("received notification confirmation", zap.String("notification_id", event.NotificationID))
-	agendaEvent, err := consumer.service.ConfirmNotification(ctx, event.NotificationID)
+	consumer.log.Info("received notification confirmation", zap.String("correlation_key", event.CorrelationKey))
+	agendaEvent, err := consumer.service.ConfirmNotification(ctx, event.CorrelationKey)
 	if err != nil {
-		consumer.log.Error("failed to confirm notification", zap.String("notification_id", event.NotificationID), zap.Error(err))
+		consumer.log.Error("failed to confirm notification", zap.String("correlation_key", event.CorrelationKey), zap.Error(err))
 		return err
 	}
 	if agendaEvent == nil {
-		consumer.log.Info("notification confirmation has no pending appointment", zap.String("notification_id", event.NotificationID))
+		consumer.log.Info("notification confirmation has no pending appointment", zap.String("correlation_key", event.CorrelationKey))
 		return nil
 	}
-	consumer.log.Info("confirmed reminder sent", zap.String("event_id", agendaEvent.ID), zap.String("notification_id", event.NotificationID))
+	consumer.log.Info("confirmed reminder sent", zap.String("event_id", agendaEvent.ID), zap.String("correlation_key", event.CorrelationKey))
 	return nil
 }
 
 type notificationConfirmedEvent struct {
-	NotificationID string `json:"notificationId"`
+	CorrelationKey string `json:"notificationId"`
 }
