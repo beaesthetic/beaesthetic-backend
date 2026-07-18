@@ -36,9 +36,8 @@ type MongoConfig struct {
 	Database string `koanf:"database"`
 }
 type RemoteConfig struct {
-	CustomerURL     string `koanf:"customer_url"`
-	SchedulerURL    string `koanf:"scheduler_url"`
-	NotificationURL string `koanf:"notification_url"`
+	CustomerURL  string `koanf:"customer_url"`
+	SchedulerURL string `koanf:"scheduler_url"`
 }
 type RabbitMQConfig struct {
 	URL                         string `koanf:"url"`

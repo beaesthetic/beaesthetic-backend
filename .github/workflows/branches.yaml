@@ -62,7 +62,8 @@ jobs:
             image: petretiandrea/appointment-service-v2
             context: ./appointment
             dockerfile: ./appointment/Dockerfile
-            build_contexts: ""
+            build_contexts: |
+              core-contracts=./core-contracts
           - key: notification
             image: petretiandrea/notification-service-v2
             context: ./notification

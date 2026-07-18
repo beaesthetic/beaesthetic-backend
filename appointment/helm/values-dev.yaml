@@ -9,7 +9,6 @@ envConfig:
   ENV_APP_NAME: appointment-service-v2
   ENV_REMOTE_CUSTOMER__URL: http://customer-service-v2:8080
   ENV_REMOTE_SCHEDULER__URL: http://scheduler-service:8080
-  ENV_REMOTE_NOTIFICATION__URL: http://notification-service-v2:8080
   ENV_MONGO_DATABASE: appointments-v2
   MONITOR_REMINDERS_FAILED_FREQUENCY: 30m
 

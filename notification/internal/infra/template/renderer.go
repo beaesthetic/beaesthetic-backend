@@ -29,7 +29,7 @@ func (renderer *Renderer) Render(ctx context.Context, data application.CustomerN
 		return "", fmt.Errorf("templates path is required")
 	}
 	path := filepath.Join(renderer.basePath, data.NotificationType, data.NotificationChannel+".body.tmpl")
-	tpl, err := texttemplate.ParseFiles(path)
+	tpl, err := texttemplate.New(filepath.Base(path)).Funcs(templateFunctions()).ParseFiles(path)
 	if err != nil {
 		return "", fmt.Errorf("parse notification template %q: %w", path, err)
 	}
@@ -38,4 +38,11 @@ func (renderer *Renderer) Render(ctx context.Context, data application.CustomerN
 		return "", fmt.Errorf("execute notification template %q: %w", path, err)
 	}
 	return out.String(), nil
+}
+
+func templateFunctions() texttemplate.FuncMap {
+	return texttemplate.FuncMap{
+		"dateFormat":   formatDateWithLayoutDefault,
+		"dateFormatIn": formatDateWithLayoutIn,
+	}
 }

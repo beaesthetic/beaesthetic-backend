@@ -21,7 +21,7 @@ type AppointmentRepository interface {
 }
 
 type PendingNotification struct {
-	NotificationID string
+	CorrelationKey string
 	AgendaEventID  string
 	Type           string
 }
@@ -128,23 +128,23 @@ func (s *AppointmentService) ProcessReminderTimesUp(ctx context.Context, eventID
 	return event, err
 }
 
-func (s *AppointmentService) TrackPendingNotification(ctx context.Context, notificationID, agendaEventID, notificationType string) error {
+func (s *AppointmentService) TrackPendingNotification(ctx context.Context, correlationKey, agendaEventID, notificationType string) error {
 	return s.repo.SavePendingNotification(ctx, PendingNotification{
-		NotificationID: notificationID,
+		CorrelationKey: correlationKey,
 		AgendaEventID:  agendaEventID,
 		Type:           notificationType,
 	})
 }
 
-func (s *AppointmentService) ConfirmNotification(ctx context.Context, notificationID string) (*domain.AgendaEvent, error) {
+func (s *AppointmentService) ConfirmNotification(ctx context.Context, correlationKey string) (*domain.AgendaEvent, error) {
 	var event *domain.AgendaEvent
 	err := s.repo.Tx(ctx, func(ctx context.Context) error {
-		pending, err := s.repo.FindPendingNotification(ctx, notificationID)
+		pending, err := s.repo.FindPendingNotification(ctx, correlationKey)
 		if err != nil || pending == nil {
 			return err
 		}
 		if pending.Type != "reminder" && pending.Type != "Reminder" {
-			return s.repo.RemovePendingNotification(ctx, notificationID)
+			return s.repo.RemovePendingNotification(ctx, correlationKey)
 		}
 		e, err := s.repo.FindAgendaEvent(ctx, pending.AgendaEventID)
 		if err != nil {
@@ -158,7 +158,7 @@ func (s *AppointmentService) ConfirmNotification(ctx context.Context, notificati
 		if err := s.repo.SaveAgendaEvent(ctx, e); err != nil {
 			return err
 		}
-		return s.repo.RemovePendingNotification(ctx, notificationID)
+		return s.repo.RemovePendingNotification(ctx, correlationKey)
 	})
 	return event, err
 }

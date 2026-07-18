@@ -15,8 +15,9 @@ import (
 )
 
 type Server struct {
-	service *application.NotificationService
-	log     *zap.Logger
+	service                     *application.NotificationService
+	customerNotificationService *application.CustomerNotificationService
+	log                         *zap.Logger
 }
 
 var _ api.StrictServerInterface = (*Server)(nil)
@@ -24,6 +25,10 @@ var _ smswebhook.StrictServerInterface = (*Server)(nil)
 
 func NewSmsHandler(service *application.NotificationService, log *zap.Logger) *Server {
 	return &Server{service: service, log: log}
+}
+
+func NewSmsHandlerWithCustomerNotifications(service *application.NotificationService, customerNotificationService *application.CustomerNotificationService, log *zap.Logger) *Server {
+	return &Server{service: service, customerNotificationService: customerNotificationService, log: log}
 }
 
 func (server *Server) CreateNotification(ctx context.Context, request api.CreateNotificationRequestObject) (api.CreateNotificationResponseObject, error) {

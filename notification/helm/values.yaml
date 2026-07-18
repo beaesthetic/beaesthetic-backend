@@ -26,7 +26,7 @@ envConfig:
   RABBITMQ__NOTIFICATION_QUEUE: "NotificationQueue"
   RABBITMQ__NOTIFICATION_CONFIRM_QUEUE: "NotificationConfirmQueue"
   RABBITMQ__CUSTOMER_NOTIFICATION_QUEUE: "customer.notifications"
-  CUSTOMER_SERVICE__URL: "http://customer-service.beaesthetic.svc.cluster.local:80"
+  CUSTOMER_SERVICE__URL: "http://customer-service-v2.beaesthetic.svc.cluster.local:8080"
   TEMPLATES__PATH: "/app/templates"
   MONGO__DATABASE: "notifications-v2"
   MONGO__COLLECTION: "notifications"

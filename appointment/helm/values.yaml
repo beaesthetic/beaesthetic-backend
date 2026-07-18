@@ -28,7 +28,6 @@ envConfig:
 
   ENV_REMOTE_CUSTOMER__URL: "http://customer-service-v2:8080"
   ENV_REMOTE_SCHEDULER__URL: "http://scheduler-service:8080"
-  ENV_REMOTE_NOTIFICATION__URL: "http://notification-service-v2:8080"
 
   ENV_REMINDER_TRIGGER__BEFORE: "24h"
   ENV_REMINDER_IMMEDIATE__SEND__THRESHOLD: "2m"
@@ -37,6 +36,8 @@ envConfig:
   ENV_RABBITMQ_SCHEDULER__QUEUE: "reminders-times-up"
   ENV_RABBITMQ_APPOINTMENT__INTERNAL__JOB__QUEUE: "beaesthetic.appointments.internal.job"
   ENV_RABBITMQ_NOTIFICATION__CONFIRM__QUEUE: "NotificationConfirmQueue"
+
+  ENV_RABBITMQ_CUSTOMER__NOTIFICATION__QUEUE: "customer.notifications"
 
   SERVICES_CACHE_TTL: "1h"
   SERVICES_SEARCH_CACHE_TTL: "1h"

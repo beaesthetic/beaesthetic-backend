@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/petretiandrea/beaesthetic-backend/notification/internal/domain"
 )
 
 var (
@@ -50,30 +49,47 @@ type CustomerNotificationTemplateRenderer interface {
 	Render(ctx context.Context, data CustomerNotificationTemplateData) (string, error)
 }
 
-type CustomerNotificationDelivery struct {
+type CustomerNotificationSMSDispatcher interface {
+	Send(ctx context.Context, messageID, phone, content string) (string, error)
+}
+
+type CustomerNotificationRecord struct {
+	ID                  string
 	IdempotencyKey      string
-	NotificationID      string
 	CustomerID          string
 	NotificationType    string
 	NotificationChannel string
+	TemplateValues      map[string]any
+	Status              string
 	CreatedAt           time.Time
+	SentAt              time.Time
 }
 
-type CustomerNotificationIdempotencyRepository interface {
+type SMSGatewayDispatch struct {
+	ID                     string
+	CustomerNotificationID string
+	SMSGatewayMessageID    string
+	CreatedAt              time.Time
+}
+
+type CustomerNotificationRepository interface {
 	Exists(ctx context.Context, idempotencyKey string) (bool, error)
-	Save(ctx context.Context, delivery CustomerNotificationDelivery) error
+	CreatePending(ctx context.Context, notification CustomerNotificationRecord) (bool, error)
+	SaveSMSGatewayDispatch(ctx context.Context, dispatch SMSGatewayDispatch) error
+	MarkSentBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, sentAt time.Time) error
+	MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, failedAt time.Time) error
 }
 
 type CustomerNotificationService struct {
 	customers     CustomerReader
 	templates     CustomerNotificationTemplateRenderer
-	idempotency   CustomerNotificationIdempotencyRepository
-	notifications *NotificationService
+	repository    CustomerNotificationRepository
+	smsDispatcher CustomerNotificationSMSDispatcher
 	now           func() time.Time
 }
 
-func NewCustomerNotificationService(customers CustomerReader, templates CustomerNotificationTemplateRenderer, idempotency CustomerNotificationIdempotencyRepository, notifications *NotificationService) *CustomerNotificationService {
-	return &CustomerNotificationService{customers: customers, templates: templates, idempotency: idempotency, notifications: notifications, now: time.Now}
+func NewCustomerNotificationService(customers CustomerReader, templates CustomerNotificationTemplateRenderer, repository CustomerNotificationRepository, smsDispatcher CustomerNotificationSMSDispatcher) *CustomerNotificationService {
+	return &CustomerNotificationService{customers: customers, templates: templates, repository: repository, smsDispatcher: smsDispatcher, now: time.Now}
 }
 
 func (service *CustomerNotificationService) Process(ctx context.Context, command CustomerNotificationCommand) error {
@@ -91,13 +107,40 @@ func (service *CustomerNotificationService) Process(ctx context.Context, command
 	return nil
 }
 
+func (service *CustomerNotificationService) ConfirmSMSGatewayMessageSent(ctx context.Context, smsGatewayMessageID string) error {
+	return service.repository.MarkSentBySMSGatewayMessageID(ctx, smsGatewayMessageID, service.now().UTC())
+}
+
+func (service *CustomerNotificationService) MarkSMSGatewayMessageFailed(ctx context.Context, smsGatewayMessageID string) error {
+	return service.repository.MarkFailedBySMSGatewayMessageID(ctx, smsGatewayMessageID, service.now().UTC())
+}
+
 func (service *CustomerNotificationService) processCustomer(ctx context.Context, command CustomerNotificationCommand, customerID string) error {
 	key := command.CustomerIdempotencyKey(customerID)
-	exists, err := service.idempotency.Exists(ctx, key)
+	exists, err := service.repository.Exists(ctx, key)
 	if err != nil {
 		return err
 	}
 	if exists {
+		return nil
+	}
+
+	newNotificationID := uuid.NewString()
+	now := service.now().UTC()
+	created, err := service.repository.CreatePending(ctx, CustomerNotificationRecord{
+		ID:                  newNotificationID,
+		IdempotencyKey:      key,
+		CustomerID:          customerID,
+		NotificationType:    command.NotificationType,
+		NotificationChannel: command.NotificationChannel,
+		TemplateValues:      command.Body,
+		Status:              "pending",
+		CreatedAt:           now,
+	})
+	if err != nil {
+		return err
+	}
+	if !created {
 		return nil
 	}
 
@@ -108,30 +151,28 @@ func (service *CustomerNotificationService) processCustomer(ctx context.Context,
 	if strings.TrimSpace(customer.Phone) == "" {
 		return fmt.Errorf("%w: %s", ErrCustomerPhoneRequired, customerID)
 	}
-
+	templateValues := command.TemplateValues(customer)
 	content, err := service.templates.Render(ctx, CustomerNotificationTemplateData{
 		NotificationType:    command.NotificationType,
 		NotificationChannel: command.NotificationChannel,
-		Values:              command.TemplateValues(customer),
+		Values:              templateValues,
 	})
 	if err != nil {
 		return err
 	}
 
-	notification, err := service.notifications.CreateNotification(ctx, "", content, domain.Channel{Type: domain.ChannelSMS, Phone: customer.Phone})
+	smsGatewayMessageID, err := service.smsDispatcher.Send(ctx, newNotificationID, customer.Phone, content)
 	if err != nil {
 		return err
 	}
-	if err := service.notifications.SendNotification(ctx, notification.ID); err != nil {
-		return err
+	if smsGatewayMessageID == "" {
+		return nil
 	}
-	return service.idempotency.Save(ctx, CustomerNotificationDelivery{
-		IdempotencyKey:      key,
-		NotificationID:      notification.ID,
-		CustomerID:          customerID,
-		NotificationType:    command.NotificationType,
-		NotificationChannel: command.NotificationChannel,
-		CreatedAt:           service.now().UTC(),
+	return service.repository.SaveSMSGatewayDispatch(ctx, SMSGatewayDispatch{
+		ID:                     uuid.NewString(),
+		CustomerNotificationID: newNotificationID,
+		SMSGatewayMessageID:    smsGatewayMessageID,
+		CreatedAt:              service.now().UTC(),
 	})
 }
 
@@ -145,7 +186,7 @@ func (command CustomerNotificationCommand) Validate() error {
 	if strings.ContainsAny(command.NotificationType, `/\\`) {
 		return errors.New("notificationType cannot contain path separators")
 	}
-	if command.NotificationChannel != string(domain.ChannelSMS) {
+	if command.NotificationChannel != "sms" {
 		return fmt.Errorf("%w: %s", ErrUnsupportedCustomerNotificationChannel, command.NotificationChannel)
 	}
 	if command.Body == nil {

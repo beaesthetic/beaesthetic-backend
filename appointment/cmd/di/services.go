@@ -2,9 +2,9 @@ package di
 
 import (
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
+	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/messaging"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/postgres"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/client/customer"
-	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/client/notification"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/client/scheduler"
 )
 
@@ -31,7 +31,7 @@ func (d *DiContainer) GetAppointmentLifecycleHandler() *application.AppointmentL
 			d.GetAppointmentService(),
 			d.GetCustomerRegistry(),
 			d.GetReminderScheduler(),
-			d.GetNotificationClient(),
+			d.GetCustomerNotificationSender(),
 			d.GetClock(),
 			d.Config.Reminder.NoSendThreshold,
 			d.Config.Reminder.ImmediateSendThreshold,
@@ -70,9 +70,9 @@ func (d *DiContainer) GetPostgresRepository() *postgres.Repository {
 	})
 }
 
-func (d *DiContainer) GetNotificationClient() *notification.NotificationClient {
-	return singletonWithError(d, "notificationClient", func() (*notification.NotificationClient, error) {
-		return notification.NewNotificationClient(d.Config.Remote.NotificationURL)
+func (d *DiContainer) GetCustomerNotificationSender() application.NotificationSender {
+	return singleton(d, "customerNotificationSender", func() application.NotificationSender {
+		return messaging.NewCustomerNotificationSender(d.GetOutboxPublisher())
 	})
 }
 

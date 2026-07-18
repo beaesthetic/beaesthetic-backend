@@ -15,6 +15,7 @@ FROM gcr.io/distroless/base-debian12:nonroot
 WORKDIR /app
 COPY --from=build /src/build/notification /app/notification
 COPY --from=build /src/migrations /app/migrations
+COPY --from=build /src/templates /app/templates
 
 EXPOSE 8080
 ENTRYPOINT ["/app/notification"]

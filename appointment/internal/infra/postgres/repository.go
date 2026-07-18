@@ -176,9 +176,9 @@ func (r *Repository) FindService(ctx context.Context, id string) (*domain.Appoin
 	return &services[0], nil
 }
 
-func (r *Repository) FindPendingNotification(ctx context.Context, notificationID string) (*application.PendingNotification, error) {
+func (r *Repository) FindPendingNotification(ctx context.Context, correlationKey string) (*application.PendingNotification, error) {
 	var pending application.PendingNotification
-	err := r.db.QueryRow(ctx, `SELECT notification_id, agenda_event_id, notification_type FROM pending_notifications WHERE notification_id=$1`, notificationID).Scan(&pending.NotificationID, &pending.AgendaEventID, &pending.Type)
+	err := r.db.QueryRow(ctx, `SELECT correlation_key, agenda_event_id, notification_type FROM pending_notifications WHERE correlation_key=$1`, correlationKey).Scan(&pending.CorrelationKey, &pending.AgendaEventID, &pending.Type)
 	if err == pgx.ErrNoRows {
 		return nil, nil
 	}
@@ -188,13 +188,13 @@ func (r *Repository) FindPendingNotification(ctx context.Context, notificationID
 	return &pending, nil
 }
 
-func (r *Repository) RemovePendingNotification(ctx context.Context, notificationID string) error {
-	_, err := r.db.Exec(ctx, `DELETE FROM pending_notifications WHERE notification_id=$1`, notificationID)
+func (r *Repository) RemovePendingNotification(ctx context.Context, correlationKey string) error {
+	_, err := r.db.Exec(ctx, `DELETE FROM pending_notifications WHERE correlation_key=$1`, correlationKey)
 	return err
 }
 
 func (r *Repository) SavePendingNotification(ctx context.Context, pending application.PendingNotification) error {
-	_, err := r.db.Exec(ctx, `INSERT INTO pending_notifications (notification_id, agenda_event_id, notification_type, expires_at) VALUES ($1,$2,$3,$4) ON CONFLICT (notification_id) DO UPDATE SET agenda_event_id=$2, notification_type=$3, expires_at=$4`, pending.NotificationID, pending.AgendaEventID, pending.Type, time.Now().UTC().Add(24*time.Hour))
+	_, err := r.db.Exec(ctx, `INSERT INTO pending_notifications (correlation_key, agenda_event_id, notification_type, expires_at) VALUES ($1,$2,$3,$4) ON CONFLICT (correlation_key) DO UPDATE SET agenda_event_id=$2, notification_type=$3, expires_at=$4`, pending.CorrelationKey, pending.AgendaEventID, pending.Type, time.Now().UTC().Add(24*time.Hour))
 	return err
 }
 
