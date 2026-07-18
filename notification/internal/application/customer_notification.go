@@ -56,6 +56,7 @@ type CustomerNotificationSMSDispatcher interface {
 type CustomerNotificationRecord struct {
 	ID                  string
 	IdempotencyKey      string
+	CorrelationKey      string
 	CustomerID          string
 	NotificationType    string
 	NotificationChannel string
@@ -116,6 +117,7 @@ func (service *CustomerNotificationService) MarkSMSGatewayMessageFailed(ctx cont
 }
 
 func (service *CustomerNotificationService) processCustomer(ctx context.Context, command CustomerNotificationCommand, customerID string) error {
+	correlationKey := command.CorrelationKey()
 	key := command.CustomerIdempotencyKey(customerID)
 	exists, err := service.repository.Exists(ctx, key)
 	if err != nil {
@@ -130,6 +132,7 @@ func (service *CustomerNotificationService) processCustomer(ctx context.Context,
 	created, err := service.repository.CreatePending(ctx, CustomerNotificationRecord{
 		ID:                  newNotificationID,
 		IdempotencyKey:      key,
+		CorrelationKey:      correlationKey,
 		CustomerID:          customerID,
 		NotificationType:    command.NotificationType,
 		NotificationChannel: command.NotificationChannel,
@@ -218,11 +221,15 @@ func (command CustomerNotificationCommand) TemplateValues(customer Customer) map
 }
 
 func (command CustomerNotificationCommand) CustomerIdempotencyKey(customerID string) string {
+	return fmt.Sprintf("%s:%s:%s:%s", command.CorrelationKey(), customerID, command.NotificationChannel, command.NotificationType)
+}
+
+func (command CustomerNotificationCommand) CorrelationKey() string {
 	base := strings.TrimSpace(command.IdempotencyKey)
-	if base == "" {
-		base = command.fallbackIdempotencyKey()
+	if base != "" {
+		return base
 	}
-	return fmt.Sprintf("%s:%s:%s:%s", base, customerID, command.NotificationChannel, command.NotificationType)
+	return command.fallbackIdempotencyKey()
 }
 
 func (command CustomerNotificationCommand) fallbackIdempotencyKey() string {

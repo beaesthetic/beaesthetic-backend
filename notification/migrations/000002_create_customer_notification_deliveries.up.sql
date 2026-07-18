@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS customer_notifications (
     id UUID PRIMARY KEY,
     idempotency_key TEXT NOT NULL UNIQUE,
+    correlation_key TEXT NOT NULL,
     customer_id TEXT NOT NULL,
     notification_type TEXT NOT NULL,
     notification_channel TEXT NOT NULL,

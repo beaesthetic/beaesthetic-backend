@@ -19,6 +19,7 @@ envConfig:
   HTTP__ADDR: ':8080'
   SMS_GATEWAY__URL: http://sms-gateway-api.beaesthetic.svc.cluster.local:80
   SMS_GATEWAY__FROM_NUMBER: '+393515253634'
+  RABBITMQ__NOTIFICATION_CONFIRM_QUEUE: NotificationConfirmQueue
   RABBITMQ__CUSTOMER_NOTIFICATION_QUEUE: customer.notifications
   CUSTOMER_SERVICE__URL: http://customer-service-v2.beaesthetic.svc.cluster.local:8080
   TEMPLATES__PATH: /app/templates
@@ -65,5 +66,29 @@ livenessProbe:
   initialDelaySeconds: 30
   failureThreshold: 10
   periodSeconds: 30
+sidecar:
+  outbox:
+    image:
+      repository: petretiandrea/outbox-forwarder
+      tag: v1.6.0
+      pullPolicy: IfNotPresent
+    configMapRefs:
+      - notification-service-v2-config
+    secretKeyRef:
+      - name: POSTGRES_DSN
+        secretRefName: notification-secrets
+        key: postgres-dsn
+      - name: RABBITMQ_DSN
+        secretRefName: notification-secrets
+        key: rabbitmq-url
+    volumeMounts:
+      - name: outbox-config
+        mountPath: /etc/outbox/outbox.yaml
+        subPath: outbox.yaml
+        readOnly: true
+volumes:
+  - name: outbox-config
+    configMap:
+      name: notification-service-v2-outbox-config
 postgres:
   database: notifications
