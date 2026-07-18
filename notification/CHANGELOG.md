@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.7.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.6.0...notification-service-v2.7.0) (2026-07-18)
+
+
+### Features
+
+* implement outbox pattern for customer notifications with correlation key ([20c9933](https://github.com/beaesthetic/beaesthetic-backend/commit/20c9933a58b62de9d2b18c7a740bf306be250f3e))
+
 ## [2.6.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.5.0...notification-service-v2.6.0) (2026-07-18)
 
 
