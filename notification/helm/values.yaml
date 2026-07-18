@@ -1,44 +1,38 @@
-environment: ""
-namespace: "beaesthetic"
-name: "notification-service-v2"
+environment: ''
+namespace: beaesthetic
+name: notification-service-v2
 labels:
-  app: "notification-api-v2"
-
+  app: notification-api-v2
 replicaCount: 1
-
 image:
   repository: petretiandrea/notification-service-v2
-  tag: "2.4.0"
+  tag: 2.5.0
   pullPolicy: IfNotPresent
-
 service:
   create: true
   type: ClusterIP
   ports:
     - 8080
-
 envConfig:
-  APP__NAME: "beaesthetic-notifications"
-  APP__ENV: "prod"
-  HTTP__ADDR: ":8080"
-  SMS_GATEWAY__URL: "http://sms-gateway-api.beaesthetic.svc.cluster.local:80"
-  SMS_GATEWAY__FROM_NUMBER: "+393515253634"
-  RABBITMQ__NOTIFICATION_QUEUE: "NotificationQueue"
-  RABBITMQ__NOTIFICATION_CONFIRM_QUEUE: "NotificationConfirmQueue"
-  RABBITMQ__CUSTOMER_NOTIFICATION_QUEUE: "customer.notifications"
-  CUSTOMER_SERVICE__URL: "http://customer-service-v2.beaesthetic.svc.cluster.local:8080"
-  TEMPLATES__PATH: "/app/templates"
-  MONGO__DATABASE: "notifications-v2"
-  MONGO__COLLECTION: "notifications"
-
+  APP__NAME: beaesthetic-notifications
+  APP__ENV: prod
+  HTTP__ADDR: ':8080'
+  SMS_GATEWAY__URL: http://sms-gateway-api.beaesthetic.svc.cluster.local:80
+  SMS_GATEWAY__FROM_NUMBER: '+393515253634'
+  RABBITMQ__NOTIFICATION_QUEUE: NotificationQueue
+  RABBITMQ__NOTIFICATION_CONFIRM_QUEUE: NotificationConfirmQueue
+  RABBITMQ__CUSTOMER_NOTIFICATION_QUEUE: customer.notifications
+  CUSTOMER_SERVICE__URL: http://customer-service-v2.beaesthetic.svc.cluster.local:8080
+  TEMPLATES__PATH: /app/templates
+  MONGO__DATABASE: notifications-v2
+  MONGO__COLLECTION: notifications
 resources:
   requests:
-    memory: "100Mi"
-    cpu: "80m"
+    memory: 100Mi
+    cpu: 80m
   limits:
-    memory: "100Mi"
-    cpu: "80m"
-
+    memory: 100Mi
+    cpu: 80m
 secretKeyRef:
   - name: POSTGRES__DSN
     secretRefName: notification-secrets
@@ -52,7 +46,6 @@ secretKeyRef:
   - name: SMS_GATEWAY__API_KEY
     secretRefName: notification-secrets
     key: SMS_GATEWAY_API_KEY
-
 initContainers:
   migrate:
     enabled: true
@@ -60,7 +53,6 @@ initContainers:
       - /app/notification
       - migrate
       - up
-
 readinessProbe:
   httpGet:
     path: /health
@@ -68,7 +60,6 @@ readinessProbe:
   initialDelaySeconds: 30
   failureThreshold: 10
   periodSeconds: 30
-
 livenessProbe:
   httpGet:
     path: /health
@@ -76,12 +67,11 @@ livenessProbe:
   initialDelaySeconds: 30
   failureThreshold: 10
   periodSeconds: 30
-
 sidecar:
   outbox:
     image:
       repository: petretiandrea/outbox-forwarder
-      tag: "v1.6.0"
+      tag: v1.6.0
       pullPolicy: IfNotPresent
     configMapRefs:
       - notification-service-v2-config
@@ -94,14 +84,12 @@ sidecar:
         key: rabbitmq-url
     volumeMounts:
       - name: outbox-config
-        mountPath: "/etc/outbox/outbox.yaml"
-        subPath: "outbox.yaml"
+        mountPath: /etc/outbox/outbox.yaml
+        subPath: outbox.yaml
         readOnly: true
-
 volumes:
   - name: outbox-config
     configMap:
       name: notification-service-v2-outbox-config
-
 postgres:
-  database: "notifications"
+  database: notifications

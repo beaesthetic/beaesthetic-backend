@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.13.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.12.0...appointment-service-v1.13.0) (2026-07-18)
+
+
+### Features
+
+* add GitHub workflows for branches and main, remove obsolete release workflows, and update environment configurations ([892579d](https://github.com/beaesthetic/beaesthetic-backend/commit/892579dd7511802e46cacb1396599671886e664e))
+* notification revamp ([#86](https://github.com/beaesthetic/beaesthetic-backend/issues/86)) ([c9249a6](https://github.com/beaesthetic/beaesthetic-backend/commit/c9249a62602357eb0cd7edfce3f662f3b2070ce7))
+
 ## [1.12.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.11.0...appointment-service-v1.12.0) (2026-07-09)
 
 
