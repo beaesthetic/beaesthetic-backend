@@ -5,10 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "appointment/helm/Chart.yaml"
-      - "appointment/helm/values.yaml"
-      - "notification/helm/Chart.yaml"
-      - "notification/helm/values.yaml"
+      - ".release-please-manifest.json"
       - ".github/workflows/main.yaml"
   workflow_dispatch:
 
@@ -24,25 +21,36 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      appointment: ${{ steps.filter.outputs.appointment }}
-      notification: ${{ steps.filter.outputs.notification }}
+      appointment: ${{ steps.release.outputs.appointment }}
+      notification: ${{ steps.release.outputs.notification }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Detect changed services
-        id: filter
-        uses: dorny/paths-filter@v3
         with:
-          filters: |
-            appointment:
-              - 'appointment/helm/Chart.yaml'
-              - 'appointment/helm/values.yaml'
-              - '.github/workflows/main.yaml'
-            notification:
-              - 'notification/helm/Chart.yaml'
-              - 'notification/helm/values.yaml'
-              - '.github/workflows/main.yaml'
+          fetch-depth: 0
+
+      - name: Detect released services
+        id: release
+        shell: bash
+        run: |
+          before="${{ github.event.before }}"
+          manifest=".release-please-manifest.json"
+
+          for service in appointment notification; do
+            current="$(jq -r --arg service "$service" '.[$service] // empty' "$manifest")"
+            previous=""
+            if [ -n "$before" ] && git cat-file -e "$before:$manifest" 2>/dev/null; then
+              previous="$(git show "$before:$manifest" | jq -r --arg service "$service" '.[$service] // empty')"
+            fi
+
+            if [ -n "$current" ] && [ "$current" != "$previous" ]; then
+              echo "$service=true" >> "$GITHUB_OUTPUT"
+              echo "$service released: $previous -> $current"
+            else
+              echo "$service=false" >> "$GITHUB_OUTPUT"
+              echo "$service not released"
+            fi
+          done
 
   build:
     needs: changes

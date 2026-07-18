@@ -178,12 +178,12 @@ func (repo *fakeCustomerNotificationRepository) SaveSMSGatewayDispatch(ctx conte
 	return nil
 }
 
-func (repo *fakeCustomerNotificationRepository) MarkSentBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, sentAt time.Time) error {
-	return nil
+func (repo *fakeCustomerNotificationRepository) MarkSentBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, sentAt time.Time) (bool, error) {
+	return true, nil
 }
 
-func (repo *fakeCustomerNotificationRepository) MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, failedAt time.Time) error {
-	return nil
+func (repo *fakeCustomerNotificationRepository) MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, failedAt time.Time) (bool, error) {
+	return true, nil
 }
 
 type fakeSMSDispatcher struct{ sent int }

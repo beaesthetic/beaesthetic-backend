@@ -47,7 +47,6 @@ func appCommand(envFile *string) *cobra.Command {
 			}()
 
 			httpServer := c.GetHttpServer()
-			outboxConsumer := c.GetNotificationOutboxConsumer()
 			var customerNotificationConsumer interface {
 				Run(context.Context) error
 			}
@@ -70,13 +69,6 @@ func appCommand(envFile *string) *cobra.Command {
 				defer cancel()
 				if err := httpServer.Shutdown(shutdownCtx); err != nil {
 					return fmt.Errorf("shutdown http server: %w", err)
-				}
-				return nil
-			})
-			group.Go(func() error {
-				c.Log.Info("starting notification outbox consumer", zap.String("queue", c.Config.RabbitMQ.NotificationQueue))
-				if err := outboxConsumer.Run(groupCtx); err != nil && !errors.Is(err, context.Canceled) {
-					return fmt.Errorf("run notification outbox consumer: %w", err)
 				}
 				return nil
 			})

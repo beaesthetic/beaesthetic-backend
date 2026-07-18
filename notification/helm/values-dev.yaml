@@ -20,14 +20,3 @@ resources:
   limits:
     memory: 128Mi
     cpu: 100m
-
-sidecar:
-  outbox:
-    configMapRefs:
-      - notification-service-v2-config
-
-volumes:
-  - name: outbox-config
-    configMap:
-      name: notification-service-v2-outbox-config
-

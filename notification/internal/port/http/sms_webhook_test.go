@@ -3,27 +3,29 @@ package http
 import (
 	"context"
 	"testing"
+	"time"
 
+	"github.com/google/uuid"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/api/smswebhook"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/application"
-	"github.com/petretiandrea/beaesthetic-backend/notification/internal/domain"
-	"github.com/petretiandrea/beaesthetic-backend/notification/internal/infra/provider"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zaptest/observer"
 )
 
-func TestSmsGatewayNotifyNotificationNotFoundLogsWarning(t *testing.T) {
-	core, observedLogs := observer.New(zap.WarnLevel)
-	service := application.NewNotificationService(notificationRepositoryStub{}, notificationProviderStub{})
-	server := NewSmsHandler(service, zap.New(core))
+func TestSmsGatewayNotifyConfirmsCustomerNotificationDelivery(t *testing.T) {
+	customerRepository := &customerNotificationRepositoryStub{sentMatch: true}
+	customerService := application.NewCustomerNotificationService(nil, nil, customerRepository, nil)
+	server := NewSmsWebhookHandler(customerService, zap.NewNop())
 
 	eventType := smswebhook.MessageDeliverSucceeded
-	metadata := smswebhook.AdditionalMetadata{provider.NotificationIDMetadata: "missing-notification"}
+	smsGatewayMessageID := uuid.MustParse("044207cc-35bd-4027-9034-e07ec51b4635")
 
 	response, err := server.SmsGatewayNotify(context.Background(), smswebhook.SmsGatewayNotifyRequestObject{
 		Body: &smswebhook.SmsGatewayNotifyJSONRequestBody{
 			EventType: &eventType,
-			Metadata:  &metadata,
+			Data: &smswebhook.SmsEntityResponse{
+				Id: smsGatewayMessageID,
+			},
 		},
 	})
 	if err != nil {
@@ -32,32 +34,62 @@ func TestSmsGatewayNotifyNotificationNotFoundLogsWarning(t *testing.T) {
 	if _, ok := response.(smswebhook.SmsGatewayNotify200Response); !ok {
 		t.Fatalf("response = %T, want SmsGatewayNotify200Response", response)
 	}
+	if customerRepository.sentMessageID != smsGatewayMessageID.String() {
+		t.Fatalf("sent sms gateway message id = %q, want %q", customerRepository.sentMessageID, smsGatewayMessageID.String())
+	}
+}
 
-	warnings := observedLogs.FilterMessage("notification not found while confirming sms delivery").All()
+func TestSmsGatewayNotifyUnmatchedCustomerNotificationLogsWarning(t *testing.T) {
+	core, observedLogs := observer.New(zap.WarnLevel)
+	customerRepository := &customerNotificationRepositoryStub{sentMatch: false}
+	customerService := application.NewCustomerNotificationService(nil, nil, customerRepository, nil)
+	server := NewSmsWebhookHandler(customerService, zap.New(core))
+
+	eventType := smswebhook.MessageDeliverSucceeded
+
+	response, err := server.SmsGatewayNotify(context.Background(), smswebhook.SmsGatewayNotifyRequestObject{
+		Body: &smswebhook.SmsGatewayNotifyJSONRequestBody{
+			EventType: &eventType,
+			Data: &smswebhook.SmsEntityResponse{
+				Id: uuid.MustParse("044207cc-35bd-4027-9034-e07ec51b4635"),
+			},
+		},
+	})
+	if err != nil {
+		t.Fatalf("SmsGatewayNotify returned error: %v", err)
+	}
+	if _, ok := response.(smswebhook.SmsGatewayNotify200Response); !ok {
+		t.Fatalf("response = %T, want SmsGatewayNotify200Response", response)
+	}
+	warnings := observedLogs.FilterMessage("customer notification not found while confirming sms delivery").All()
 	if len(warnings) != 1 {
 		t.Fatalf("warning logs = %d, want 1", len(warnings))
 	}
-	if observedLogs.FilterMessage("failed to confirm notification sent").Len() != 0 {
-		t.Fatal("unexpected error log for missing notification")
-	}
 }
 
-type notificationRepositoryStub struct{}
-
-func (notificationRepositoryStub) FindByID(context.Context, string) (*domain.Notification, error) {
-	return nil, nil
+type customerNotificationRepositoryStub struct {
+	sentMatch     bool
+	failedMatch   bool
+	sentMessageID string
 }
 
-func (notificationRepositoryStub) Save(context.Context, *domain.Notification) error {
+func (repo *customerNotificationRepositoryStub) Exists(context.Context, string) (bool, error) {
+	return false, nil
+}
+
+func (repo *customerNotificationRepositoryStub) CreatePending(context.Context, application.CustomerNotificationRecord) (bool, error) {
+	return true, nil
+}
+
+func (repo *customerNotificationRepositoryStub) SaveSMSGatewayDispatch(context.Context, application.SMSGatewayDispatch) error {
 	return nil
 }
 
-type notificationProviderStub struct{}
-
-func (notificationProviderStub) Supports(domain.Notification) bool {
-	return true
+func (repo *customerNotificationRepositoryStub) MarkSentBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, sentAt time.Time) (bool, error) {
+	repo.sentMessageID = smsGatewayMessageID
+	return repo.sentMatch, nil
 }
 
-func (notificationProviderStub) Send(context.Context, domain.Notification) (domain.ChannelMetadata, error) {
-	return domain.ChannelMetadata{}, nil
+func (repo *customerNotificationRepositoryStub) MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, failedAt time.Time) (bool, error) {
+	return repo.failedMatch, nil
 }

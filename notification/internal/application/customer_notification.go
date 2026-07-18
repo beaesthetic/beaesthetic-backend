@@ -76,8 +76,8 @@ type CustomerNotificationRepository interface {
 	Exists(ctx context.Context, idempotencyKey string) (bool, error)
 	CreatePending(ctx context.Context, notification CustomerNotificationRecord) (bool, error)
 	SaveSMSGatewayDispatch(ctx context.Context, dispatch SMSGatewayDispatch) error
-	MarkSentBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, sentAt time.Time) error
-	MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, failedAt time.Time) error
+	MarkSentBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, sentAt time.Time) (bool, error)
+	MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, failedAt time.Time) (bool, error)
 }
 
 type CustomerNotificationService struct {
@@ -107,11 +107,11 @@ func (service *CustomerNotificationService) Process(ctx context.Context, command
 	return nil
 }
 
-func (service *CustomerNotificationService) ConfirmSMSGatewayMessageSent(ctx context.Context, smsGatewayMessageID string) error {
+func (service *CustomerNotificationService) ConfirmSMSGatewayMessageSent(ctx context.Context, smsGatewayMessageID string) (bool, error) {
 	return service.repository.MarkSentBySMSGatewayMessageID(ctx, smsGatewayMessageID, service.now().UTC())
 }
 
-func (service *CustomerNotificationService) MarkSMSGatewayMessageFailed(ctx context.Context, smsGatewayMessageID string) error {
+func (service *CustomerNotificationService) MarkSMSGatewayMessageFailed(ctx context.Context, smsGatewayMessageID string) (bool, error) {
 	return service.repository.MarkFailedBySMSGatewayMessageID(ctx, smsGatewayMessageID, service.now().UTC())
 }
 

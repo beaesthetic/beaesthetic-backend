@@ -12,6 +12,8 @@ import (
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/config"
 )
 
+const NotificationIDMetadata = "notificationId"
+
 type CustomerNotificationSMSDispatcher struct {
 	client *http.Client
 	config config.SMSGatewayConfig
@@ -63,4 +65,20 @@ func (dispatcher *CustomerNotificationSMSDispatcher) Send(ctx context.Context, m
 		return "", err
 	}
 	return response.ID, nil
+}
+
+type sendSMSRequest struct {
+	Content  string            `json:"content"`
+	From     string            `json:"from"`
+	To       string            `json:"to"`
+	Webhook  *webhookConfig    `json:"webhook,omitempty"`
+	Metadata map[string]string `json:"metadata,omitempty"`
+}
+
+type webhookConfig struct {
+	URL string `json:"url"`
+}
+
+type smsEntityResponse struct {
+	ID string `json:"id"`
 }
