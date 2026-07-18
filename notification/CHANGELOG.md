@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.5.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.4.0...notification-service-v2.5.0) (2026-07-18)
+
+
+### Features
+
+* implement customer notification service with SMS support ([5a7d9b2](https://github.com/beaesthetic/beaesthetic-backend/commit/5a7d9b20ae9e72804889ca1de4c3b94434ce4e3c))
+* implement protobuf-based customer notification system with AMQP integration ([d37a1b0](https://github.com/beaesthetic/beaesthetic-backend/commit/d37a1b07838113ae3979b2dffa79a135577a835c))
+* notification revamp ([#86](https://github.com/beaesthetic/beaesthetic-backend/issues/86)) ([c9249a6](https://github.com/beaesthetic/beaesthetic-backend/commit/c9249a62602357eb0cd7edfce3f662f3b2070ce7))
+* update release notification workflow and helm values for notification service ([7f612c9](https://github.com/beaesthetic/beaesthetic-backend/commit/7f612c93c74082be2b6d29617f6a62f65803ac52))
+* update release notification workflow, enhance ApplicationSet for notification service, and set image tag in Helm values ([b949d50](https://github.com/beaesthetic/beaesthetic-backend/commit/b949d50fe0934854921fca0d17abf970f19ee34d))
+
 ## [2.4.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.3.0...notification-service-v2.4.0) (2026-07-09)
 
 

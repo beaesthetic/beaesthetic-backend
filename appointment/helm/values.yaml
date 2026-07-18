@@ -1,62 +1,47 @@
-environment: ""
-namespace: "beaesthetic"
-name: "appointment-service-v2"
+environment: ''
+namespace: beaesthetic
+name: appointment-service-v2
 labels:
-  app: "appointment-api-v2"
-
+  app: appointment-api-v2
 replicaCount: 1
-
 image:
   repository: petretiandrea/appointment-service-v2
-  tag: "1.12.0"
+  tag: 1.13.0
   pullPolicy: IfNotPresent
-
 service:
   create: true
   type: ClusterIP
   ports:
     - 8080
-
 envConfig:
-  OTEL_COLLECTOR_GRPC_ENDPOINT: "http://opentelemetry-collector.monitoring.svc.cluster.local:4317"
-  REDIS_HOST: "redis-headless.common.svc.cluster.local:6379"
-
-  ENV_APP_NAME: "appointment-service-v2"
-  ENV_HTTP_ADDR: ":8080"
-
-  ENV_MONGO_DATABASE: "appointments-v2"
-
-  ENV_REMOTE_CUSTOMER__URL: "http://customer-service-v2:8080"
-  ENV_REMOTE_SCHEDULER__URL: "http://scheduler-service:8080"
-
-  ENV_REMINDER_TRIGGER__BEFORE: "24h"
-  ENV_REMINDER_IMMEDIATE__SEND__THRESHOLD: "2m"
-  ENV_REMINDER_NO__SEND__THRESHOLD: "30m"
-
-  ENV_RABBITMQ_SCHEDULER__QUEUE: "reminders-times-up"
-  ENV_RABBITMQ_APPOINTMENT__INTERNAL__JOB__QUEUE: "beaesthetic.appointments.internal.job"
-  ENV_RABBITMQ_NOTIFICATION__CONFIRM__QUEUE: "NotificationConfirmQueue"
-
-  ENV_RABBITMQ_CUSTOMER__NOTIFICATION__QUEUE: "customer.notifications"
-
-  SERVICES_CACHE_TTL: "1h"
-  SERVICES_SEARCH_CACHE_TTL: "1h"
-
-  MONITOR_REMINDERS_FAILED_FREQUENCY: "2h"
-  RECOVERY_ENABLED: "true"
-
+  OTEL_COLLECTOR_GRPC_ENDPOINT: http://opentelemetry-collector.monitoring.svc.cluster.local:4317
+  REDIS_HOST: redis-headless.common.svc.cluster.local:6379
+  ENV_APP_NAME: appointment-service-v2
+  ENV_HTTP_ADDR: ':8080'
+  ENV_MONGO_DATABASE: appointments-v2
+  ENV_REMOTE_CUSTOMER__URL: http://customer-service-v2:8080
+  ENV_REMOTE_SCHEDULER__URL: http://scheduler-service:8080
+  ENV_REMINDER_TRIGGER__BEFORE: 24h
+  ENV_REMINDER_IMMEDIATE__SEND__THRESHOLD: 2m
+  ENV_REMINDER_NO__SEND__THRESHOLD: 30m
+  ENV_RABBITMQ_SCHEDULER__QUEUE: reminders-times-up
+  ENV_RABBITMQ_APPOINTMENT__INTERNAL__JOB__QUEUE: beaesthetic.appointments.internal.job
+  ENV_RABBITMQ_NOTIFICATION__CONFIRM__QUEUE: NotificationConfirmQueue
+  ENV_RABBITMQ_CUSTOMER__NOTIFICATION__QUEUE: customer.notifications
+  SERVICES_CACHE_TTL: 1h
+  SERVICES_SEARCH_CACHE_TTL: 1h
+  MONITOR_REMINDERS_FAILED_FREQUENCY: 2h
+  RECOVERY_ENABLED: 'true'
 initContainers:
   migrate:
     enabled: true
-
 resources:
   requests:
-    memory: "100Mi"
-    cpu: "80m"
+    memory: 100Mi
+    cpu: 80m
   limits:
-    memory: "100Mi"
-    cpu: "80m"
-
+    memory: 100Mi
+    cpu: 80m
 secretKeyRef:
   - name: ENV_MONGO_URI
     secretRefName: appointment-secrets
@@ -67,7 +52,6 @@ secretKeyRef:
   - name: ENV_RABBITMQ_URL
     secretRefName: appointment-secrets-v2
     key: rabbitmq-url
-
 readinessProbe:
   httpGet:
     path: /health
@@ -75,7 +59,6 @@ readinessProbe:
   initialDelaySeconds: 30
   failureThreshold: 10
   periodSeconds: 30
-
 livenessProbe:
   httpGet:
     path: /health
@@ -83,12 +66,11 @@ livenessProbe:
   initialDelaySeconds: 30
   failureThreshold: 10
   periodSeconds: 30
-
 sidecar:
   outbox:
     image:
       repository: petretiandrea/outbox-forwarder
-      tag: "v1.6.0"
+      tag: v1.6.0
       pullPolicy: IfNotPresent
     configMapRefs:
       - appointment-service-v2-outbox-config
@@ -101,14 +83,12 @@ sidecar:
         key: rabbitmq-url
     volumeMounts:
       - name: outbox-config
-        mountPath: "/etc/outbox/outbox.yaml"
-        subPath: "outbox.yaml"
+        mountPath: /etc/outbox/outbox.yaml
+        subPath: outbox.yaml
         readOnly: true
-
 volumes:
   - name: outbox-config
     configMap:
       name: appointment-service-v2-outbox-config
-
 postgres:
-  database: "appointments"
+  database: appointments
