@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.6.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.5.0...notification-service-v2.6.0) (2026-07-18)
+
+
+### Features
+
+* remove legacy notification domain and related infrastructure ([ef4086a](https://github.com/beaesthetic/beaesthetic-backend/commit/ef4086a2fe1ba1d9c62e88acb6f8fe40e79a1cca))
+
 ## [2.5.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.4.0...notification-service-v2.5.0) (2026-07-18)
 
 
