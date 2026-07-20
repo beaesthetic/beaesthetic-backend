@@ -29,7 +29,7 @@ springBoot {
     mainClass.set("it.beaesthetic.gateway.GatewayApplicationKt")
 }
 
-extra["springCloudVersion"] = "2023.0.2-SNAPSHOT"
+extra["springCloudVersion"] = "2023.0.6"
 
 dependencies {
     // functional - fp
