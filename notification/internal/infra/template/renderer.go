@@ -42,7 +42,8 @@ func (renderer *Renderer) Render(ctx context.Context, data application.CustomerN
 
 func templateFunctions() texttemplate.FuncMap {
 	return texttemplate.FuncMap{
-		"dateFormat":   formatDateWithLayoutDefault,
-		"dateFormatIn": formatDateWithLayoutIn,
+		"dateFormat":         formatDateWithLayoutDefault,
+		"dateFormatIn":       formatDateWithLayoutIn,
+		"isChristmasHoliday": isChristmasHoliday,
 	}
 }

@@ -34,6 +34,44 @@ func formatDateWithLayoutIn(locale string, timezone string, layout string, value
 	return monday.Format(parsed.In(loc), resolvedLayout, resolvedLocale), nil
 }
 
+func isChristmasHoliday(value any) (bool, error) {
+	inDecember, err := dateInMonthDayRange(time.December, 8, time.December, 31, value)
+	if err != nil {
+		return false, err
+	}
+	inJanuary, err := dateInMonthDayRange(time.January, 1, time.January, 6, value)
+	if err != nil {
+		return false, err
+	}
+	return inDecember || inJanuary, nil
+}
+
+func dateInMonthDayRange(startMonth time.Month, startDay int, endMonth time.Month, endDay int, value any) (bool, error) {
+	parsed, loc, err := valueInTimezone(defaultTimezone, value)
+	if err != nil {
+		return false, err
+	}
+	current := monthDay{month: time.Month(parsed.In(loc).Month()), day: parsed.In(loc).Day()}
+	start := monthDay{month: startMonth, day: startDay}
+	end := monthDay{month: endMonth, day: endDay}
+	if monthDayBefore(start, end) {
+		return !monthDayBefore(current, start) && !monthDayBefore(end, current), nil
+	}
+	return !monthDayBefore(current, start) || !monthDayBefore(end, current), nil
+}
+
+type monthDay struct {
+	month time.Month
+	day   int
+}
+
+func monthDayBefore(a monthDay, b monthDay) bool {
+	if a.month != b.month {
+		return a.month < b.month
+	}
+	return a.day < b.day
+}
+
 func valueInTimezone(timezone string, value any) (time.Time, *time.Location, error) {
 	loc := loadTimezone(timezone)
 	switch typed := value.(type) {

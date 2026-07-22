@@ -1,2 +1,2 @@
 Il centro Be Aesthetic ti ricorda il tuo appuntamento di {{ dateFormat "Monday 2 January, 2006" .startAt }} alle ore {{ dateFormat "15:04" .startAt }}.
-Buona giornata!
+{{ if isChristmasHoliday .startAt }}Buona giornata e buone feste!{{ else }}Buona giornata!{{ end }}
