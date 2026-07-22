@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.13.0...customer-service-v1.14.0) (2026-07-22)
+
+
+### Features
+
+* add PostgreSQL queries and models for customers, fidelity cards, and wallets ([2457883](https://github.com/beaesthetic/beaesthetic-backend/commit/2457883a40d60bd3cd775baae793a38c1623f781))
+
 ## [1.13.0](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.12.0...customer-service-v1.13.0) (2026-07-11)
 
 
