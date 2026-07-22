@@ -33,21 +33,6 @@
       ],
       "changelog-path": "CHANGELOG.md"
     },
-    "gateway": {
-      "release-type": "simple",
-      "package-name": "gateway",
-      "include-component-in-tag": true,
-      "component": "gateway",
-      "extra-files": [
-        "gradle.properties",
-        {
-          "type": "yaml",
-          "path": "helm/Chart.yaml",
-          "jsonpath": "$.appVersion"
-        }
-      ],
-      "changelog-path": "CHANGELOG.md"
-    },
     "notification": {
       "release-type": "simple",
       "package-name": "notification-service",
