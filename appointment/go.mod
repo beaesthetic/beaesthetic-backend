@@ -13,13 +13,13 @@ require (
 	github.com/knadh/koanf/v2 v2.2.2
 	github.com/oapi-codegen/runtime v1.4.2
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/notification v0.0.0
+	github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime v0.0.0
 	github.com/petretiandrea/outbox-go/pkg/outbox v0.0.0-20260622171345-cccb1d641543
 	github.com/rabbitmq/amqp091-go v1.11.0
 	github.com/riverqueue/river v0.40.0
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.40.0
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/zap v1.27.0
-	golang.org/x/sync v0.21.0
 	google.golang.org/protobuf v1.36.10
 )
 
@@ -74,9 +74,12 @@ require (
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.46.0 // indirect
 	golang.org/x/net v0.48.0 // indirect
+	golang.org/x/sync v0.21.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	golang.org/x/text v0.38.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 replace github.com/petretiandrea/beaesthetic-backend/core-contracts/notification => ../core-contracts/notification
+
+replace github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime => ../core-contracts/runtime

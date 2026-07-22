@@ -4,17 +4,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	nethttp "net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
+	appruntime "github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime"
 	"github.com/petretiandrea/beaesthetic-backend/notification/cmd/di"
 	"github.com/spf13/cobra"
-	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 )
 
 func NewRootCommand() *cobra.Command {
@@ -54,35 +52,13 @@ func appCommand(envFile *string) *cobra.Command {
 				customerNotificationConsumer = c.GetCustomerNotificationConsumer()
 			}
 
-			group, groupCtx := errgroup.WithContext(ctx)
-			group.Go(func() error {
-				c.Log.Info("starting http server", zap.String("addr", c.Config.HTTP.Addr))
-				if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, nethttp.ErrServerClosed) {
-					return fmt.Errorf("run http server: %w", err)
-				}
-				return nil
-			})
-			group.Go(func() error {
-				<-groupCtx.Done()
-
-				shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-				defer cancel()
-				if err := httpServer.Shutdown(shutdownCtx); err != nil {
-					return fmt.Errorf("shutdown http server: %w", err)
-				}
-				return nil
-			})
+			runner := appruntime.NewRunner(c.Log)
+			runner.Add(appruntime.HTTPServer("http server", httpServer, 10*time.Second))
 			if customerNotificationConsumer != nil {
-				group.Go(func() error {
-					c.Log.Info("starting customer notification consumer", zap.String("queue", c.Config.RabbitMQ.CustomerNotificationQueue))
-					if err := customerNotificationConsumer.Run(groupCtx); err != nil && !errors.Is(err, context.Canceled) {
-						return fmt.Errorf("run customer notification consumer: %w", err)
-					}
-					return nil
-				})
+				runner.Add(appruntime.Consumer("customer notification consumer", customerNotificationConsumer))
 			}
 
-			return group.Wait()
+			return runner.Run(ctx)
 		},
 	}
 }

@@ -13,11 +13,12 @@ require (
 	github.com/knadh/koanf/providers/file v1.2.0
 	github.com/knadh/koanf/v2 v2.2.2
 	github.com/oapi-codegen/runtime v1.4.2
+	github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime v0.0.0
 	github.com/petretiandrea/outbox-go/pkg/outbox v0.0.0-20260622171345-cccb1d641543
 	github.com/rabbitmq/amqp091-go v1.11.0
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/zap v1.27.0
-	golang.org/x/sync v0.19.0
+	golang.org/x/sync v0.21.0 // indirect
 )
 
 require github.com/goodsign/monday v1.0.2
@@ -70,3 +71,5 @@ require (
 )
 
 replace github.com/petretiandrea/beaesthetic-backend/core-contracts/notification => ../core-contracts/notification
+
+replace github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime => ../core-contracts/runtime

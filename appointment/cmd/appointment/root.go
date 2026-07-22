@@ -1,10 +1,8 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	nethttp "net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -12,9 +10,9 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/cmd/di"
+	appruntime "github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 )
 
 func NewRootCommand() *cobra.Command {
@@ -44,64 +42,18 @@ func appCommand(envFile *string) *cobra.Command {
 		schedulerConsumer := c.GetSchedulerQueueConsumer()
 		notificationConfirmConsumer := c.GetNotificationConfirmQueueConsumer()
 
-		group, groupCtx := errgroup.WithContext(ctx)
+		runner := appruntime.NewRunner(c.Log)
 		riverConfig := c.GetRiverReminderConfig()
 		if riverConfig.Enabled {
 			riverClient := c.GetRiverClient()
-			c.Log.Info("starting river reminder scheduler", zap.String("queue", riverConfig.Queue))
-			if err := riverClient.Start(groupCtx); err != nil {
-				return fmt.Errorf("start river reminder scheduler: %w", err)
-			}
-			group.Go(func() error {
-				<-groupCtx.Done()
-				shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-				defer cancel()
-				if err := riverClient.Stop(shutdownCtx); err != nil {
-					return fmt.Errorf("stop river reminder scheduler: %w", err)
-				}
-				return nil
-			})
+			runner.Add(appruntime.StartStop("river reminder scheduler", riverClient.Start, riverClient.Stop, 10*time.Second))
 		}
+		runner.Add(appruntime.HTTPServer("http server", httpServer, 10*time.Second))
+		runner.Add(appruntime.Consumer("appointment lifecycle consumer", appointmentLifecycleConsumer))
+		runner.Add(appruntime.Consumer("scheduler queue consumer", schedulerConsumer))
+		runner.Add(appruntime.Consumer("notification confirm consumer", notificationConfirmConsumer))
 
-		group.Go(func() error {
-			c.Log.Info("starting http server", zap.String("addr", c.Config.HTTP.Addr))
-			if err := httpServer.ListenAndServe(); err != nil && !errors.Is(err, nethttp.ErrServerClosed) {
-				return fmt.Errorf("run http server: %w", err)
-			}
-			return nil
-		})
-		group.Go(func() error {
-			<-groupCtx.Done()
-			shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-			defer cancel()
-			if err := httpServer.Shutdown(shutdownCtx); err != nil {
-				return fmt.Errorf("shutdown http server: %w", err)
-			}
-			return nil
-		})
-		group.Go(func() error {
-			c.Log.Info("starting appointment lifecycle consumer", zap.String("queue", c.Config.RabbitMQ.AppointmentInternalJobQueue))
-			if err := appointmentLifecycleConsumer.Run(groupCtx); err != nil && !errors.Is(err, context.Canceled) {
-				return fmt.Errorf("run appointment lifecycle consumer: %w", err)
-			}
-			return nil
-		})
-		group.Go(func() error {
-			c.Log.Info("starting scheduler queue consumer", zap.String("queue", c.Config.RabbitMQ.SchedulerQueue))
-			if err := schedulerConsumer.Run(groupCtx); err != nil && !errors.Is(err, context.Canceled) {
-				return fmt.Errorf("run scheduler queue consumer: %w", err)
-			}
-			return nil
-		})
-		group.Go(func() error {
-			c.Log.Info("starting notification confirm queue consumer", zap.String("queue", c.Config.RabbitMQ.NotificationConfirmQueue))
-			if err := notificationConfirmConsumer.Run(groupCtx); err != nil && !errors.Is(err, context.Canceled) {
-				return fmt.Errorf("run notification confirm queue consumer: %w", err)
-			}
-			return nil
-		})
-
-		return group.Wait()
+		return runner.Run(ctx)
 	}}
 }
 
