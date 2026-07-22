@@ -4,17 +4,22 @@ import (
 	"context"
 	"database/sql"
 	"encoding/base64"
-	"fmt"
 	"strconv"
 	"strings"
 	"time"
 
 	customerdomain "github.com/petretiandrea/beaesthetic-backend/customer/internal/domain/customer"
+	"github.com/petretiandrea/beaesthetic-backend/customer/internal/infra/postgres/queries"
 )
 
-type CustomerRepository struct{ db *sql.DB }
+type CustomerRepository struct {
+	db      *sql.DB
+	queries *queries.Queries
+}
 
-func NewCustomerRepository(db *sql.DB) *CustomerRepository { return &CustomerRepository{db: db} }
+func NewCustomerRepository(db *sql.DB) *CustomerRepository {
+	return &CustomerRepository{db: db, queries: queries.New(db)}
+}
 
 func (r *CustomerRepository) Save(ctx context.Context, c customerdomain.Customer) (customerdomain.Customer, error) {
 	phone := (*string)(nil)
@@ -22,22 +27,27 @@ func (r *CustomerRepository) Save(ctx context.Context, c customerdomain.Customer
 		value := c.Phone.FullNumber()
 		phone = &value
 	}
-	_, err := r.db.ExecContext(ctx, `INSERT INTO customers (id,name,surname,email,phone,note,updated_at) VALUES ($1,$2,$3,$4,$5,$6,$7)
-ON CONFLICT (id) DO UPDATE SET name=$2,surname=$3,email=$4,phone=$5,note=$6,updated_at=$7`, c.ID, c.Name, c.Surname, c.Email, phone, c.Note, time.Now().UTC())
-	return c, err
+	return c, r.queries.SaveCustomer(ctx, queries.SaveCustomerParams{
+		ID:        c.ID,
+		Name:      c.Name,
+		Surname:   c.Surname,
+		Email:     nullableString(c.Email),
+		Phone:     nullableString(phone),
+		Note:      c.Note,
+		UpdatedAt: time.Now().UTC(),
+	})
 }
 
 func (r *CustomerRepository) FindByID(ctx context.Context, id string) (*customerdomain.Customer, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id,name,surname,email,phone,note FROM customers WHERE id=$1`, id)
+	row, err := r.queries.FindCustomerByID(ctx, id)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	customers, err := scanCustomers(rows)
-	if err != nil || len(customers) == 0 {
-		return nil, err
-	}
-	return &customers[0], nil
+	customer := mapCustomer(row.ID, row.Name, row.Surname, row.Email, row.Phone, row.Note)
+	return &customer, nil
 }
 
 func (r *CustomerRepository) FindAll(ctx context.Context, filter string, limit int) ([]customerdomain.Customer, error) {
@@ -45,32 +55,40 @@ func (r *CustomerRepository) FindAll(ctx context.Context, filter string, limit i
 		limit = 50
 	}
 	if strings.TrimSpace(filter) == "" {
-		rows, err := r.db.QueryContext(ctx, `SELECT id,name,surname,email,phone,note FROM customers ORDER BY name,surname LIMIT $1`, limit)
+		rows, err := r.queries.FindCustomers(ctx, int32(limit))
 		if err != nil {
 			return nil, err
 		}
-		defer rows.Close()
-		return scanCustomers(rows)
+		out := make([]customerdomain.Customer, 0, len(rows))
+		for _, row := range rows {
+			out = append(out, mapCustomer(row.ID, row.Name, row.Surname, row.Email, row.Phone, row.Note))
+		}
+		return out, nil
 	}
-	rows, err := r.db.QueryContext(ctx, `SELECT id,name,surname,email,phone,note FROM customers WHERE search_text ILIKE '%' || $1 || '%' OR search_text % $1 ORDER BY similarity(search_text,$1) DESC,name,surname LIMIT $2`, strings.ToLower(filter), limit)
+	rows, err := r.queries.SearchCustomers(ctx, queries.SearchCustomersParams{
+		Column1: sql.NullString{String: strings.ToLower(filter), Valid: true},
+		Limit:   int32(limit),
+	})
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	return scanCustomers(rows)
+	out := make([]customerdomain.Customer, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, mapCustomer(row.ID, row.Name, row.Surname, row.Email, row.Phone, row.Note))
+	}
+	return out, nil
 }
 
 func (r *CustomerRepository) FindByPhone(ctx context.Context, phone string) (*customerdomain.Customer, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id,name,surname,email,phone,note FROM customers WHERE phone=$1 LIMIT 1`, phone)
+	row, err := r.queries.FindCustomerByPhone(ctx, sql.NullString{String: phone, Valid: true})
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	customers, err := scanCustomers(rows)
-	if err != nil || len(customers) == 0 {
-		return nil, err
-	}
-	return &customers[0], nil
+	customer := mapCustomer(row.ID, row.Name, row.Surname, row.Email, row.Phone, row.Note)
+	return &customer, nil
 }
 
 func (r *CustomerRepository) FindPage(ctx context.Context, pageToken string, limit int, sortBy string, direction string) ([]customerdomain.Customer, string, bool, bool, error) {
@@ -78,21 +96,7 @@ func (r *CustomerRepository) FindPage(ctx context.Context, pageToken string, lim
 		limit = 50
 	}
 	offset := decodePageToken(pageToken)
-	orderBy := "name"
-	if sortBy == "surname" || sortBy == "updated_at" {
-		orderBy = sortBy
-	}
-	dir := "ASC"
-	if direction == "prev" {
-		dir = "DESC"
-	}
-	query := fmt.Sprintf(`SELECT id,name,surname,email,phone,note FROM customers ORDER BY %s %s,id LIMIT $1 OFFSET $2`, orderBy, dir)
-	rows, err := r.db.QueryContext(ctx, query, limit, offset)
-	if err != nil {
-		return nil, "", false, false, err
-	}
-	defer rows.Close()
-	items, err := scanCustomers(rows)
+	items, err := r.findPage(ctx, limit, offset, sortBy, direction)
 	if err != nil {
 		return nil, "", false, false, err
 	}
@@ -109,42 +113,115 @@ func (r *CustomerRepository) Delete(ctx context.Context, id string) (bool, error
 		return false, err
 	}
 	defer tx.Rollback()
-	cmd, err := tx.ExecContext(ctx, `INSERT INTO deleted_customers (id,name,surname,email,phone,note)
-SELECT id,name,surname,email,phone,note FROM customers WHERE id=$1 ON CONFLICT (id) DO NOTHING`, id)
-	if err != nil {
-		return false, err
-	}
-	rowsAffected, err := cmd.RowsAffected()
+	qtx := r.queries.WithTx(tx)
+	rowsAffected, err := qtx.ArchiveDeletedCustomer(ctx, id)
 	if err != nil {
 		return false, err
 	}
 	if rowsAffected == 0 {
 		return false, nil
 	}
-	if _, err := tx.ExecContext(ctx, `DELETE FROM customers WHERE id=$1`, id); err != nil {
+	if err := qtx.DeleteCustomer(ctx, id); err != nil {
 		return false, err
 	}
 	return true, tx.Commit()
 }
 
-func scanCustomers(rows *sql.Rows) ([]customerdomain.Customer, error) {
-	out := []customerdomain.Customer{}
-	for rows.Next() {
-		var c customerdomain.Customer
-		var email, phone *string
-		if err := rows.Scan(&c.ID, &c.Name, &c.Surname, &email, &phone, &c.Note); err != nil {
-			return nil, err
+func (r *CustomerRepository) findPage(ctx context.Context, limit int, offset int, sortBy string, direction string) ([]customerdomain.Customer, error) {
+	limit32 := int32(limit)
+	offset32 := int32(offset)
+	mapRows := func(rows []queries.FindCustomersPageByNameAscRow) []customerdomain.Customer {
+		out := make([]customerdomain.Customer, 0, len(rows))
+		for _, row := range rows {
+			out = append(out, mapCustomer(row.ID, row.Name, row.Surname, row.Email, row.Phone, row.Note))
 		}
-		c.Email = email
-		if phone != nil {
-			parsed, err := customerdomain.ParsePhone(*phone)
-			if err == nil {
-				c.Phone = parsed
-			}
-		}
-		out = append(out, c)
+		return out
 	}
-	return out, rows.Err()
+	if direction == "prev" {
+		switch sortBy {
+		case "surname":
+			rows, err := r.queries.FindCustomersPageBySurnameDesc(ctx, queries.FindCustomersPageBySurnameDescParams{Limit: limit32, Offset: offset32})
+			return mapCustomerPageBySurnameDesc(rows), err
+		case "updated_at":
+			rows, err := r.queries.FindCustomersPageByUpdatedAtDesc(ctx, queries.FindCustomersPageByUpdatedAtDescParams{Limit: limit32, Offset: offset32})
+			return mapCustomerPageByUpdatedAtDesc(rows), err
+		default:
+			rows, err := r.queries.FindCustomersPageByNameDesc(ctx, queries.FindCustomersPageByNameDescParams{Limit: limit32, Offset: offset32})
+			return mapCustomerPageByNameDesc(rows), err
+		}
+	}
+	switch sortBy {
+	case "surname":
+		rows, err := r.queries.FindCustomersPageBySurnameAsc(ctx, queries.FindCustomersPageBySurnameAscParams{Limit: limit32, Offset: offset32})
+		return mapCustomerPageBySurnameAsc(rows), err
+	case "updated_at":
+		rows, err := r.queries.FindCustomersPageByUpdatedAtAsc(ctx, queries.FindCustomersPageByUpdatedAtAscParams{Limit: limit32, Offset: offset32})
+		return mapCustomerPageByUpdatedAtAsc(rows), err
+	default:
+		rows, err := r.queries.FindCustomersPageByNameAsc(ctx, queries.FindCustomersPageByNameAscParams{Limit: limit32, Offset: offset32})
+		return mapRows(rows), err
+	}
+}
+
+func mapCustomer(id string, name string, surname string, email sql.NullString, phone sql.NullString, note string) customerdomain.Customer {
+	c := customerdomain.Customer{ID: id, Name: name, Surname: surname, Note: note}
+	if email.Valid {
+		c.Email = &email.String
+	}
+	if phone.Valid {
+		parsed, err := customerdomain.ParsePhone(phone.String)
+		if err == nil {
+			c.Phone = parsed
+		}
+	}
+	return c
+}
+
+func mapCustomerPageByNameDesc(rows []queries.FindCustomersPageByNameDescRow) []customerdomain.Customer {
+	out := make([]customerdomain.Customer, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, mapCustomer(row.ID, row.Name, row.Surname, row.Email, row.Phone, row.Note))
+	}
+	return out
+}
+
+func mapCustomerPageBySurnameAsc(rows []queries.FindCustomersPageBySurnameAscRow) []customerdomain.Customer {
+	out := make([]customerdomain.Customer, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, mapCustomer(row.ID, row.Name, row.Surname, row.Email, row.Phone, row.Note))
+	}
+	return out
+}
+
+func mapCustomerPageBySurnameDesc(rows []queries.FindCustomersPageBySurnameDescRow) []customerdomain.Customer {
+	out := make([]customerdomain.Customer, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, mapCustomer(row.ID, row.Name, row.Surname, row.Email, row.Phone, row.Note))
+	}
+	return out
+}
+
+func mapCustomerPageByUpdatedAtAsc(rows []queries.FindCustomersPageByUpdatedAtAscRow) []customerdomain.Customer {
+	out := make([]customerdomain.Customer, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, mapCustomer(row.ID, row.Name, row.Surname, row.Email, row.Phone, row.Note))
+	}
+	return out
+}
+
+func mapCustomerPageByUpdatedAtDesc(rows []queries.FindCustomersPageByUpdatedAtDescRow) []customerdomain.Customer {
+	out := make([]customerdomain.Customer, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, mapCustomer(row.ID, row.Name, row.Surname, row.Email, row.Phone, row.Note))
+	}
+	return out
+}
+
+func nullableString(value *string) sql.NullString {
+	if value == nil {
+		return sql.NullString{}
+	}
+	return sql.NullString{String: *value, Valid: true}
 }
 
 func encodePageToken(offset int) string {

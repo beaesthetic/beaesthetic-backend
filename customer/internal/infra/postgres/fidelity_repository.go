@@ -6,48 +6,59 @@ import (
 	"encoding/json"
 
 	"github.com/petretiandrea/beaesthetic-backend/customer/internal/domain/fidelity"
+	"github.com/petretiandrea/beaesthetic-backend/customer/internal/infra/postgres/queries"
 )
 
-type FidelityRepository struct{ db *sql.DB }
+type FidelityRepository struct{ queries *queries.Queries }
 
-func NewFidelityRepository(db *sql.DB) *FidelityRepository { return &FidelityRepository{db: db} }
+func NewFidelityRepository(db *sql.DB) *FidelityRepository {
+	return &FidelityRepository{queries: queries.New(db)}
+}
 
 func (r *FidelityRepository) Save(ctx context.Context, card fidelity.Card) (fidelity.Card, error) {
 	vouchers, err := json.Marshal(card.Vouchers)
 	if err != nil {
 		return fidelity.Card{}, err
 	}
-	_, err = r.db.ExecContext(ctx, `INSERT INTO fidelity_cards (id,customer_id,solarium_purchases,vouchers,updated_at) VALUES ($1,$2,$3,$4,now())
-ON CONFLICT (id) DO UPDATE SET customer_id=$2,solarium_purchases=$3,vouchers=$4,updated_at=now()`, card.ID, card.CustomerID, card.SolariumPurchases, vouchers)
-	return card, err
+	return card, r.queries.SaveFidelityCard(ctx, queries.SaveFidelityCardParams{
+		ID:                card.ID,
+		CustomerID:        card.CustomerID,
+		SolariumPurchases: int32(card.SolariumPurchases),
+		Vouchers:          vouchers,
+	})
 }
 func (r *FidelityRepository) FindAll(ctx context.Context) ([]fidelity.Card, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id,customer_id,solarium_purchases,vouchers FROM fidelity_cards ORDER BY created_at DESC`)
+	rows, err := r.queries.FindFidelityCards(ctx)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	return scanCards(rows)
+	out := make([]fidelity.Card, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, mapFidelityCard(row.ID, row.CustomerID, row.SolariumPurchases, row.Vouchers))
+	}
+	return out, nil
 }
 func (r *FidelityRepository) FindByID(ctx context.Context, id string) (*fidelity.Card, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id,customer_id,solarium_purchases,vouchers FROM fidelity_cards WHERE id=$1`, id)
+	row, err := r.queries.FindFidelityCardByID(ctx, id)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	cards, err := scanCards(rows)
-	if err != nil || len(cards) == 0 {
-		return nil, err
-	}
-	return &cards[0], nil
+	card := mapFidelityCard(row.ID, row.CustomerID, row.SolariumPurchases, row.Vouchers)
+	return &card, nil
 }
 func (r *FidelityRepository) FindByCustomerID(ctx context.Context, customerID string) ([]fidelity.Card, error) {
-	rows, err := r.db.QueryContext(ctx, `SELECT id,customer_id,solarium_purchases,vouchers FROM fidelity_cards WHERE customer_id=$1`, customerID)
+	rows, err := r.queries.FindFidelityCardsByCustomerID(ctx, customerID)
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	return scanCards(rows)
+	out := make([]fidelity.Card, 0, len(rows))
+	for _, row := range rows {
+		out = append(out, mapFidelityCard(row.ID, row.CustomerID, row.SolariumPurchases, row.Vouchers))
+	}
+	return out, nil
 }
 func (r *FidelityRepository) FindOneByCustomerID(ctx context.Context, customerID string) (*fidelity.Card, error) {
 	cards, err := r.FindByCustomerID(ctx, customerID)
@@ -61,30 +72,21 @@ func (r *FidelityRepository) FindByVoucherID(ctx context.Context, voucherID stri
 	if err != nil {
 		return nil, err
 	}
-	rows, err := r.db.QueryContext(ctx, `SELECT id,customer_id,solarium_purchases,vouchers FROM fidelity_cards WHERE vouchers @> $1::jsonb LIMIT 1`, string(filter))
+	row, err := r.queries.FindFidelityCardByVoucherID(ctx, filter)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
-	cards, err := scanCards(rows)
-	if err != nil || len(cards) == 0 {
-		return nil, err
-	}
-	return &cards[0], nil
+	card := mapFidelityCard(row.ID, row.CustomerID, row.SolariumPurchases, row.Vouchers)
+	return &card, nil
 }
 
-func scanCards(rows *sql.Rows) ([]fidelity.Card, error) {
-	out := []fidelity.Card{}
-	for rows.Next() {
-		var card fidelity.Card
-		var vouchers []byte
-		if err := rows.Scan(&card.ID, &card.CustomerID, &card.SolariumPurchases, &vouchers); err != nil {
-			return nil, err
-		}
-		if len(vouchers) > 0 {
-			_ = json.Unmarshal(vouchers, &card.Vouchers)
-		}
-		out = append(out, card)
+func mapFidelityCard(id string, customerID string, solariumPurchases int32, vouchers []byte) fidelity.Card {
+	card := fidelity.Card{ID: id, CustomerID: customerID, SolariumPurchases: int(solariumPurchases)}
+	if len(vouchers) > 0 {
+		_ = json.Unmarshal(vouchers, &card.Vouchers)
 	}
-	return out, rows.Err()
+	return card
 }

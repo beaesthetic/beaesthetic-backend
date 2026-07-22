@@ -12,6 +12,9 @@ import (
 )
 
 func Generate() error {
+	if err := run("go", "run", "github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0", "generate"); err != nil {
+		return err
+	}
 	if err := run("go", "run", "github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.7.1", "--config", "internal/port/http/server/customer/oapi-codegen.yaml", "-o", "internal/port/http/server/customer/openapi.gen.go", "api-spec/customer-api.yaml"); err != nil {
 		return err
 	}
