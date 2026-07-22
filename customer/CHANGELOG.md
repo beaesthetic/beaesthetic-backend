@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.14.0...customer-service-v1.15.0) (2026-07-22)
+
+
+### Features
+
+* add wallet operations and credit lots migration scripts ([6f0d785](https://github.com/beaesthetic/beaesthetic-backend/commit/6f0d7852de00b8c3756c65cf057cea6155b05d36))
+
 ## [1.14.0](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.13.0...customer-service-v1.14.0) (2026-07-22)
 
 
