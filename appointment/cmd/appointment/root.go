@@ -12,7 +12,6 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/cmd/di"
-	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/backfill"
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
 	"golang.org/x/sync/errgroup"
@@ -22,7 +21,7 @@ func NewRootCommand() *cobra.Command {
 	var envFile string
 	root := &cobra.Command{Use: "appointment", Short: "Appointment service", SilenceUsage: true}
 	root.PersistentFlags().StringVar(&envFile, "env-file", "", "optional dotenv file")
-	root.AddCommand(appCommand(&envFile), migrateCommand(&envFile), backfillCommand(&envFile), scheduleFutureRemindersCommand(&envFile))
+	root.AddCommand(appCommand(&envFile), migrateCommand(&envFile), scheduleFutureRemindersCommand(&envFile))
 	return root
 }
 
@@ -116,17 +115,6 @@ func migrateCommand(envFile *string) *cobra.Command {
 			return fmt.Errorf("unsupported migration command %q", args[0])
 		}
 		return nil
-	}}
-}
-
-func backfillCommand(envFile *string) *cobra.Command {
-	return &cobra.Command{Use: "backfill", Short: "Copy legacy Mongo data to Postgres", RunE: func(cmd *cobra.Command, args []string) error {
-		c, err := di.NewDiContainer(cmd.Context(), *envFile)
-		if err != nil {
-			return err
-		}
-		defer func() { _ = c.Log.Sync() }()
-		return backfill.Run(cmd.Context(), c.Config, c.Log)
 	}}
 }
 
