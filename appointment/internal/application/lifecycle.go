@@ -15,7 +15,7 @@ const (
 )
 
 type ReminderScheduler interface {
-	ScheduleReminder(ctx context.Context, eventID string, sendAt time.Time) error
+	ScheduleReminder(ctx context.Context, agendaEvent *domain.AgendaEvent, sendAt time.Time) error
 	UnscheduleReminder(ctx context.Context, eventID string) error
 }
 
@@ -111,7 +111,7 @@ func (h *AppointmentLifecycleHandler) scheduleReminder(ctx context.Context, agen
 		agendaEvent.MarkReminderUnprocessable(now)
 		return h.service.SaveAgendaEvent(ctx, agendaEvent)
 	}
-	if err := h.scheduler.ScheduleReminder(ctx, agendaEvent.ID, *sendAt); err != nil {
+	if err := h.scheduler.ScheduleReminder(ctx, agendaEvent, *sendAt); err != nil {
 		h.log.Error("failed to schedule appointment reminder", zap.String("event_id", agendaEvent.ID), zap.Time("send_at", *sendAt), zap.Error(err))
 		return err
 	}

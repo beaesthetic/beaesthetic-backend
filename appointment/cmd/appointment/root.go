@@ -45,6 +45,23 @@ func appCommand(envFile *string) *cobra.Command {
 		notificationConfirmConsumer := c.GetNotificationConfirmQueueConsumer()
 
 		group, groupCtx := errgroup.WithContext(ctx)
+		riverConfig := c.GetRiverReminderConfig()
+		if riverConfig.Enabled {
+			riverClient := c.GetRiverClient()
+			c.Log.Info("starting river reminder scheduler", zap.String("queue", riverConfig.Queue))
+			if err := riverClient.Start(groupCtx); err != nil {
+				return fmt.Errorf("start river reminder scheduler: %w", err)
+			}
+			group.Go(func() error {
+				<-groupCtx.Done()
+				shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+				defer cancel()
+				if err := riverClient.Stop(shutdownCtx); err != nil {
+					return fmt.Errorf("stop river reminder scheduler: %w", err)
+				}
+				return nil
+			})
+		}
 
 		group.Go(func() error {
 			c.Log.Info("starting http server", zap.String("addr", c.Config.HTTP.Addr))
@@ -100,6 +117,9 @@ func migrateCommand(envFile *string) *cobra.Command {
 		case "up":
 			if err := m.Up(); err != nil && !errors.Is(err, migrate.ErrNoChange) {
 				return err
+			}
+			if err := c.MigrateRiver(cmd.Context()); err != nil {
+				return fmt.Errorf("run river migrations: %w", err)
 			}
 		case "down":
 			if err := m.Steps(-1); err != nil && !errors.Is(err, migrate.ErrNoChange) {

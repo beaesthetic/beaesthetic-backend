@@ -19,6 +19,7 @@ type Config struct {
 	Mongo    MongoConfig    `koanf:"mongo"`
 	Remote   RemoteConfig   `koanf:"remote"`
 	Reminder ReminderConfig `koanf:"reminder"`
+	River    RiverConfig    `koanf:"river"`
 	RabbitMQ RabbitMQConfig `koanf:"rabbitmq"`
 }
 
@@ -50,6 +51,14 @@ type ReminderConfig struct {
 	TriggerBefore          time.Duration `koanf:"trigger_before"`
 	ImmediateSendThreshold time.Duration `koanf:"immediate_send_threshold"`
 	NoSendThreshold        time.Duration `koanf:"no_send_threshold"`
+	SchedulerProvider      string        `koanf:"scheduler_provider"`
+}
+
+type RiverConfig struct {
+	Enabled     bool   `koanf:"enabled"`
+	Queue       string `koanf:"queue"`
+	Workers     int    `koanf:"workers"`
+	MaxAttempts int    `koanf:"max_attempts"`
 }
 
 func Load(envFile string) (Config, error) {

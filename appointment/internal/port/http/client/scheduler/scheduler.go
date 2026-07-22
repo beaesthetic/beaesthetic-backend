@@ -9,6 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	openapi_types "github.com/oapi-codegen/runtime/types"
+	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
 )
 
 type SchedulerClient struct {
@@ -75,8 +76,8 @@ func NewReminderScheduler(client *SchedulerClient, route string) *ReminderSchedu
 	return &ReminderScheduler{client: client, route: route}
 }
 
-func (s *ReminderScheduler) ScheduleReminder(ctx context.Context, eventID string, sendAt time.Time) error {
-	return s.client.Schedule(ctx, eventID, sendAt, s.route, map[string]any{"eventId": eventID})
+func (s *ReminderScheduler) ScheduleReminder(ctx context.Context, agendaEvent *domain.AgendaEvent, sendAt time.Time) error {
+	return s.client.Schedule(ctx, agendaEvent.ID, sendAt, s.route, map[string]any{"eventId": agendaEvent.ID})
 }
 
 func (s *ReminderScheduler) UnscheduleReminder(ctx context.Context, eventID string) error {

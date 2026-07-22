@@ -1,12 +1,22 @@
 package di
 
 import (
+	"strings"
+
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
+	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/jobs"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/messaging"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/postgres"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/client/customer"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/client/scheduler"
 )
+
+type RiverReminderConfig struct {
+	Enabled     bool
+	Queue       string
+	Workers     int
+	MaxAttempts int
+}
 
 func (d *DiContainer) GetAppointmentService() *application.AppointmentService {
 	return singleton(d, "appointmentService", func() *application.AppointmentService {
@@ -76,6 +86,12 @@ func (d *DiContainer) GetCustomerNotificationSender() application.NotificationSe
 	})
 }
 
+func (d *DiContainer) GetReminderSender() *application.ReminderSender {
+	return singleton(d, "reminderSender", func() *application.ReminderSender {
+		return application.NewReminderSender(d.GetAppointmentService(), d.GetCustomerNotificationSender(), d.Log)
+	})
+}
+
 func (d *DiContainer) GetSchedulerClient() *scheduler.SchedulerClient {
 	return singletonWithError(d, "schedulerClient", func() (*scheduler.SchedulerClient, error) {
 		return scheduler.NewSchedulerClient(d.Config.Remote.SchedulerURL)
@@ -84,6 +100,29 @@ func (d *DiContainer) GetSchedulerClient() *scheduler.SchedulerClient {
 
 func (d *DiContainer) GetReminderScheduler() application.ReminderScheduler {
 	return singleton(d, "reminderScheduler", func() application.ReminderScheduler {
+		riverConfig := d.GetRiverReminderConfig()
+		if riverConfig.Enabled {
+			return jobs.NewReminderScheduler(d.GetRiverClient(), riverConfig.Queue, riverConfig.MaxAttempts, d.Log)
+		}
 		return scheduler.NewReminderScheduler(d.GetSchedulerClient(), d.Config.RabbitMQ.SchedulerQueue)
 	})
+}
+
+func (d *DiContainer) GetRiverReminderConfig() RiverReminderConfig {
+	cfg := RiverReminderConfig{
+		Enabled:     d.Config.River.Enabled || strings.EqualFold(d.Config.Reminder.SchedulerProvider, "river"),
+		Queue:       d.Config.River.Queue,
+		Workers:     d.Config.River.Workers,
+		MaxAttempts: d.Config.River.MaxAttempts,
+	}
+	if cfg.Queue == "" {
+		cfg.Queue = "appointment_reminders"
+	}
+	if cfg.Workers <= 0 {
+		cfg.Workers = 5
+	}
+	if cfg.MaxAttempts <= 0 {
+		cfg.MaxAttempts = 3
+	}
+	return cfg
 }

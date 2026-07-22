@@ -7,7 +7,7 @@ func (d *DiContainer) GetSchedulerQueueConsumer() *messaging.Consumer {
 		return messaging.NewConsumer(
 			d.Config.RabbitMQ.URL,
 			d.Config.RabbitMQ.SchedulerQueue,
-			messaging.NewSchedulerQueueConsumer(d.GetAppointmentService(), d.GetCustomerNotificationSender(), d.Log),
+			messaging.NewSchedulerQueueConsumer(d.GetReminderSender(), d.Log),
 			d.Log,
 		)
 	})

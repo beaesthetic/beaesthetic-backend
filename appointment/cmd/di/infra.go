@@ -5,13 +5,18 @@ import (
 	"database/sql"
 
 	"github.com/golang-migrate/migrate/v4"
-	"github.com/golang-migrate/migrate/v4/database/postgres"
+	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/stdlib"
+	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/jobs"
 	app_postgres "github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/postgres"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
 	outboxpostgres "github.com/petretiandrea/outbox-go/pkg/outbox/postgres"
+	"github.com/riverqueue/river"
+	"github.com/riverqueue/river/riverdriver/riverpgxv5"
+	"github.com/riverqueue/river/rivermigrate"
 )
 
 func (d *DiContainer) GetPostgresDatabase() *pgxpool.Pool {
@@ -38,7 +43,7 @@ func (d *DiContainer) GetMigrator() *migrate.Migrate {
 	return singletonWithError(d, "migrator", func() (*migrate.Migrate, error) {
 		db := d.GetPostgresDatabase()
 		sqlDB := stdlibOpenDBFromPool(db)
-		driver, err := postgres.WithInstance(sqlDB, &postgres.Config{})
+		driver, err := migratepostgres.WithInstance(sqlDB, &migratepostgres.Config{})
 		if err != nil {
 			sqlDB.Close()
 			db.Close()
@@ -46,6 +51,31 @@ func (d *DiContainer) GetMigrator() *migrate.Migrate {
 		}
 		return migrate.NewWithDatabaseInstance("file://migrations", "postgres", driver)
 	})
+}
+
+func (d *DiContainer) GetRiverClient() *river.Client[pgx.Tx] {
+	return singletonWithError(d, "riverClient", func() (*river.Client[pgx.Tx], error) {
+		riverConfig := d.GetRiverReminderConfig()
+		workers := river.NewWorkers()
+		if err := river.AddWorkerSafely(workers, jobs.NewSendAppointmentReminderWorker(d.GetReminderSender())); err != nil {
+			return nil, err
+		}
+		return river.NewClient(riverpgxv5.New(d.GetPostgresDatabase()), &river.Config{
+			Queues: map[string]river.QueueConfig{
+				riverConfig.Queue: {MaxWorkers: riverConfig.Workers},
+			},
+			Workers: workers,
+		})
+	})
+}
+
+func (d *DiContainer) MigrateRiver(ctx context.Context) error {
+	migrator, err := rivermigrate.New(riverpgxv5.New(d.GetPostgresDatabase()), nil)
+	if err != nil {
+		return err
+	}
+	_, err = migrator.Migrate(ctx, rivermigrate.DirectionUp, nil)
+	return err
 }
 
 func stdlibOpenDBFromPool(pool *pgxpool.Pool) *sql.DB {
