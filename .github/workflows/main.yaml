@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       appointment: ${{ steps.release.outputs.appointment }}
+      customer: ${{ steps.release.outputs.customer }}
       notification: ${{ steps.release.outputs.notification }}
     steps:
       - name: Checkout repository
@@ -36,7 +37,7 @@ jobs:
           before="${{ github.event.before }}"
           manifest=".release-please-manifest.json"
 
-          for service in appointment notification; do
+          for service in appointment customer notification; do
             current="$(jq -r --arg service "$service" '.[$service] // empty' "$manifest")"
             previous=""
             if [ -n "$before" ] && git cat-file -e "$before:$manifest" 2>/dev/null; then
@@ -64,6 +65,10 @@ jobs:
             image: petretiandrea/appointment-service-v2
             context: ./appointment
             dockerfile: ./appointment/Dockerfile
+          - key: customer
+            image: petretiandrea/customer-service-v2
+            context: ./customer
+            dockerfile: ./customer/Dockerfile
           - key: notification
             image: petretiandrea/notification-service-v2
             context: ./notification

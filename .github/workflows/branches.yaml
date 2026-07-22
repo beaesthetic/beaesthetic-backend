@@ -6,12 +6,14 @@ on:
       - main
     paths:
       - "appointment/**"
+      - "customer/**"
       - "notification/**"
       - "core-contracts/**"
       - ".github/workflows/branches.yaml"
   pull_request:
     paths:
       - "appointment/**"
+      - "customer/**"
       - "notification/**"
       - "core-contracts/**"
       - ".github/workflows/branches.yaml"
@@ -30,6 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       appointment: ${{ steps.filter.outputs.appointment }}
+      customer: ${{ steps.filter.outputs.customer }}
       notification: ${{ steps.filter.outputs.notification }}
     steps:
       - name: Checkout repository
@@ -44,6 +47,9 @@ jobs:
           filters: |
             appointment:
               - 'appointment/**'
+              - '.github/workflows/branches.yaml'
+            customer:
+              - 'customer/**'
               - '.github/workflows/branches.yaml'
             notification:
               - 'notification/**'
@@ -62,6 +68,12 @@ jobs:
             image: petretiandrea/appointment-service-v2
             context: ./appointment
             dockerfile: ./appointment/Dockerfile
+            build_contexts: |
+              core-contracts=./core-contracts
+          - key: customer
+            image: petretiandrea/customer-service-v2
+            context: ./customer
+            dockerfile: ./customer/Dockerfile
             build_contexts: |
               core-contracts=./core-contracts
           - key: notification
