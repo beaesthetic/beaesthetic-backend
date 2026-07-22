@@ -33,7 +33,7 @@ func (d *DiContainer) GetCustomerNotificationTemplateRenderer() application.Cust
 
 func (d *DiContainer) GetCustomerNotificationRepository() application.CustomerNotificationRepository {
 	return singleton(d, "customerNotificationIdempotencyRepository", func() application.CustomerNotificationRepository {
-		return postgres.NewCustomerNotificationRepository(d.GetPostgresDatabase())
+		return postgres.NewCustomerNotificationRepository(d.GetPostgresContextDB(), d.GetOutboxPublisher())
 	})
 }
 

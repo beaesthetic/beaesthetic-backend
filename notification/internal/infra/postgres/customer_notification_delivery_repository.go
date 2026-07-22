@@ -8,20 +8,19 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
-	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/application"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
-	outboxpostgres "github.com/petretiandrea/outbox-go/pkg/outbox/postgres"
 )
 
 const channelCustomerNotificationsConfirmed = "customer_notifications.confirmed"
 
 type CustomerNotificationRepository struct {
-	db *pgxpool.Pool
+	db        *ContextDB
+	publisher outbox.Publisher
 }
 
-func NewCustomerNotificationRepository(db *pgxpool.Pool) *CustomerNotificationRepository {
-	return &CustomerNotificationRepository{db: db}
+func NewCustomerNotificationRepository(db *ContextDB, publisher outbox.Publisher) *CustomerNotificationRepository {
+	return &CustomerNotificationRepository{db: db, publisher: publisher}
 }
 
 func (repo *CustomerNotificationRepository) Exists(ctx context.Context, idempotencyKey string) (bool, error) {
@@ -65,36 +64,34 @@ func (repo *CustomerNotificationRepository) SaveSMSGatewayDispatch(ctx context.C
 }
 
 func (repo *CustomerNotificationRepository) MarkSentBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, sentAt time.Time) (bool, error) {
-	tx, err := repo.db.Begin(ctx)
-	if err != nil {
-		return false, fmt.Errorf("begin customer notification sent transaction: %w", err)
+	marked := false
+	if err := repo.db.Tx(ctx, func(ctx context.Context) error {
+		var correlationKey string
+		err := repo.db.QueryRow(ctx, `
+			UPDATE customer_notifications
+			SET status = 'sent', sent_at = $2
+			WHERE id = (
+				SELECT customer_notification_id
+				FROM customer_notification_sms_gateway_messages
+				WHERE sms_gateway_message_id = $1
+			)
+			RETURNING correlation_key
+		`, smsGatewayMessageID, sentAt).Scan(&correlationKey)
+		if err == pgx.ErrNoRows {
+			return nil
+		}
+		if err != nil {
+			return fmt.Errorf("mark customer notification sent: %w", err)
+		}
+		if err := repo.publishCustomerNotificationConfirmed(ctx, correlationKey, sentAt); err != nil {
+			return err
+		}
+		marked = true
+		return nil
+	}); err != nil {
+		return false, fmt.Errorf("customer notification sent transaction: %w", err)
 	}
-	defer tx.Rollback(ctx)
-
-	var correlationKey string
-	err = tx.QueryRow(ctx, `
-		UPDATE customer_notifications
-		SET status = 'sent', sent_at = $2
-		WHERE id = (
-			SELECT customer_notification_id
-			FROM customer_notification_sms_gateway_messages
-			WHERE sms_gateway_message_id = $1
-		)
-		RETURNING correlation_key
-	`, smsGatewayMessageID, sentAt).Scan(&correlationKey)
-	if err == pgx.ErrNoRows {
-		return false, nil
-	}
-	if err != nil {
-		return false, fmt.Errorf("mark customer notification sent: %w", err)
-	}
-	if err := publishCustomerNotificationConfirmed(ctx, tx, correlationKey, sentAt); err != nil {
-		return false, err
-	}
-	if err := tx.Commit(ctx); err != nil {
-		return false, fmt.Errorf("commit customer notification sent transaction: %w", err)
-	}
-	return true, nil
+	return marked, nil
 }
 
 func (repo *CustomerNotificationRepository) MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, failedAt time.Time) (bool, error) {
@@ -113,16 +110,12 @@ func (repo *CustomerNotificationRepository) MarkFailedBySMSGatewayMessageID(ctx 
 	return commandTag.RowsAffected() > 0, nil
 }
 
-func publishCustomerNotificationConfirmed(ctx context.Context, tx pgx.Tx, correlationKey string, occurredAt time.Time) error {
+func (repo *CustomerNotificationRepository) publishCustomerNotificationConfirmed(ctx context.Context, correlationKey string, occurredAt time.Time) error {
 	payload, err := json.Marshal(map[string]string{"notificationId": correlationKey})
 	if err != nil {
 		return fmt.Errorf("marshal customer notification confirmed event: %w", err)
 	}
-	publisher, err := outboxpostgres.NewPublisher(tx, outboxpostgres.PublisherConfig{TableName: "outbox_messages"})
-	if err != nil {
-		return fmt.Errorf("create customer notification confirmed publisher: %w", err)
-	}
-	if err := publisher.Publish(ctx, outbox.Message{
+	if err := repo.publisher.Publish(ctx, outbox.Message{
 		ID:          uuid.NewString(),
 		Channel:     outbox.Channel(channelCustomerNotificationsConfirmed),
 		AffinityKey: outbox.AffinityKey(correlationKey),
