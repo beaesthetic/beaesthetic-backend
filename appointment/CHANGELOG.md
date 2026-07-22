@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.13.0...appointment-service-v1.14.0) (2026-07-22)
+
+
+### Features
+
+* remove backfill command and related infrastructure ([b251e63](https://github.com/beaesthetic/beaesthetic-backend/commit/b251e6352580cda7210f16c8cd180a5f26b533c8))
+
 ## [1.13.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.12.0...appointment-service-v1.13.0) (2026-07-18)
 
 

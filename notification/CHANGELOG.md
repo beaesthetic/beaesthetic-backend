@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.8.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.7.0...notification-service-v2.8.0) (2026-07-22)
+
+
+### Features
+
+* implement SQL queries and repository methods for customer notifications ([f923935](https://github.com/beaesthetic/beaesthetic-backend/commit/f92393525729a9c7f0312c1ab711ed14ef9e2087))
+* refactor customer notification repository to use context-aware database and outbox publisher ([0a1ae51](https://github.com/beaesthetic/beaesthetic-backend/commit/0a1ae519b7067ecba25187899b9f199a362b0606))
+
 ## [2.7.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.6.0...notification-service-v2.7.0) (2026-07-18)
 
 
