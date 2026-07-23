@@ -37,8 +37,7 @@ type MongoConfig struct {
 	Database string `koanf:"database"`
 }
 type RemoteConfig struct {
-	CustomerURL  string `koanf:"customer_url"`
-	SchedulerURL string `koanf:"scheduler_url"`
+	CustomerURL string `koanf:"customer_url"`
 }
 type RabbitMQConfig struct {
 	URL                         string `koanf:"url"`
@@ -51,11 +50,9 @@ type ReminderConfig struct {
 	TriggerBefore          time.Duration `koanf:"trigger_before"`
 	ImmediateSendThreshold time.Duration `koanf:"immediate_send_threshold"`
 	NoSendThreshold        time.Duration `koanf:"no_send_threshold"`
-	SchedulerProvider      string        `koanf:"scheduler_provider"`
 }
 
 type RiverConfig struct {
-	Enabled     bool   `koanf:"enabled"`
 	Queue       string `koanf:"queue"`
 	Workers     int    `koanf:"workers"`
 	MaxAttempts int    `koanf:"max_attempts"`

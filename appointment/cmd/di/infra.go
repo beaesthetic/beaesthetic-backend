@@ -78,6 +78,12 @@ func (d *DiContainer) MigrateRiver(ctx context.Context) error {
 	return err
 }
 
+func (d *DiContainer) GetRiverJobInserter() *app_postgres.RiverJobInserter {
+	return singleton(d, "riverJobInserter", func() *app_postgres.RiverJobInserter {
+		return app_postgres.NewRiverJobInserter(d.GetPostgresContextDB(), d.GetRiverClient())
+	})
+}
+
 func stdlibOpenDBFromPool(pool *pgxpool.Pool) *sql.DB {
 	config := pool.Config().ConnConfig.Copy()
 	return stdlib.OpenDB(*config)

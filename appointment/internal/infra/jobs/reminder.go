@@ -2,9 +2,10 @@ package jobs
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
 	"github.com/riverqueue/river"
@@ -36,19 +37,24 @@ func (w *SendAppointmentReminderWorker) Work(ctx context.Context, job *river.Job
 	return w.reminders.SendDueReminder(ctx, job.Args.EventID, &job.Args.ExpectedStartAt)
 }
 
+type JobInserter interface {
+	Insert(ctx context.Context, args river.JobArgs, opts *river.InsertOpts) error
+	CancelByKey(ctx context.Context, kind string, queue string, key string) error
+}
+
 type ReminderScheduler struct {
-	client      *river.Client[pgx.Tx]
+	inserter    JobInserter
 	queue       string
 	maxAttempts int
 	log         *zap.Logger
 }
 
-func NewReminderScheduler(client *river.Client[pgx.Tx], queue string, maxAttempts int, log *zap.Logger) *ReminderScheduler {
+func NewReminderScheduler(inserter JobInserter, queue string, maxAttempts int, log *zap.Logger) *ReminderScheduler {
 	if log == nil {
 		log = zap.NewNop()
 	}
 	return &ReminderScheduler{
-		client:      client,
+		inserter:    inserter,
 		queue:       queue,
 		maxAttempts: maxAttempts,
 		log:         log.Named("river_reminder_scheduler"),
@@ -56,18 +62,30 @@ func NewReminderScheduler(client *river.Client[pgx.Tx], queue string, maxAttempt
 }
 
 func (s *ReminderScheduler) ScheduleReminder(ctx context.Context, agendaEvent *domain.AgendaEvent, sendAt time.Time) error {
-	_, err := s.client.Insert(ctx, SendAppointmentReminderArgs{
+	key := appointmentReminderKey(agendaEvent.ID)
+	if err := s.inserter.CancelByKey(ctx, SendAppointmentReminderKind, s.queue, key); err != nil {
+		return err
+	}
+	return s.inserter.Insert(ctx, SendAppointmentReminderArgs{
 		EventID:         agendaEvent.ID,
 		ExpectedStartAt: agendaEvent.Start.UTC(),
 	}, &river.InsertOpts{
 		Queue:       s.queue,
 		ScheduledAt: sendAt.UTC(),
 		MaxAttempts: s.maxAttempts,
+		Metadata:    appointmentReminderMetadata(key),
 	})
-	return err
 }
 
-func (s *ReminderScheduler) UnscheduleReminder(ctx context.Context, eventID string) error {
-	s.log.Debug("river reminder unschedule requested; stale jobs are skipped by worker validation", zap.String("event_id", eventID))
-	return nil
+func (s *ReminderScheduler) UnscheduleReminder(ctx context.Context, agendaEvent *domain.AgendaEvent) error {
+	return s.inserter.CancelByKey(ctx, SendAppointmentReminderKind, s.queue, appointmentReminderKey(agendaEvent.ID))
+}
+
+func appointmentReminderKey(eventID string) string {
+	return fmt.Sprintf("appointment:%s:reminder", eventID)
+}
+
+func appointmentReminderMetadata(key string) []byte {
+	metadata, _ := json.Marshal(map[string]string{"idempotencyKey": key})
+	return metadata
 }

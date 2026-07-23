@@ -10,15 +10,27 @@ import (
 )
 
 type appointmentRepoStub struct {
-	saved *domain.AgendaEvent
+	saved               *domain.AgendaEvent
+	txContextKey        any
+	txCalls             int
+	saveTxContext       bool
+	pendingTxContext    bool
+	pendingNotification *PendingNotification
 }
 
 func (r *appointmentRepoStub) Tx(ctx context.Context, atomicFn func(context.Context) error) error {
+	r.txCalls++
+	if r.txContextKey != nil {
+		ctx = context.WithValue(ctx, r.txContextKey, true)
+	}
 	return atomicFn(ctx)
 }
 
 func (r *appointmentRepoStub) SaveAgendaEvent(ctx context.Context, event *domain.AgendaEvent) error {
 	r.saved = event
+	if r.txContextKey != nil {
+		r.saveTxContext, _ = ctx.Value(r.txContextKey).(bool)
+	}
 	return nil
 }
 
@@ -41,7 +53,11 @@ func (r *appointmentRepoStub) RemovePendingNotification(context.Context, string)
 	return nil
 }
 
-func (r *appointmentRepoStub) SavePendingNotification(context.Context, PendingNotification) error {
+func (r *appointmentRepoStub) SavePendingNotification(ctx context.Context, pending PendingNotification) error {
+	r.pendingNotification = &pending
+	if r.txContextKey != nil {
+		r.pendingTxContext, _ = ctx.Value(r.txContextKey).(bool)
+	}
 	return nil
 }
 

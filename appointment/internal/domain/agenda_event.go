@@ -90,6 +90,11 @@ func (event *AgendaEvent) MarkReminderScheduled(now time.Time) {
 	event.UpdatedAt = now.UTC()
 }
 
+func (event *AgendaEvent) MarkReminderDeleted(now time.Time) {
+	event.ReminderStatus = ReminderDeleted
+	event.UpdatedAt = now.UTC()
+}
+
 func (event *AgendaEvent) MarkReminderUnprocessable(now time.Time) {
 	event.ReminderStatus = ReminderUnprocessable
 	event.UpdatedAt = now.UTC()

@@ -10,7 +10,6 @@ import (
 func TestLoadEnvironment(t *testing.T) {
 	t.Setenv("ENV_POSTGRES_DSN", "postgres://test")
 	t.Setenv("ENV_REMINDER_TRIGGER__BEFORE", "2h")
-	t.Setenv("ENV_REMINDER_SCHEDULER__PROVIDER", "river")
 	cfg, err := Load("")
 	if err != nil {
 		t.Fatal(err)
@@ -20,9 +19,6 @@ func TestLoadEnvironment(t *testing.T) {
 	}
 	if cfg.Reminder.TriggerBefore != 2*time.Hour {
 		t.Fatalf("trigger=%s", cfg.Reminder.TriggerBefore)
-	}
-	if cfg.Reminder.SchedulerProvider != "river" {
-		t.Fatalf("scheduler provider=%q", cfg.Reminder.SchedulerProvider)
 	}
 }
 

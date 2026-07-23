@@ -43,11 +43,8 @@ func appCommand(envFile *string) *cobra.Command {
 		notificationConfirmConsumer := c.GetNotificationConfirmQueueConsumer()
 
 		runner := appruntime.NewRunner(c.Log)
-		riverConfig := c.GetRiverReminderConfig()
-		if riverConfig.Enabled {
-			riverClient := c.GetRiverClient()
-			runner.Add(appruntime.StartStop("river reminder scheduler", riverClient.Start, riverClient.Stop, 10*time.Second))
-		}
+		riverClient := c.GetRiverClient()
+		runner.Add(appruntime.StartStop("river reminder scheduler", riverClient.Start, riverClient.Stop, 10*time.Second))
 		runner.Add(appruntime.HTTPServer("http server", httpServer, 10*time.Second))
 		runner.Add(appruntime.Consumer("appointment lifecycle consumer", appointmentLifecycleConsumer))
 		runner.Add(appruntime.Consumer("scheduler queue consumer", schedulerConsumer))

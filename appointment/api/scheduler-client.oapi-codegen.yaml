@@ -1,4 +1,0 @@
-package: scheduler
-generate:
-  models: true
-  client: true

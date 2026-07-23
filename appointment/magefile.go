@@ -28,12 +28,7 @@ func Generate() error {
 	); err != nil {
 		return err
 	}
-	return run(
-		"go", "run", openAPIGenerator,
-		"--config", "api/scheduler-client.oapi-codegen.yaml",
-		"-o", "internal/port/http/client/scheduler/scheduler.gen.go",
-		"api-spec/scheduler-api.yaml",
-	)
+	return nil
 }
 func Build() error {
 	if err := Generate(); err != nil {

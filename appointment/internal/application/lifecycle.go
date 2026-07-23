@@ -16,7 +16,7 @@ const (
 
 type ReminderScheduler interface {
 	ScheduleReminder(ctx context.Context, agendaEvent *domain.AgendaEvent, sendAt time.Time) error
-	UnscheduleReminder(ctx context.Context, eventID string) error
+	UnscheduleReminder(ctx context.Context, agendaEvent *domain.AgendaEvent) error
 }
 
 type NotificationSender interface {
@@ -25,8 +25,13 @@ type NotificationSender interface {
 	SendAppointmentRescheduled(ctx context.Context, agendaEvent *domain.AgendaEvent) (string, error)
 }
 
+type TransactionRunner interface {
+	Tx(ctx context.Context, atomicFn func(ctx context.Context) error) error
+}
+
 type AppointmentLifecycleHandler struct {
 	service                *AppointmentService
+	transactions           TransactionRunner
 	customers              CustomerRegistry
 	scheduler              ReminderScheduler
 	notifications          NotificationSender
@@ -36,12 +41,13 @@ type AppointmentLifecycleHandler struct {
 	log                    *zap.Logger
 }
 
-func NewAppointmentLifecycleHandler(service *AppointmentService, customers CustomerRegistry, scheduler ReminderScheduler, notifications NotificationSender, clock Clock, noSendThreshold time.Duration, immediateSendThreshold time.Duration, log *zap.Logger) *AppointmentLifecycleHandler {
+func NewAppointmentLifecycleHandler(service *AppointmentService, transactions TransactionRunner, customers CustomerRegistry, scheduler ReminderScheduler, notifications NotificationSender, clock Clock, noSendThreshold time.Duration, immediateSendThreshold time.Duration, log *zap.Logger) *AppointmentLifecycleHandler {
 	if log == nil {
 		log = zap.NewNop()
 	}
 	return &AppointmentLifecycleHandler{
 		service:                service,
+		transactions:           transactions,
 		customers:              customers,
 		scheduler:              scheduler,
 		notifications:          notifications,
@@ -75,12 +81,7 @@ func (h *AppointmentLifecycleHandler) Handle(ctx context.Context, eventType, eve
 	case "AgendaEventRescheduled":
 		return h.handleScheduled(ctx, agendaEvent, true)
 	case "AgendaEventDeleted":
-		if err := h.scheduler.UnscheduleReminder(ctx, agendaEvent.ID); err != nil {
-			h.log.Error("failed to unschedule appointment reminder", zap.String("event_id", agendaEvent.ID), zap.Error(err))
-			return err
-		}
-		h.log.Info("unscheduled appointment reminder", zap.String("event_id", agendaEvent.ID))
-		return nil
+		return h.handleDeleted(ctx, agendaEvent)
 	default:
 		h.log.Debug("ignoring unsupported appointment lifecycle event", zap.String("type", eventType), zap.String("event_id", eventID))
 		return nil
@@ -91,16 +92,35 @@ func (h *AppointmentLifecycleHandler) ScheduleReminder(ctx context.Context, agen
 	if agendaEvent == nil {
 		return nil
 	}
-	return h.scheduleReminder(ctx, agendaEvent)
+	return h.transactions.Tx(ctx, func(ctx context.Context) error {
+		return h.scheduleReminder(ctx, agendaEvent)
+	})
 }
 func (h *AppointmentLifecycleHandler) handleScheduled(ctx context.Context, agendaEvent *domain.AgendaEvent, isRescheduled bool) error {
 	h.log.Info("processing scheduled appointment lifecycle", zap.String("event_id", agendaEvent.ID), zap.Bool("rescheduled", isRescheduled))
-	reminderErr := h.scheduleReminder(ctx, agendaEvent)
-	confirmationErr := h.sendConfirmationNotification(ctx, agendaEvent, isRescheduled)
-	if reminderErr != nil {
-		return reminderErr
-	}
-	return confirmationErr
+	return h.transactions.Tx(ctx, func(ctx context.Context) error {
+		reminderErr := h.scheduleReminder(ctx, agendaEvent)
+		confirmationErr := h.sendConfirmationNotification(ctx, agendaEvent, isRescheduled)
+		if reminderErr != nil {
+			return reminderErr
+		}
+		return confirmationErr
+	})
+}
+
+func (h *AppointmentLifecycleHandler) handleDeleted(ctx context.Context, agendaEvent *domain.AgendaEvent) error {
+	return h.transactions.Tx(ctx, func(ctx context.Context) error {
+		if err := h.scheduler.UnscheduleReminder(ctx, agendaEvent); err != nil {
+			h.log.Error("failed to unschedule appointment reminder", zap.String("event_id", agendaEvent.ID), zap.Error(err))
+			return err
+		}
+		agendaEvent.MarkReminderDeleted(h.clock.Now().UTC())
+		if err := h.service.SaveAgendaEvent(ctx, agendaEvent); err != nil {
+			return err
+		}
+		h.log.Info("unscheduled appointment reminder", zap.String("event_id", agendaEvent.ID))
+		return nil
+	})
 }
 
 func (h *AppointmentLifecycleHandler) scheduleReminder(ctx context.Context, agendaEvent *domain.AgendaEvent) error {
