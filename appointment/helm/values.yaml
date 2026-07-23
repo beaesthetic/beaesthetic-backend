@@ -6,7 +6,7 @@ labels:
 replicaCount: 1
 image:
   repository: petretiandrea/appointment-service-v2
-  tag: 1.14.0
+  tag: 1.15.0
   pullPolicy: IfNotPresent
 service:
   create: true
