@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.15.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.14.0...appointment-service-v1.15.0) (2026-07-23)
+
+
+### Features
+
+* add reminder scheduler provider configuration to environment settings ([8af56f1](https://github.com/beaesthetic/beaesthetic-backend/commit/8af56f1f30c82932acb8bc9e522f7a4dda26b154))
+* implement reminder scheduling and sending functionality with qriver ([7d68a3d](https://github.com/beaesthetic/beaesthetic-backend/commit/7d68a3debe5736230724199d2eaa2b4305f769ed))
+* implement runtime process management with new runner and adapters ([23c7861](https://github.com/beaesthetic/beaesthetic-backend/commit/23c7861f94a53062770f5211431425369a5eceeb))
+
 ## [1.14.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.13.0...appointment-service-v1.14.0) (2026-07-22)
 
 

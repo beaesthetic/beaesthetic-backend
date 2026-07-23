@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.8.0...notification-service-v2.9.0) (2026-07-23)
+
+
+### Features
+
+* implement runtime process management with new runner and adapters ([23c7861](https://github.com/beaesthetic/beaesthetic-backend/commit/23c7861f94a53062770f5211431425369a5eceeb))
+
 ## [2.8.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.7.0...notification-service-v2.8.0) (2026-07-22)
 
 
