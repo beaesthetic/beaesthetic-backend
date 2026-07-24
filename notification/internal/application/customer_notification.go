@@ -24,9 +24,9 @@ const (
 	CustomerNotificationStatusSent       = "sent"
 	CustomerNotificationStatusFailed     = "failed"
 
-	CustomerNotificationReasonCustomerPhoneRequired  = "customer_phone_required"
+	CustomerNotificationReasonMissingCustomerContact = "missing_customer_contact"
 	CustomerNotificationReasonTemplateRenderFailed   = "template_render_failed"
-	CustomerNotificationReasonProviderDispatchFailed = "provider_dispatch_failed"
+	CustomerNotificationReasonProviderRejected       = "provider_rejected"
 	CustomerNotificationReasonProviderDeliveryFailed = "provider_delivery_failed"
 )
 
@@ -169,10 +169,11 @@ func (service *CustomerNotificationService) processCustomer(ctx context.Context,
 
 	customer, err := service.customers.GetCustomer(ctx, customerID)
 	if err != nil {
-		return err
+		_, markErr := service.repository.MarkFailed(ctx, newNotificationID, CustomerNotificationReasonMissingCustomerContact, err.Error(), service.now().UTC())
+		return markErr
 	}
 	if strings.TrimSpace(customer.Phone) == "" {
-		_, err := service.repository.MarkFailed(ctx, newNotificationID, CustomerNotificationReasonCustomerPhoneRequired, fmt.Sprintf("%s: %s", ErrCustomerPhoneRequired.Error(), customerID), service.now().UTC())
+		_, err := service.repository.MarkFailed(ctx, newNotificationID, CustomerNotificationReasonMissingCustomerContact, fmt.Sprintf("%s: sms channel requires customer phone", ErrCustomerPhoneRequired.Error()), service.now().UTC())
 		return err
 	}
 	templateValues := command.TemplateValues(customer)
@@ -188,7 +189,7 @@ func (service *CustomerNotificationService) processCustomer(ctx context.Context,
 
 	smsGatewayMessageID, err := service.smsDispatcher.Send(ctx, newNotificationID, customer.Phone, content)
 	if err != nil {
-		_, markErr := service.repository.MarkFailed(ctx, newNotificationID, CustomerNotificationReasonProviderDispatchFailed, err.Error(), service.now().UTC())
+		_, markErr := service.repository.MarkFailed(ctx, newNotificationID, CustomerNotificationReasonProviderRejected, err.Error(), service.now().UTC())
 		return markErr
 	}
 	if smsGatewayMessageID == "" {

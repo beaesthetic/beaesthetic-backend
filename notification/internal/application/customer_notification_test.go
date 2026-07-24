@@ -99,8 +99,34 @@ func TestCustomerNotificationServiceRequiresPhone(t *testing.T) {
 	if repo.failed == nil {
 		t.Fatal("customer notification should be marked failed")
 	}
-	if repo.failed.reason != CustomerNotificationReasonCustomerPhoneRequired {
-		t.Fatalf("failed reason = %q, want %q", repo.failed.reason, CustomerNotificationReasonCustomerPhoneRequired)
+	if repo.failed.reason != CustomerNotificationReasonMissingCustomerContact {
+		t.Fatalf("failed reason = %q, want %q", repo.failed.reason, CustomerNotificationReasonMissingCustomerContact)
+	}
+}
+
+func TestCustomerNotificationServiceMarksMissingCustomerAsMissingContact(t *testing.T) {
+	repo := newFakeCustomerNotificationRepository()
+	service := NewCustomerNotificationService(
+		fakeCustomerReader{},
+		&fakeTemplateRenderer{content: "hello"},
+		repo,
+		&fakeSMSDispatcher{},
+	)
+
+	err := service.Process(context.Background(), CustomerNotificationCommand{
+		IdempotencyKey:      "external-key",
+		CustomerIDs:         []string{"missing-customer"},
+		NotificationChannel: "sms",
+		NotificationType:    "appointment_reminder",
+	})
+	if err != nil {
+		t.Fatalf("Process() error = %v, want nil", err)
+	}
+	if repo.failed == nil {
+		t.Fatal("customer notification should be marked failed")
+	}
+	if repo.failed.reason != CustomerNotificationReasonMissingCustomerContact {
+		t.Fatalf("failed reason = %q, want %q", repo.failed.reason, CustomerNotificationReasonMissingCustomerContact)
 	}
 }
 
