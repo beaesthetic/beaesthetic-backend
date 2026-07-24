@@ -71,6 +71,55 @@ func (NotificationChannel) EnumDescriptor() ([]byte, []int) {
 	return file_beaesthetic_notification_v1_customer_notifications_proto_rawDescGZIP(), []int{0}
 }
 
+type CustomerNotificationOutcomeStatus int32
+
+const (
+	CustomerNotificationOutcomeStatus_CUSTOMER_NOTIFICATION_OUTCOME_STATUS_UNSPECIFIED CustomerNotificationOutcomeStatus = 0
+	CustomerNotificationOutcomeStatus_CUSTOMER_NOTIFICATION_OUTCOME_STATUS_SENT        CustomerNotificationOutcomeStatus = 1
+	CustomerNotificationOutcomeStatus_CUSTOMER_NOTIFICATION_OUTCOME_STATUS_FAILED      CustomerNotificationOutcomeStatus = 2
+)
+
+// Enum value maps for CustomerNotificationOutcomeStatus.
+var (
+	CustomerNotificationOutcomeStatus_name = map[int32]string{
+		0: "CUSTOMER_NOTIFICATION_OUTCOME_STATUS_UNSPECIFIED",
+		1: "CUSTOMER_NOTIFICATION_OUTCOME_STATUS_SENT",
+		2: "CUSTOMER_NOTIFICATION_OUTCOME_STATUS_FAILED",
+	}
+	CustomerNotificationOutcomeStatus_value = map[string]int32{
+		"CUSTOMER_NOTIFICATION_OUTCOME_STATUS_UNSPECIFIED": 0,
+		"CUSTOMER_NOTIFICATION_OUTCOME_STATUS_SENT":        1,
+		"CUSTOMER_NOTIFICATION_OUTCOME_STATUS_FAILED":      2,
+	}
+)
+
+func (x CustomerNotificationOutcomeStatus) Enum() *CustomerNotificationOutcomeStatus {
+	p := new(CustomerNotificationOutcomeStatus)
+	*p = x
+	return p
+}
+
+func (x CustomerNotificationOutcomeStatus) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (CustomerNotificationOutcomeStatus) Descriptor() protoreflect.EnumDescriptor {
+	return file_beaesthetic_notification_v1_customer_notifications_proto_enumTypes[1].Descriptor()
+}
+
+func (CustomerNotificationOutcomeStatus) Type() protoreflect.EnumType {
+	return &file_beaesthetic_notification_v1_customer_notifications_proto_enumTypes[1]
+}
+
+func (x CustomerNotificationOutcomeStatus) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use CustomerNotificationOutcomeStatus.Descriptor instead.
+func (CustomerNotificationOutcomeStatus) EnumDescriptor() ([]byte, []int) {
+	return file_beaesthetic_notification_v1_customer_notifications_proto_rawDescGZIP(), []int{1}
+}
+
 type CustomerNotificationRequested struct {
 	state               protoimpl.MessageState `protogen:"open.v1"`
 	IdempotencyKey      string                 `protobuf:"bytes,1,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
@@ -147,6 +196,90 @@ func (x *CustomerNotificationRequested) GetBody() *structpb.Struct {
 	return nil
 }
 
+type CustomerNotificationOutcome struct {
+	state          protoimpl.MessageState            `protogen:"open.v1"`
+	NotificationId string                            `protobuf:"bytes,1,opt,name=notification_id,json=notificationId,proto3" json:"notification_id,omitempty"`
+	Status         CustomerNotificationOutcomeStatus `protobuf:"varint,2,opt,name=status,proto3,enum=beaesthetic.notification.v1.CustomerNotificationOutcomeStatus" json:"status,omitempty"`
+	Reason         string                            `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
+	Message        string                            `protobuf:"bytes,4,opt,name=message,proto3" json:"message,omitempty"`
+	IdempotencyKey string                            `protobuf:"bytes,5,opt,name=idempotency_key,json=idempotencyKey,proto3" json:"idempotency_key,omitempty"`
+	CustomerId     string                            `protobuf:"bytes,6,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *CustomerNotificationOutcome) Reset() {
+	*x = CustomerNotificationOutcome{}
+	mi := &file_beaesthetic_notification_v1_customer_notifications_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CustomerNotificationOutcome) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CustomerNotificationOutcome) ProtoMessage() {}
+
+func (x *CustomerNotificationOutcome) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_notification_v1_customer_notifications_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CustomerNotificationOutcome.ProtoReflect.Descriptor instead.
+func (*CustomerNotificationOutcome) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_notification_v1_customer_notifications_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *CustomerNotificationOutcome) GetNotificationId() string {
+	if x != nil {
+		return x.NotificationId
+	}
+	return ""
+}
+
+func (x *CustomerNotificationOutcome) GetStatus() CustomerNotificationOutcomeStatus {
+	if x != nil {
+		return x.Status
+	}
+	return CustomerNotificationOutcomeStatus_CUSTOMER_NOTIFICATION_OUTCOME_STATUS_UNSPECIFIED
+}
+
+func (x *CustomerNotificationOutcome) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
+func (x *CustomerNotificationOutcome) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *CustomerNotificationOutcome) GetIdempotencyKey() string {
+	if x != nil {
+		return x.IdempotencyKey
+	}
+	return ""
+}
+
+func (x *CustomerNotificationOutcome) GetCustomerId() string {
+	if x != nil {
+		return x.CustomerId
+	}
+	return ""
+}
+
 var File_beaesthetic_notification_v1_customer_notifications_proto protoreflect.FileDescriptor
 
 const file_beaesthetic_notification_v1_customer_notifications_proto_rawDesc = "" +
@@ -157,11 +290,23 @@ const file_beaesthetic_notification_v1_customer_notifications_proto_rawDesc = ""
 	"\fcustomer_ids\x18\x02 \x03(\tR\vcustomerIds\x12c\n" +
 	"\x14notification_channel\x18\x03 \x01(\x0e20.beaesthetic.notification.v1.NotificationChannelR\x13notificationChannel\x12+\n" +
 	"\x11notification_type\x18\x04 \x01(\tR\x10notificationType\x12+\n" +
-	"\x04body\x18\x05 \x01(\v2\x17.google.protobuf.StructR\x04body*y\n" +
+	"\x04body\x18\x05 \x01(\v2\x17.google.protobuf.StructR\x04body\"\x9a\x02\n" +
+	"\x1bCustomerNotificationOutcome\x12'\n" +
+	"\x0fnotification_id\x18\x01 \x01(\tR\x0enotificationId\x12V\n" +
+	"\x06status\x18\x02 \x01(\x0e2>.beaesthetic.notification.v1.CustomerNotificationOutcomeStatusR\x06status\x12\x16\n" +
+	"\x06reason\x18\x03 \x01(\tR\x06reason\x12\x18\n" +
+	"\amessage\x18\x04 \x01(\tR\amessage\x12'\n" +
+	"\x0fidempotency_key\x18\x05 \x01(\tR\x0eidempotencyKey\x12\x1f\n" +
+	"\vcustomer_id\x18\x06 \x01(\tR\n" +
+	"customerId*y\n" +
 	"\x13NotificationChannel\x12$\n" +
 	" NOTIFICATION_CHANNEL_UNSPECIFIED\x10\x00\x12\x1c\n" +
 	"\x18NOTIFICATION_CHANNEL_SMS\x10\x01\x12\x1e\n" +
-	"\x1aNOTIFICATION_CHANNEL_EMAIL\x10\x02BWZUgithub.com/petretiandrea/beaesthetic-backend/core-contracts/notification;notificationb\x06proto3"
+	"\x1aNOTIFICATION_CHANNEL_EMAIL\x10\x02*\xb9\x01\n" +
+	"!CustomerNotificationOutcomeStatus\x124\n" +
+	"0CUSTOMER_NOTIFICATION_OUTCOME_STATUS_UNSPECIFIED\x10\x00\x12-\n" +
+	")CUSTOMER_NOTIFICATION_OUTCOME_STATUS_SENT\x10\x01\x12/\n" +
+	"+CUSTOMER_NOTIFICATION_OUTCOME_STATUS_FAILED\x10\x02BWZUgithub.com/petretiandrea/beaesthetic-backend/core-contracts/notification;notificationb\x06proto3"
 
 var (
 	file_beaesthetic_notification_v1_customer_notifications_proto_rawDescOnce sync.Once
@@ -175,21 +320,24 @@ func file_beaesthetic_notification_v1_customer_notifications_proto_rawDescGZIP()
 	return file_beaesthetic_notification_v1_customer_notifications_proto_rawDescData
 }
 
-var file_beaesthetic_notification_v1_customer_notifications_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_beaesthetic_notification_v1_customer_notifications_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_beaesthetic_notification_v1_customer_notifications_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_beaesthetic_notification_v1_customer_notifications_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_beaesthetic_notification_v1_customer_notifications_proto_goTypes = []any{
-	(NotificationChannel)(0),              // 0: beaesthetic.notification.v1.NotificationChannel
-	(*CustomerNotificationRequested)(nil), // 1: beaesthetic.notification.v1.CustomerNotificationRequested
-	(*structpb.Struct)(nil),               // 2: google.protobuf.Struct
+	(NotificationChannel)(0),               // 0: beaesthetic.notification.v1.NotificationChannel
+	(CustomerNotificationOutcomeStatus)(0), // 1: beaesthetic.notification.v1.CustomerNotificationOutcomeStatus
+	(*CustomerNotificationRequested)(nil),  // 2: beaesthetic.notification.v1.CustomerNotificationRequested
+	(*CustomerNotificationOutcome)(nil),    // 3: beaesthetic.notification.v1.CustomerNotificationOutcome
+	(*structpb.Struct)(nil),                // 4: google.protobuf.Struct
 }
 var file_beaesthetic_notification_v1_customer_notifications_proto_depIdxs = []int32{
 	0, // 0: beaesthetic.notification.v1.CustomerNotificationRequested.notification_channel:type_name -> beaesthetic.notification.v1.NotificationChannel
-	2, // 1: beaesthetic.notification.v1.CustomerNotificationRequested.body:type_name -> google.protobuf.Struct
-	2, // [2:2] is the sub-list for method output_type
-	2, // [2:2] is the sub-list for method input_type
-	2, // [2:2] is the sub-list for extension type_name
-	2, // [2:2] is the sub-list for extension extendee
-	0, // [0:2] is the sub-list for field type_name
+	4, // 1: beaesthetic.notification.v1.CustomerNotificationRequested.body:type_name -> google.protobuf.Struct
+	1, // 2: beaesthetic.notification.v1.CustomerNotificationOutcome.status:type_name -> beaesthetic.notification.v1.CustomerNotificationOutcomeStatus
+	3, // [3:3] is the sub-list for method output_type
+	3, // [3:3] is the sub-list for method input_type
+	3, // [3:3] is the sub-list for extension type_name
+	3, // [3:3] is the sub-list for extension extendee
+	0, // [0:3] is the sub-list for field type_name
 }
 
 func init() { file_beaesthetic_notification_v1_customer_notifications_proto_init() }
@@ -202,8 +350,8 @@ func file_beaesthetic_notification_v1_customer_notifications_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_beaesthetic_notification_v1_customer_notifications_proto_rawDesc), len(file_beaesthetic_notification_v1_customer_notifications_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   1,
+			NumEnums:      2,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
