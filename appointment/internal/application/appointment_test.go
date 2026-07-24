@@ -16,6 +16,9 @@ type appointmentRepoStub struct {
 	saveTxContext       bool
 	pendingTxContext    bool
 	pendingNotification *PendingNotification
+	pendingLookup       *PendingNotification
+	agendaLookup        *domain.AgendaEvent
+	removedPending      string
 }
 
 func (r *appointmentRepoStub) Tx(ctx context.Context, atomicFn func(context.Context) error) error {
@@ -35,7 +38,7 @@ func (r *appointmentRepoStub) SaveAgendaEvent(ctx context.Context, event *domain
 }
 
 func (r *appointmentRepoStub) FindAgendaEvent(context.Context, string) (*domain.AgendaEvent, error) {
-	return nil, nil
+	return r.agendaLookup, nil
 }
 
 func (r *appointmentRepoStub) SearchAgendaEvents(context.Context, string, *time.Time, *time.Time) ([]domain.AgendaEvent, error) {
@@ -46,10 +49,11 @@ func (r *appointmentRepoStub) FindFutureAppointments(context.Context, time.Time)
 	return nil, nil
 }
 func (r *appointmentRepoStub) FindPendingNotification(context.Context, string) (*PendingNotification, error) {
-	return nil, nil
+	return r.pendingLookup, nil
 }
 
-func (r *appointmentRepoStub) RemovePendingNotification(context.Context, string) error {
+func (r *appointmentRepoStub) RemovePendingNotification(ctx context.Context, correlationKey string) error {
+	r.removedPending = correlationKey
 	return nil
 }
 
@@ -148,4 +152,66 @@ func TestCreateAgendaAppointmentFailsWhenCustomerIsUnknown(t *testing.T) {
 	if repo.saved != nil {
 		t.Fatalf("expected no saved event, got %#v", repo.saved)
 	}
+}
+
+func TestConfirmNotificationMarksReminderSent(t *testing.T) {
+	event := newAppointmentTestAgendaEvent(t)
+	event.ReminderStatus = domain.ReminderSentRequested
+	repo := &appointmentRepoStub{
+		pendingLookup: &PendingNotification{CorrelationKey: "notification-1", AgendaEventID: event.ID, Type: "reminder"},
+		agendaLookup:  event,
+	}
+	service := NewAppointmentService(repo, &customerRegistryStub{}, time.Hour, fixedClock{now: time.Date(2026, 7, 4, 10, 0, 0, 0, time.UTC)})
+
+	agendaEvent, err := service.ConfirmNotification(context.Background(), "notification-1")
+	if err != nil {
+		t.Fatalf("ConfirmNotification() error = %v", err)
+	}
+	if agendaEvent == nil || agendaEvent.ReminderStatus != domain.ReminderSent {
+		t.Fatalf("reminder status = %v, want %s", agendaEvent, domain.ReminderSent)
+	}
+	if repo.removedPending != "notification-1" {
+		t.Fatalf("removed pending = %q, want notification-1", repo.removedPending)
+	}
+}
+
+func TestFailNotificationMarksReminderFailToSend(t *testing.T) {
+	event := newAppointmentTestAgendaEvent(t)
+	event.ReminderStatus = domain.ReminderSentRequested
+	repo := &appointmentRepoStub{
+		pendingLookup: &PendingNotification{CorrelationKey: "notification-1", AgendaEventID: event.ID, Type: "reminder"},
+		agendaLookup:  event,
+	}
+	service := NewAppointmentService(repo, &customerRegistryStub{}, time.Hour, fixedClock{now: time.Date(2026, 7, 4, 10, 0, 0, 0, time.UTC)})
+
+	agendaEvent, err := service.FailNotification(context.Background(), "notification-1")
+	if err != nil {
+		t.Fatalf("FailNotification() error = %v", err)
+	}
+	if agendaEvent == nil || agendaEvent.ReminderStatus != domain.ReminderFailToSend {
+		t.Fatalf("reminder status = %v, want %s", agendaEvent, domain.ReminderFailToSend)
+	}
+	if repo.removedPending != "notification-1" {
+		t.Fatalf("removed pending = %q, want notification-1", repo.removedPending)
+	}
+}
+
+func newAppointmentTestAgendaEvent(t *testing.T) *domain.AgendaEvent {
+	t.Helper()
+	event, err := domain.NewAgendaEvent(
+		"event-1",
+		domain.EventTypeAppointment,
+		"Haircut",
+		"",
+		time.Date(2026, 7, 5, 10, 0, 0, 0, time.UTC),
+		time.Date(2026, 7, 5, 11, 0, 0, 0, time.UTC),
+		domain.Attendee{ID: "customer-1", DisplayName: "Jane Doe"},
+		nil,
+		time.Hour,
+		time.Date(2026, 7, 4, 10, 0, 0, 0, time.UTC),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return &event
 }

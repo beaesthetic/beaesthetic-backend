@@ -137,6 +137,18 @@ func (s *AppointmentService) TrackPendingNotification(ctx context.Context, corre
 }
 
 func (s *AppointmentService) ConfirmNotification(ctx context.Context, correlationKey string) (*domain.AgendaEvent, error) {
+	return s.completePendingNotification(ctx, correlationKey, func(event *domain.AgendaEvent) {
+		event.MarkReminderSent(s.clock.Now())
+	})
+}
+
+func (s *AppointmentService) FailNotification(ctx context.Context, correlationKey string) (*domain.AgendaEvent, error) {
+	return s.completePendingNotification(ctx, correlationKey, func(event *domain.AgendaEvent) {
+		event.MarkReminderFailToSend(s.clock.Now())
+	})
+}
+
+func (s *AppointmentService) completePendingNotification(ctx context.Context, correlationKey string, completeReminder func(*domain.AgendaEvent)) (*domain.AgendaEvent, error) {
 	var event *domain.AgendaEvent
 	err := s.repo.Tx(ctx, func(ctx context.Context) error {
 		pending, err := s.repo.FindPendingNotification(ctx, correlationKey)
@@ -153,7 +165,7 @@ func (s *AppointmentService) ConfirmNotification(ctx context.Context, correlatio
 		if e == nil {
 			return fmt.Errorf("No event with id %s found", pending.AgendaEventID)
 		}
-		e.MarkReminderSent(s.clock.Now())
+		completeReminder(e)
 		event = e
 		if err := s.repo.SaveAgendaEvent(ctx, e); err != nil {
 			return err

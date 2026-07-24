@@ -96,7 +96,6 @@ func TestScheduleReminderSchedulesAndSavesInTransaction(t *testing.T) {
 	handler := NewAppointmentLifecycleHandler(
 		service,
 		repo,
-		&customerRegistryStub{},
 		scheduler,
 		notificationSenderStub{},
 		fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)},
@@ -133,7 +132,6 @@ func TestScheduleReminderDoesNotSaveScheduledStateWhenSchedulerFails(t *testing.
 	handler := NewAppointmentLifecycleHandler(
 		service,
 		repo,
-		&customerRegistryStub{},
 		scheduler,
 		notificationSenderStub{},
 		fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)},
@@ -153,14 +151,12 @@ func TestScheduleReminderDoesNotSaveScheduledStateWhenSchedulerFails(t *testing.
 }
 
 func TestHandleScheduledRunsReminderAndConfirmationInSingleTransaction(t *testing.T) {
-	phoneNumber := "+390000000000"
 	repo := &appointmentRepoStub{txContextKey: lifecycleTxContextKey{}}
 	service := NewAppointmentService(repo, &customerRegistryStub{}, 2*time.Hour, fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)})
 	scheduler := &reminderSchedulerStub{}
 	handler := NewAppointmentLifecycleHandler(
 		service,
 		repo,
-		&customerRegistryStub{customer: &Customer{ID: "customer-1", DisplayName: "Jane Doe", PhoneNumber: &phoneNumber}},
 		scheduler,
 		notificationSenderStub{},
 		fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)},
@@ -197,7 +193,6 @@ func TestHandleDeletedUnschedulesReminderInTransaction(t *testing.T) {
 	handler := NewAppointmentLifecycleHandler(
 		service,
 		repo,
-		&customerRegistryStub{},
 		scheduler,
 		notificationSenderStub{},
 		fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)},

@@ -32,7 +32,6 @@ type TransactionRunner interface {
 type AppointmentLifecycleHandler struct {
 	service                *AppointmentService
 	transactions           TransactionRunner
-	customers              CustomerRegistry
 	scheduler              ReminderScheduler
 	notifications          NotificationSender
 	clock                  Clock
@@ -41,14 +40,13 @@ type AppointmentLifecycleHandler struct {
 	log                    *zap.Logger
 }
 
-func NewAppointmentLifecycleHandler(service *AppointmentService, transactions TransactionRunner, customers CustomerRegistry, scheduler ReminderScheduler, notifications NotificationSender, clock Clock, noSendThreshold time.Duration, immediateSendThreshold time.Duration, log *zap.Logger) *AppointmentLifecycleHandler {
+func NewAppointmentLifecycleHandler(service *AppointmentService, transactions TransactionRunner, scheduler ReminderScheduler, notifications NotificationSender, clock Clock, noSendThreshold time.Duration, immediateSendThreshold time.Duration, log *zap.Logger) *AppointmentLifecycleHandler {
 	if log == nil {
 		log = zap.NewNop()
 	}
 	return &AppointmentLifecycleHandler{
 		service:                service,
 		transactions:           transactions,
-		customers:              customers,
 		scheduler:              scheduler,
 		notifications:          notifications,
 		clock:                  clock,
@@ -141,18 +139,9 @@ func (h *AppointmentLifecycleHandler) scheduleReminder(ctx context.Context, agen
 }
 
 func (h *AppointmentLifecycleHandler) sendConfirmationNotification(ctx context.Context, agendaEvent *domain.AgendaEvent, isRescheduled bool) error {
-	customer, err := h.customers.FindByCustomerID(ctx, agendaEvent.Attendee.ID)
-	if err != nil {
-		h.log.Error("failed to load attendee for confirmation notification", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID), zap.Error(err))
-		return err
-	}
-	if customer == nil || customer.PhoneNumber == nil {
-		h.log.Info("attendee has no valid contacts, not sending confirmation", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID))
-		return nil
-	}
-
 	notificationType := confirmationNotificationType(isRescheduled)
 	var correlationKey string
+	var err error
 	if isRescheduled {
 		correlationKey, err = h.notifications.SendAppointmentRescheduled(ctx, agendaEvent)
 	} else {

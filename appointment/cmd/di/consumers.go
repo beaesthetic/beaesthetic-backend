@@ -24,12 +24,12 @@ func (d *DiContainer) GetAppointmentLifecycleConsumer() *messaging.Consumer {
 	})
 }
 
-func (d *DiContainer) GetNotificationConfirmQueueConsumer() *messaging.Consumer {
-	return singleton(d, "notificationConfirmQueueConsumer", func() *messaging.Consumer {
+func (d *DiContainer) GetNotificationOutcomeQueueConsumer() *messaging.Consumer {
+	return singleton(d, "notificationOutcomeQueueConsumer", func() *messaging.Consumer {
 		return messaging.NewConsumer(
 			d.Config.RabbitMQ.URL,
-			d.Config.RabbitMQ.NotificationConfirmQueue,
-			messaging.NewNotificationConfirmQueueConsumer(d.GetAppointmentService(), d.Log),
+			d.Config.RabbitMQ.CustomerNotificationOutcomesQueue,
+			messaging.NewNotificationOutcomeQueueConsumer(d.GetAppointmentService(), d.Log),
 			d.Log,
 		)
 	})

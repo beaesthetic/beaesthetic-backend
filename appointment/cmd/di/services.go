@@ -36,7 +36,6 @@ func (d *DiContainer) GetAppointmentLifecycleHandler() *application.AppointmentL
 		return application.NewAppointmentLifecycleHandler(
 			d.GetAppointmentService(),
 			d.GetAppointmentRepository(),
-			d.GetCustomerRegistry(),
 			d.GetReminderScheduler(),
 			d.GetCustomerNotificationSender(),
 			d.GetClock(),

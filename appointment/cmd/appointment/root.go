@@ -40,7 +40,7 @@ func appCommand(envFile *string) *cobra.Command {
 		httpServer := c.GetHttpServer()
 		appointmentLifecycleConsumer := c.GetAppointmentLifecycleConsumer()
 		schedulerConsumer := c.GetSchedulerQueueConsumer()
-		notificationConfirmConsumer := c.GetNotificationConfirmQueueConsumer()
+		notificationOutcomeConsumer := c.GetNotificationOutcomeQueueConsumer()
 
 		runner := appruntime.NewRunner(c.Log)
 		riverClient := c.GetRiverClient()
@@ -48,7 +48,7 @@ func appCommand(envFile *string) *cobra.Command {
 		runner.Add(appruntime.HTTPServer("http server", httpServer, 10*time.Second))
 		runner.Add(appruntime.Consumer("appointment lifecycle consumer", appointmentLifecycleConsumer))
 		runner.Add(appruntime.Consumer("scheduler queue consumer", schedulerConsumer))
-		runner.Add(appruntime.Consumer("notification confirm consumer", notificationConfirmConsumer))
+		runner.Add(appruntime.Consumer("notification outcome consumer", notificationOutcomeConsumer))
 
 		return runner.Run(ctx)
 	}}
