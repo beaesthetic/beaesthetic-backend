@@ -8,8 +8,11 @@ CREATE TABLE customer_notifications (
     template_values JSONB NOT NULL,
     status TEXT NOT NULL,
     created_at TIMESTAMPTZ NOT NULL,
+    dispatched_at TIMESTAMPTZ NULL,
     sent_at TIMESTAMPTZ NULL,
-    failed_at TIMESTAMPTZ NULL
+    failed_at TIMESTAMPTZ NULL,
+    failure_reason TEXT NULL,
+    failure_message TEXT NULL
 );
 
 CREATE TABLE customer_notification_sms_gateway_messages (

@@ -79,10 +79,11 @@ func TestCustomerNotificationServiceSkipsExistingIdempotencyKey(t *testing.T) {
 }
 
 func TestCustomerNotificationServiceRequiresPhone(t *testing.T) {
+	repo := newFakeCustomerNotificationRepository()
 	service := NewCustomerNotificationService(
 		fakeCustomerReader{"customer-1": {ID: "customer-1"}},
 		&fakeTemplateRenderer{content: "hello"},
-		newFakeCustomerNotificationRepository(),
+		repo,
 		&fakeSMSDispatcher{},
 	)
 
@@ -92,8 +93,14 @@ func TestCustomerNotificationServiceRequiresPhone(t *testing.T) {
 		NotificationChannel: "sms",
 		NotificationType:    "appointment_reminder",
 	})
-	if !errors.Is(err, ErrCustomerPhoneRequired) {
-		t.Fatalf("Process() error = %v, want ErrCustomerPhoneRequired", err)
+	if err != nil {
+		t.Fatalf("Process() error = %v, want nil", err)
+	}
+	if repo.failed == nil {
+		t.Fatal("customer notification should be marked failed")
+	}
+	if repo.failed.reason != CustomerNotificationReasonCustomerPhoneRequired {
+		t.Fatalf("failed reason = %q, want %q", repo.failed.reason, CustomerNotificationReasonCustomerPhoneRequired)
 	}
 }
 
@@ -154,6 +161,8 @@ type fakeCustomerNotificationRepository struct {
 	createdBeforeSend bool
 	dispatcher        *fakeSMSDispatcher
 	created           *CustomerNotificationRecord
+	dispatched        string
+	failed            *fakeFailure
 }
 
 func newFakeCustomerNotificationRepository() *fakeCustomerNotificationRepository {
@@ -178,12 +187,28 @@ func (repo *fakeCustomerNotificationRepository) SaveSMSGatewayDispatch(ctx conte
 	return nil
 }
 
+func (repo *fakeCustomerNotificationRepository) MarkDispatched(ctx context.Context, notificationID string, dispatchedAt time.Time) error {
+	repo.dispatched = notificationID
+	return nil
+}
+
+func (repo *fakeCustomerNotificationRepository) MarkFailed(ctx context.Context, notificationID string, reason string, message string, failedAt time.Time) (bool, error) {
+	repo.failed = &fakeFailure{notificationID: notificationID, reason: reason, message: message}
+	return true, nil
+}
+
 func (repo *fakeCustomerNotificationRepository) MarkSentBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, sentAt time.Time) (bool, error) {
 	return true, nil
 }
 
-func (repo *fakeCustomerNotificationRepository) MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, failedAt time.Time) (bool, error) {
+func (repo *fakeCustomerNotificationRepository) MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, reason string, message string, failedAt time.Time) (bool, error) {
 	return true, nil
+}
+
+type fakeFailure struct {
+	notificationID string
+	reason         string
+	message        string
 }
 
 type fakeSMSDispatcher struct{ sent int }

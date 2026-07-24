@@ -85,11 +85,19 @@ func (repo *customerNotificationRepositoryStub) SaveSMSGatewayDispatch(context.C
 	return nil
 }
 
+func (repo *customerNotificationRepositoryStub) MarkDispatched(context.Context, string, time.Time) error {
+	return nil
+}
+
+func (repo *customerNotificationRepositoryStub) MarkFailed(context.Context, string, string, string, time.Time) (bool, error) {
+	return repo.failedMatch, nil
+}
+
 func (repo *customerNotificationRepositoryStub) MarkSentBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, sentAt time.Time) (bool, error) {
 	repo.sentMessageID = smsGatewayMessageID
 	return repo.sentMatch, nil
 }
 
-func (repo *customerNotificationRepositoryStub) MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, failedAt time.Time) (bool, error) {
+func (repo *customerNotificationRepositoryStub) MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, reason string, message string, failedAt time.Time) (bool, error) {
 	return repo.failedMatch, nil
 }
