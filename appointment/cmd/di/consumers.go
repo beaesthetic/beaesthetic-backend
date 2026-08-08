@@ -18,7 +18,7 @@ func (d *DiContainer) GetAppointmentLifecycleConsumer() *messaging.Consumer {
 		return messaging.NewConsumer(
 			d.Config.RabbitMQ.URL,
 			d.Config.RabbitMQ.AppointmentInternalJobQueue,
-			messaging.NewAppointmentLifecycleConsumer(d.GetAppointmentLifecycleHandler(), d.Log),
+			messaging.NewAppointmentLifecycleConsumer(d.GetCalendarLifecycleHandler(), d.Log),
 			d.Log,
 		)
 	})
@@ -29,7 +29,7 @@ func (d *DiContainer) GetNotificationOutcomeQueueConsumer() *messaging.Consumer 
 		return messaging.NewConsumer(
 			d.Config.RabbitMQ.URL,
 			d.Config.RabbitMQ.CustomerNotificationOutcomesQueue,
-			messaging.NewNotificationOutcomeQueueConsumer(d.GetAppointmentService(), d.Log),
+			messaging.NewNotificationOutcomeQueueConsumer(d.GetAppointmentLifecycleServiceV2(), d.Log),
 			d.Log,
 		)
 	})

@@ -2,10 +2,12 @@ package server
 
 import (
 	"context"
+	"errors"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
+	applicationv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/application/v2"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
 	httpserver "github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/server/generated"
 	"go.uber.org/zap"
@@ -95,6 +97,16 @@ func (s *Server) DeleteActivity(ctx context.Context, request httpserver.DeleteAc
 }
 
 func (s *Server) ResendReminder(ctx context.Context, request httpserver.ResendReminderRequestObject) (httpserver.ResendReminderResponseObject, error) {
+	if err := s.reminders.RequestReminderResend(ctx, request.ActivityId.String(), uuid.NewString()); err != nil {
+		switch {
+		case errors.Is(err, applicationv2.ErrCalendarEventNotFound):
+			return httpserver.ResendReminder404JSONResponse(errorResponse("activity not found")), nil
+		case errors.Is(err, applicationv2.ErrAppointmentNotRemindable), errors.Is(err, applicationv2.ErrInvalidReminderRequest):
+			return httpserver.ResendReminder400JSONResponse(errorResponse(err.Error())), nil
+		default:
+			return nil, err
+		}
+	}
 	event, err := s.appointments.GetAgenda(ctx, request.ActivityId.String())
 	if err != nil {
 		return nil, err

@@ -12,6 +12,7 @@ require (
 	github.com/knadh/koanf/providers/file v1.2.0
 	github.com/knadh/koanf/v2 v2.2.2
 	github.com/oapi-codegen/runtime v1.4.2
+	github.com/petretiandrea/beaesthetic-backend/core-contracts/appointment v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/notification v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime v0.0.0
 	github.com/petretiandrea/outbox-go/pkg/outbox v0.0.0-20260622171345-cccb1d641543
@@ -81,5 +82,7 @@ require (
 )
 
 replace github.com/petretiandrea/beaesthetic-backend/core-contracts/notification => ../core-contracts/notification
+
+replace github.com/petretiandrea/beaesthetic-backend/core-contracts/appointment => ../core-contracts/appointment
 
 replace github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime => ../core-contracts/runtime

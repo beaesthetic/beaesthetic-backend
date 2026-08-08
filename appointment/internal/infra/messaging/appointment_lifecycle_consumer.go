@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
+	applicationv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/application/v2"
 	outboxamqp "github.com/petretiandrea/outbox-go/pkg/outbox/amqp"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
@@ -14,11 +14,11 @@ import (
 const ChannelAppointmentInternalJob = "beaesthetic.appointments.internal.job"
 
 type AppointmentLifecycleConsumer struct {
-	handler *application.AppointmentLifecycleHandler
+	handler applicationv2.LifecycleEventHandler
 	log     *zap.Logger
 }
 
-func NewAppointmentLifecycleConsumer(handler *application.AppointmentLifecycleHandler, log *zap.Logger) *AppointmentLifecycleConsumer {
+func NewAppointmentLifecycleConsumer(handler applicationv2.LifecycleEventHandler, log *zap.Logger) *AppointmentLifecycleConsumer {
 	if log == nil {
 		log = zap.NewNop()
 	}
@@ -30,17 +30,18 @@ func (consumer *AppointmentLifecycleConsumer) Process(ctx context.Context, deliv
 	if err != nil {
 		return err
 	}
-	if event.AgendaEventID == "" {
+	eventID := event.EventID()
+	if eventID == "" {
 		consumer.log.Debug("unhandled lifecycle event without event id", zap.String("type", event.Type))
 		return nil
 	}
 
-	consumer.log.Info("received appointment lifecycle event", zap.String("event_id", event.AgendaEventID), zap.String("type", event.Type))
-	if err := consumer.handler.Handle(ctx, event.Type, event.AgendaEventID); err != nil {
-		consumer.log.Error("failed to handle appointment lifecycle event", zap.String("event_id", event.AgendaEventID), zap.String("type", event.Type), zap.Error(err))
+	consumer.log.Info("received appointment lifecycle event", zap.String("event_id", eventID), zap.String("type", event.Type))
+	if err := consumer.handler.Handle(ctx, event.Type, eventID); err != nil {
+		consumer.log.Error("failed to handle appointment lifecycle event", zap.String("event_id", eventID), zap.String("type", event.Type), zap.Error(err))
 		return nil
 	}
-	consumer.log.Info("processed appointment lifecycle event", zap.String("event_id", event.AgendaEventID), zap.String("type", event.Type))
+	consumer.log.Info("processed appointment lifecycle event", zap.String("event_id", eventID), zap.String("type", event.Type))
 	return nil
 }
 
@@ -57,6 +58,14 @@ func appointmentLifecycleEventFromDelivery(delivery amqp.Delivery) (appointmentL
 }
 
 type appointmentLifecycleEvent struct {
-	Type          string `json:"type"`
-	AgendaEventID string `json:"agendaEventId"`
+	Type                string `json:"type"`
+	CalendarEventID     string `json:"calendarEventId"`
+	LegacyAgendaEventID string `json:"agendaEventId"`
+}
+
+func (event appointmentLifecycleEvent) EventID() string {
+	if event.CalendarEventID != "" {
+		return event.CalendarEventID
+	}
+	return event.LegacyAgendaEventID
 }

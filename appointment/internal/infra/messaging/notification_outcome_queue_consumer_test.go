@@ -3,19 +3,17 @@ package messaging
 import (
 	"testing"
 
-	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
 	notificationcontracts "github.com/petretiandrea/beaesthetic-backend/core-contracts/notification"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func TestNotificationOutcomeHandlerMapsFailedStatus(t *testing.T) {
-	consumer := &NotificationOutcomeQueueConsumer{service: &application.AppointmentService{}}
-	handle, status, err := consumer.notificationOutcomeHandler(notificationcontracts.CustomerNotificationOutcomeStatus_CUSTOMER_NOTIFICATION_OUTCOME_STATUS_FAILED)
+	sent, status, err := notificationOutcomeStatus(notificationcontracts.CustomerNotificationOutcomeStatus_CUSTOMER_NOTIFICATION_OUTCOME_STATUS_FAILED)
 	if err != nil {
-		t.Fatalf("notificationOutcomeHandler() error = %v", err)
+		t.Fatalf("notificationOutcomeStatus() error = %v", err)
 	}
-	if handle == nil {
-		t.Fatal("expected handler")
+	if sent {
+		t.Fatal("failed outcome mapped as sent")
 	}
 	if status != "failed" {
 		t.Fatalf("status = %q, want failed", status)

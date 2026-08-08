@@ -59,7 +59,7 @@ func (s *ReminderSender) SendDueReminder(ctx context.Context, eventID string, ex
 		s.log.Error("failed to send reminder notification", zap.String("event_id", agendaEvent.ID), zap.String("attendee_id", agendaEvent.Attendee.ID), zap.Error(err))
 		return err
 	}
-	if err := s.service.TrackPendingNotification(ctx, correlationKey, agendaEvent.ID, pendingNotificationTypeReminder); err != nil {
+	if err := s.service.TrackAppointmentNotification(ctx, correlationKey, agendaEvent.ID, pendingNotificationTypeReminder); err != nil {
 		s.log.Error("failed to track reminder notification", zap.String("event_id", agendaEvent.ID), zap.String("correlation_key", correlationKey), zap.Error(err))
 		return err
 	}

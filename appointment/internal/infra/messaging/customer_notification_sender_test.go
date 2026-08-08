@@ -7,6 +7,7 @@ import (
 
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
+	domainv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain/v2"
 	notification "github.com/petretiandrea/beaesthetic-backend/core-contracts/notification"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -59,6 +60,39 @@ func TestCustomerNotificationSenderPublishesAppointmentReminderContractMessage(t
 	}
 	if got := bodyMap["endAt"]; got != "2026-07-04T14:30:00Z" {
 		t.Fatalf("body endAt = %v", got)
+	}
+}
+
+func TestCustomerNotificationSenderPublishesV2CalendarNotification(t *testing.T) {
+	publisher := &publisherStub{}
+	sender := NewCustomerNotificationSender(publisher)
+	now := time.Date(2026, time.July, 4, 13, 30, 0, 0, time.UTC)
+	eventRange, err := domainv2.NewTimeRange(now, now.Add(time.Hour), "Europe/Rome", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	customer, err := domainv2.NewCustomerRef("customer-1", "Jane Doe")
+	if err != nil {
+		t.Fatal(err)
+	}
+	event, err := domainv2.NewAppointmentEvent(domainv2.AppointmentEventParams{EventID: "event-1", CalendarID: domainv2.DefaultCalendarID, Range: eventRange, Customer: customer, Now: now})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	id, err := sender.SendCalendarNotification(context.Background(), event, domainv2.NotificationTypeAppointmentReminder, "request-1")
+	if err != nil {
+		t.Fatalf("SendCalendarNotification() error = %v", err)
+	}
+	if id != "request-1" || len(publisher.messages) != 1 {
+		t.Fatalf("id=%q messages=%d", id, len(publisher.messages))
+	}
+	var payload notification.CustomerNotificationRequested
+	if err := protojson.Unmarshal(publisher.messages[0].Payload, &payload); err != nil {
+		t.Fatal(err)
+	}
+	if payload.GetCustomerIds()[0] != customer.ID || payload.GetNotificationType() != string(domainv2.NotificationTypeAppointmentReminder) {
+		t.Fatalf("payload=%#v", payload)
 	}
 }
 

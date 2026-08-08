@@ -4,6 +4,7 @@ sql:
     schema: "internal/infra/postgres/queries/schema.sql"
     queries:
       - "internal/infra/postgres/queries/agenda_events.sql"
+      - "internal/infra/postgres/queries/agenda_event_details.sql"
       - "internal/infra/postgres/queries/appointment_services.sql"
       - "internal/infra/postgres/queries/pending_notifications.sql"
     gen:

@@ -1,0 +1,7 @@
+version: v2
+plugins:
+  - remote: buf.build/protocolbuffers/go:v1.36.10
+    out: .
+    opt:
+      - paths=import
+      - module=github.com/petretiandrea/beaesthetic-backend/core-contracts/appointment

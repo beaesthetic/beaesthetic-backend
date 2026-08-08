@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
 	"github.com/riverqueue/river"
 	"go.uber.org/zap"
@@ -26,10 +25,14 @@ func (SendAppointmentReminderArgs) Kind() string {
 type SendAppointmentReminderWorker struct {
 	river.WorkerDefaults[SendAppointmentReminderArgs]
 
-	reminders *application.ReminderSender
+	reminders DueReminderSender
 }
 
-func NewSendAppointmentReminderWorker(reminders *application.ReminderSender) *SendAppointmentReminderWorker {
+type DueReminderSender interface {
+	SendDueReminder(ctx context.Context, calendarEventID string, expectedStartAt *time.Time) error
+}
+
+func NewSendAppointmentReminderWorker(reminders DueReminderSender) *SendAppointmentReminderWorker {
 	return &SendAppointmentReminderWorker{reminders: reminders}
 }
 
@@ -62,13 +65,17 @@ func NewReminderScheduler(inserter JobInserter, queue string, maxAttempts int, l
 }
 
 func (s *ReminderScheduler) ScheduleReminder(ctx context.Context, agendaEvent *domain.AgendaEvent, sendAt time.Time) error {
-	key := appointmentReminderKey(agendaEvent.ID)
+	return s.ScheduleCalendarReminder(ctx, agendaEvent.ID, agendaEvent.Start, sendAt)
+}
+
+func (s *ReminderScheduler) ScheduleCalendarReminder(ctx context.Context, calendarEventID string, expectedStartAt time.Time, sendAt time.Time) error {
+	key := appointmentReminderKey(calendarEventID)
 	if err := s.inserter.CancelByKey(ctx, SendAppointmentReminderKind, s.queue, key); err != nil {
 		return err
 	}
 	return s.inserter.Insert(ctx, SendAppointmentReminderArgs{
-		EventID:         agendaEvent.ID,
-		ExpectedStartAt: agendaEvent.Start.UTC(),
+		EventID:         calendarEventID,
+		ExpectedStartAt: expectedStartAt.UTC(),
 	}, &river.InsertOpts{
 		Queue:       s.queue,
 		ScheduledAt: sendAt.UTC(),
@@ -78,7 +85,11 @@ func (s *ReminderScheduler) ScheduleReminder(ctx context.Context, agendaEvent *d
 }
 
 func (s *ReminderScheduler) UnscheduleReminder(ctx context.Context, agendaEvent *domain.AgendaEvent) error {
-	return s.inserter.CancelByKey(ctx, SendAppointmentReminderKind, s.queue, appointmentReminderKey(agendaEvent.ID))
+	return s.UnscheduleCalendarReminder(ctx, agendaEvent.ID)
+}
+
+func (s *ReminderScheduler) UnscheduleCalendarReminder(ctx context.Context, calendarEventID string) error {
+	return s.inserter.CancelByKey(ctx, SendAppointmentReminderKind, s.queue, appointmentReminderKey(calendarEventID))
 }
 
 func appointmentReminderKey(eventID string) string {

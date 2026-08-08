@@ -50,6 +50,10 @@ func (s *ServiceService) AllServices(ctx context.Context) ([]domain.AppointmentS
 	return s.repo.FindServices(ctx)
 }
 
+func (s *ServiceService) FindService(ctx context.Context, id string) (*domain.AppointmentService, error) {
+	return s.repo.FindService(ctx, id)
+}
+
 func (s *ServiceService) SearchServices(ctx context.Context, text string, limit int) ([]domain.AppointmentService, error) {
 	if limit <= 0 {
 		limit = 10

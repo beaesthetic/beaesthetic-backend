@@ -57,7 +57,7 @@ func (d *DiContainer) GetRiverClient() *river.Client[pgx.Tx] {
 	return singletonWithError(d, "riverClient", func() (*river.Client[pgx.Tx], error) {
 		riverConfig := d.GetRiverReminderConfig()
 		workers := river.NewWorkers()
-		if err := river.AddWorkerSafely(workers, jobs.NewSendAppointmentReminderWorker(d.GetReminderSender())); err != nil {
+		if err := river.AddWorkerSafely(workers, jobs.NewSendAppointmentReminderWorker(d.GetAppointmentLifecycleServiceV2())); err != nil {
 			return nil, err
 		}
 		return river.NewClient(riverpgxv5.New(d.GetPostgresDatabase()), &river.Config{
@@ -66,6 +66,12 @@ func (d *DiContainer) GetRiverClient() *river.Client[pgx.Tx] {
 			},
 			Workers: workers,
 		})
+	})
+}
+
+func (d *DiContainer) GetRiverInsertClient() *river.Client[pgx.Tx] {
+	return singletonWithError(d, "riverInsertClient", func() (*river.Client[pgx.Tx], error) {
+		return river.NewClient(riverpgxv5.New(d.GetPostgresDatabase()), &river.Config{})
 	})
 }
 
@@ -80,7 +86,7 @@ func (d *DiContainer) MigrateRiver(ctx context.Context) error {
 
 func (d *DiContainer) GetRiverJobInserter() *app_postgres.RiverJobInserter {
 	return singleton(d, "riverJobInserter", func() *app_postgres.RiverJobInserter {
-		return app_postgres.NewRiverJobInserter(d.GetPostgresContextDB(), d.GetRiverClient())
+		return app_postgres.NewRiverJobInserter(d.GetPostgresContextDB(), d.GetRiverInsertClient())
 	})
 }
 

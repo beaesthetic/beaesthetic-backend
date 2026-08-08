@@ -4,12 +4,15 @@ INSERT INTO agenda_events (
     event_type,
     title,
     description,
+    display_title,
+    display_description,
     start_at,
     end_at,
     attendee_id,
     attendee_display_name,
     services,
     cancel_reason,
+    canceled_at,
     reminder_status,
     reminder_sent_at,
     remind_before_seconds,
@@ -17,23 +20,26 @@ INSERT INTO agenda_events (
     created_at,
     updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 1, $14, $15
+    $1, $2, $3, $4, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 1, $15, $16
 )
 ON CONFLICT (id) DO UPDATE SET
     event_type = $2,
     title = $3,
     description = $4,
+    display_title = $3,
+    display_description = $4,
     start_at = $5,
     end_at = $6,
     attendee_id = $7,
     attendee_display_name = $8,
     services = $9,
     cancel_reason = $10,
-    reminder_status = $11,
-    reminder_sent_at = $12,
-    remind_before_seconds = $13,
+    canceled_at = $11,
+    reminder_status = $12,
+    reminder_sent_at = $13,
+    remind_before_seconds = $14,
     version = agenda_events.version + 1,
-    updated_at = $15;
+    updated_at = $16;
 
 -- name: FindAgendaEvent :one
 SELECT id,

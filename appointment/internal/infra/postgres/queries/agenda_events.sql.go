@@ -33,9 +33,28 @@ FROM agenda_events
 WHERE id = $1
 `
 
-func (q *Queries) FindAgendaEvent(ctx context.Context, id string) (AgendaEvent, error) {
+type FindAgendaEventRow struct {
+	ID                  string             `json:"id"`
+	EventType           string             `json:"event_type"`
+	Title               string             `json:"title"`
+	Description         string             `json:"description"`
+	StartAt             pgtype.Timestamptz `json:"start_at"`
+	EndAt               pgtype.Timestamptz `json:"end_at"`
+	AttendeeID          string             `json:"attendee_id"`
+	AttendeeDisplayName string             `json:"attendee_display_name"`
+	Services            json.RawMessage    `json:"services"`
+	CancelReason        pgtype.Text        `json:"cancel_reason"`
+	ReminderStatus      string             `json:"reminder_status"`
+	ReminderSentAt      pgtype.Timestamptz `json:"reminder_sent_at"`
+	RemindBeforeSeconds int32              `json:"remind_before_seconds"`
+	Version             int64              `json:"version"`
+	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	UpdatedAt           pgtype.Timestamptz `json:"updated_at"`
+}
+
+func (q *Queries) FindAgendaEvent(ctx context.Context, id string) (FindAgendaEventRow, error) {
 	row := q.db.QueryRow(ctx, findAgendaEvent, id)
-	var i AgendaEvent
+	var i FindAgendaEventRow
 	err := row.Scan(
 		&i.ID,
 		&i.EventType,
@@ -97,12 +116,15 @@ INSERT INTO agenda_events (
     event_type,
     title,
     description,
+    display_title,
+    display_description,
     start_at,
     end_at,
     attendee_id,
     attendee_display_name,
     services,
     cancel_reason,
+    canceled_at,
     reminder_status,
     reminder_sent_at,
     remind_before_seconds,
@@ -110,23 +132,26 @@ INSERT INTO agenda_events (
     created_at,
     updated_at
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 1, $14, $15
+    $1, $2, $3, $4, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, 1, $15, $16
 )
 ON CONFLICT (id) DO UPDATE SET
     event_type = $2,
     title = $3,
     description = $4,
+    display_title = $3,
+    display_description = $4,
     start_at = $5,
     end_at = $6,
     attendee_id = $7,
     attendee_display_name = $8,
     services = $9,
     cancel_reason = $10,
-    reminder_status = $11,
-    reminder_sent_at = $12,
-    remind_before_seconds = $13,
+    canceled_at = $11,
+    reminder_status = $12,
+    reminder_sent_at = $13,
+    remind_before_seconds = $14,
     version = agenda_events.version + 1,
-    updated_at = $15
+    updated_at = $16
 `
 
 type SaveAgendaEventParams struct {
@@ -140,6 +165,7 @@ type SaveAgendaEventParams struct {
 	AttendeeDisplayName string             `json:"attendee_display_name"`
 	Services            json.RawMessage    `json:"services"`
 	CancelReason        pgtype.Text        `json:"cancel_reason"`
+	CanceledAt          pgtype.Timestamptz `json:"canceled_at"`
 	ReminderStatus      string             `json:"reminder_status"`
 	ReminderSentAt      pgtype.Timestamptz `json:"reminder_sent_at"`
 	RemindBeforeSeconds int32              `json:"remind_before_seconds"`
@@ -159,6 +185,7 @@ func (q *Queries) SaveAgendaEvent(ctx context.Context, arg SaveAgendaEventParams
 		arg.AttendeeDisplayName,
 		arg.Services,
 		arg.CancelReason,
+		arg.CanceledAt,
 		arg.ReminderStatus,
 		arg.ReminderSentAt,
 		arg.RemindBeforeSeconds,

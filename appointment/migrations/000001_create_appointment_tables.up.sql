@@ -40,7 +40,7 @@ CREATE INDEX IF NOT EXISTS idx_appointment_services_search_text_trgm
     USING GIN (search_text gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS pending_notifications (
-    correlation_key TEXT PRIMARY KEY,
+    notification_id UUID PRIMARY KEY,
     agenda_event_id UUID NOT NULL,
     notification_type TEXT NOT NULL,
     expires_at TIMESTAMPTZ NOT NULL

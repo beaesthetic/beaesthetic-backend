@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
+	domainv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain/v2"
 )
 
 type CustomerRegistry struct {
@@ -30,4 +31,15 @@ func (r *CustomerRegistry) FindByCustomerID(ctx context.Context, customerID stri
 		DisplayName: strings.TrimSpace(customer.Name + " " + customer.Surname),
 		PhoneNumber: customer.Phone,
 	}, nil
+}
+
+func (r *CustomerRegistry) ResolveCustomer(ctx context.Context, customerID string) (domainv2.CustomerRef, error) {
+	customer, err := r.FindByCustomerID(ctx, customerID)
+	if err != nil {
+		return domainv2.CustomerRef{}, err
+	}
+	if customer == nil {
+		return domainv2.CustomerRef{}, domainv2.ErrMissingRequiredData
+	}
+	return domainv2.NewCustomerRef(customer.ID, customer.DisplayName)
 }

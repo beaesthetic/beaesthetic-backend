@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
-	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
+	applicationv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/application/v2"
 	notificationcontracts "github.com/petretiandrea/beaesthetic-backend/core-contracts/notification"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
@@ -13,11 +12,11 @@ import (
 )
 
 type NotificationOutcomeQueueConsumer struct {
-	service *application.AppointmentService
+	service *applicationv2.AppointmentLifecycleService
 	log     *zap.Logger
 }
 
-func NewNotificationOutcomeQueueConsumer(service *application.AppointmentService, log *zap.Logger) *NotificationOutcomeQueueConsumer {
+func NewNotificationOutcomeQueueConsumer(service *applicationv2.AppointmentLifecycleService, log *zap.Logger) *NotificationOutcomeQueueConsumer {
 	if log == nil {
 		log = zap.NewNop()
 	}
@@ -33,7 +32,7 @@ func (consumer *NotificationOutcomeQueueConsumer) Process(ctx context.Context, d
 		consumer.log.Warn("notification outcome message does not contain notificationId")
 		return nil
 	}
-	handle, status, err := consumer.notificationOutcomeHandler(event.GetStatus())
+	sent, status, err := notificationOutcomeStatus(event.GetStatus())
 	if err != nil {
 		consumer.log.Warn("notification outcome message has unsupported status", zap.String("notification_id", event.GetNotificationId()), zap.String("status", event.GetStatus().String()))
 		return nil
@@ -47,28 +46,26 @@ func (consumer *NotificationOutcomeQueueConsumer) Process(ctx context.Context, d
 		zap.String("status", status),
 		zap.String("reason", event.GetReason()),
 	)
-	agendaEvent, err := handle(ctx, event.GetNotificationId())
+	calendarEventID, err := consumer.service.HandleNotificationOutcome(ctx, event.GetNotificationId(), sent, event.GetReason(), event.GetMessage())
 	if err != nil {
 		consumer.log.Error("failed to handle notification outcome", zap.String("notification_id", event.GetNotificationId()), zap.String("idempotency_key", event.GetIdempotencyKey()), zap.String("customer_id", event.GetCustomerId()), zap.String("status", status), zap.String("reason", event.GetReason()), zap.Error(err))
 		return err
 	}
-	if agendaEvent == nil {
+	if calendarEventID == "" {
 		consumer.log.Info("notification outcome has no pending appointment", zap.String("notification_id", event.GetNotificationId()), zap.String("idempotency_key", event.GetIdempotencyKey()), zap.String("customer_id", event.GetCustomerId()), zap.String("status", status))
 		return nil
 	}
-	consumer.log.Info("handled notification outcome", zap.String("event_id", agendaEvent.ID), zap.String("notification_id", event.GetNotificationId()), zap.String("idempotency_key", event.GetIdempotencyKey()), zap.String("customer_id", event.GetCustomerId()), zap.String("status", status))
+	consumer.log.Info("handled notification outcome", zap.String("event_id", calendarEventID), zap.String("notification_id", event.GetNotificationId()), zap.String("idempotency_key", event.GetIdempotencyKey()), zap.String("customer_id", event.GetCustomerId()), zap.String("status", status))
 	return nil
 }
 
-type notificationOutcomeHandler func(context.Context, string) (*domain.AgendaEvent, error)
-
-func (consumer *NotificationOutcomeQueueConsumer) notificationOutcomeHandler(status notificationcontracts.CustomerNotificationOutcomeStatus) (notificationOutcomeHandler, string, error) {
+func notificationOutcomeStatus(status notificationcontracts.CustomerNotificationOutcomeStatus) (bool, string, error) {
 	switch status {
 	case notificationcontracts.CustomerNotificationOutcomeStatus_CUSTOMER_NOTIFICATION_OUTCOME_STATUS_SENT:
-		return consumer.service.ConfirmNotification, "sent", nil
+		return true, "sent", nil
 	case notificationcontracts.CustomerNotificationOutcomeStatus_CUSTOMER_NOTIFICATION_OUTCOME_STATUS_FAILED:
-		return consumer.service.FailNotification, "failed", nil
+		return false, "failed", nil
 	default:
-		return nil, "", fmt.Errorf("unsupported notification outcome status %s", status.String())
+		return false, "", fmt.Errorf("unsupported notification outcome status %s", status.String())
 	}
 }
