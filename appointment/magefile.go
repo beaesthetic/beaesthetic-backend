@@ -12,6 +12,9 @@ import (
 const openAPIGenerator = "github.com/oapi-codegen/oapi-codegen/v2/cmd/oapi-codegen@v2.7.1"
 
 func Generate() error {
+	if err := run("go", "run", "github.com/sqlc-dev/sqlc/cmd/sqlc@v1.30.0", "generate"); err != nil {
+		return err
+	}
 	if err := run(
 		"go", "run", openAPIGenerator,
 		"--config", "internal/port/http/server/server.oapi-codegen.yaml",

@@ -1,0 +1,347 @@
+syntax = "proto3";
+
+package beaesthetic.appointment.v1;
+
+import "google/protobuf/field_mask.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/petretiandrea/beaesthetic-backend/core-contracts/appointment;appointment";
+
+// CalendarService is the API boundary for calendar events and their typed details.
+service CalendarService {
+  rpc CreateCalendarEvent(CreateCalendarEventRequest) returns (CreateCalendarEventResult);
+  rpc GetCalendarEvent(GetCalendarEventRequest) returns (GetCalendarEventResponse);
+  rpc ListCalendarEvents(ListCalendarEventsRequest) returns (ListCalendarEventsResponse);
+  rpc UpdateCalendarEvent(UpdateCalendarEventRequest) returns (GetCalendarEventResponse);
+  rpc CancelCalendarEvent(CancelCalendarEventRequest) returns (CancelCalendarEventResponse);
+  rpc RequestReminderResend(RequestReminderResendRequest) returns (GetCalendarEventResponse);
+}
+
+// ServiceCatalogService manages the catalog items that can be selected for appointments.
+service ServiceCatalogService {
+  rpc CreateService(CreateServiceRequest) returns (CatalogService);
+  rpc UpdateService(UpdateServiceRequest) returns (CatalogService);
+  rpc SearchServices(SearchServicesRequest) returns (SearchServicesResponse);
+  rpc ListServices(ListServicesRequest) returns (ListServicesResponse);
+}
+
+service AppointmentInsightService {
+  rpc GetCustomerRanking(GetCustomerRankingRequest) returns (GetCustomerRankingResponse);
+  rpc GetCustomerCancellationRanking(GetCustomerCancellationRankingRequest) returns (GetCustomerCancellationRankingResponse);
+  rpc GetInsightOverview(GetInsightOverviewRequest) returns (GetInsightOverviewResponse);
+}
+
+enum CalendarEventType {
+  CALENDAR_EVENT_TYPE_UNSPECIFIED = 0;
+  CALENDAR_EVENT_TYPE_APPOINTMENT = 1;
+  CALENDAR_EVENT_TYPE_MANUAL = 2;
+  CALENDAR_EVENT_TYPE_TIME_BLOCK = 3;
+}
+
+enum CalendarEventVisibility {
+  CALENDAR_EVENT_VISIBILITY_UNSPECIFIED = 0;
+  CALENDAR_EVENT_VISIBILITY_PUBLIC = 1;
+  CALENDAR_EVENT_VISIBILITY_PRIVATE = 2;
+}
+
+enum AppointmentReminderStatus {
+  APPOINTMENT_REMINDER_STATUS_UNSPECIFIED = 0;
+  APPOINTMENT_REMINDER_STATUS_PENDING = 1;
+  APPOINTMENT_REMINDER_STATUS_SCHEDULED = 2;
+  APPOINTMENT_REMINDER_STATUS_UNPROCESSABLE = 3;
+  APPOINTMENT_REMINDER_STATUS_SEND_REQUESTED = 4;
+  APPOINTMENT_REMINDER_STATUS_SENT = 5;
+  APPOINTMENT_REMINDER_STATUS_FAILED = 6;
+  APPOINTMENT_REMINDER_STATUS_DELETED = 7;
+}
+
+enum CancelReason {
+  CANCEL_REASON_UNSPECIFIED = 0;
+  CANCEL_REASON_DELETED = 1;
+  CANCEL_REASON_CUSTOMER_CANCEL = 2;
+}
+
+message TimeRange {
+  google.protobuf.Timestamp start_at = 1 [json_name = "startAt"];
+  google.protobuf.Timestamp end_at = 2 [json_name = "endAt"];
+  string timezone = 3 [json_name = "timezone"];
+  bool all_day = 4 [json_name = "allDay"];
+}
+
+message CalendarEventCancellation {
+  CancelReason reason = 1 [json_name = "reason"];
+  google.protobuf.Timestamp canceled_at = 2 [json_name = "canceledAt"];
+}
+
+message CalendarEvent {
+  reserved 4, 6;
+  reserved "status", "display";
+
+  string id = 1 [json_name = "id"];
+  string calendar_id = 2 [json_name = "calendarId"];
+  CalendarEventType event_type = 3 [json_name = "eventType"];
+  TimeRange time_range = 5 [json_name = "timeRange"];
+  int64 version = 7 [json_name = "version"];
+  google.protobuf.Timestamp created_at = 8 [json_name = "createdAt"];
+  google.protobuf.Timestamp updated_at = 9 [json_name = "updatedAt"];
+  CalendarEventCancellation cancellation = 10 [json_name = "cancellation"];
+  CalendarEventVisibility visibility = 11 [json_name = "visibility"];
+  string title = 12 [json_name = "title"];
+  string description = 13 [json_name = "description"];
+
+  oneof detail {
+    AppointmentDetail appointment = 20 [json_name = "appointment"];
+    ManualEventDetail manual_event = 21 [json_name = "manualEvent"];
+    TimeBlockDetail time_block = 22 [json_name = "timeBlock"];
+  }
+}
+
+// AppointmentDetail is returned only when event_type is CALENDAR_EVENT_TYPE_APPOINTMENT.
+// The appointment identity is the owning calendar event id.
+message AppointmentDetail {
+  CustomerRef customer = 1 [json_name = "customer"];
+  repeated AppointmentServiceItem services = 2 [json_name = "services"];
+  AppointmentReminder reminder = 3 [json_name = "reminder"];
+}
+
+message CustomerRef {
+  string customer_id = 1 [json_name = "customerId"];
+  string display_name = 2 [json_name = "displayName"];
+}
+
+message AppointmentServiceItem {
+  string service_id = 1 [json_name = "serviceId"];
+  string service_name = 2 [json_name = "serviceName"];
+  double price = 3 [json_name = "price"];
+  int32 position = 4 [json_name = "position"];
+}
+
+message AppointmentReminder {
+  AppointmentReminderStatus status = 1 [json_name = "status"];
+  int32 remind_before_seconds = 2 [json_name = "remindBeforeSeconds"];
+  google.protobuf.Timestamp scheduled_at = 3 [json_name = "scheduledAt"];
+  google.protobuf.Timestamp sent_requested_at = 4 [json_name = "sentRequestedAt"];
+  google.protobuf.Timestamp sent_at = 5 [json_name = "sentAt"];
+  google.protobuf.Timestamp failed_at = 6 [json_name = "failedAt"];
+  string failure_reason = 7 [json_name = "failureReason"];
+}
+
+message ManualEventDetail {
+  string title = 1 [json_name = "title"];
+  string description = 2 [json_name = "description"];
+  string location = 3 [json_name = "location"];
+}
+
+message TimeBlockDetail {
+  string reason = 1 [json_name = "reason"];
+}
+
+message CreateCalendarEventRequest {
+  reserved 3;
+  reserved "display";
+
+  // Optional while appointment owns one calendar; omitted values use the service default calendar.
+  string calendar_id = 1 [json_name = "calendarId"];
+  TimeRange time_range = 2 [json_name = "timeRange"];
+  CalendarEventVisibility visibility = 4 [json_name = "visibility"];
+  string title = 5 [json_name = "title"];
+  string description = 6 [json_name = "description"];
+
+  oneof detail {
+    CreateAppointmentDetail appointment = 20 [json_name = "appointment"];
+    CreateManualEventDetail manual_event = 21 [json_name = "manualEvent"];
+    CreateTimeBlockDetail time_block = 22 [json_name = "timeBlock"];
+  }
+}
+
+message CreateAppointmentDetail {
+  string customer_id = 1 [json_name = "customerId"];
+  repeated AppointmentServiceSelection services = 2 [json_name = "services"];
+  // Defaults to 24 hours when omitted.
+  optional int32 remind_before_seconds = 3 [json_name = "remindBeforeSeconds"];
+}
+
+message AppointmentServiceSelection {
+  oneof value {
+    string catalog_service_id = 1 [json_name = "catalogServiceId"];
+    string custom_service_name = 2 [json_name = "customServiceName"];
+  }
+}
+
+message CreateManualEventDetail {
+  string title = 1 [json_name = "title"];
+  string description = 2 [json_name = "description"];
+  string location = 3 [json_name = "location"];
+}
+
+message CreateTimeBlockDetail {
+  string reason = 1 [json_name = "reason"];
+}
+
+message CreateCalendarEventResult {
+  string calendar_event_id = 1 [json_name = "calendarEventId"];
+}
+
+message GetCalendarEventRequest {
+  string id = 1 [json_name = "id"];
+}
+
+message GetCalendarEventResponse {
+  CalendarEvent event = 1 [json_name = "event"];
+}
+
+message ListCalendarEventsRequest {
+  // Optional while appointment owns one calendar; omitted values use the service default calendar.
+  string calendar_id = 1 [json_name = "calendarId"];
+  google.protobuf.Timestamp start_at = 2 [json_name = "startAt"];
+  google.protobuf.Timestamp end_at = 3 [json_name = "endAt"];
+  string customer_id = 4 [json_name = "customerId"];
+  repeated CalendarEventType event_types = 5 [json_name = "eventTypes"];
+}
+
+message ListCalendarEventsResponse {
+  repeated CalendarEvent events = 1 [json_name = "events"];
+}
+
+// UpdateCalendarEvent updates only mutable fields of an existing calendar event.
+// Immutable fields such as calendar_id, event_type, created_at and cancellation cannot be changed here.
+// The selected detail must match the existing event_type; this request never converts an event to another type.
+// Supported update_mask paths:
+// - time_range
+// - title
+// - description
+// - visibility
+// - appointment.services
+// - manual_event.title
+// - manual_event.description
+// - manual_event.location
+// - time_block.reason
+message UpdateCalendarEventRequest {
+  reserved 3;
+  reserved "display";
+
+  string id = 1 [json_name = "id"];
+  TimeRange time_range = 2 [json_name = "timeRange"];
+  google.protobuf.FieldMask update_mask = 4 [json_name = "updateMask"];
+  CalendarEventVisibility visibility = 5 [json_name = "visibility"];
+  optional string title = 6 [json_name = "title"];
+  optional string description = 7 [json_name = "description"];
+
+  oneof detail {
+    UpdateAppointmentDetail appointment = 20 [json_name = "appointment"];
+    UpdateManualEventDetail manual_event = 21 [json_name = "manualEvent"];
+    UpdateTimeBlockDetail time_block = 22 [json_name = "timeBlock"];
+  }
+}
+
+message UpdateAppointmentDetail {
+  repeated AppointmentServiceSelection services = 1 [json_name = "services"];
+}
+
+message UpdateManualEventDetail {
+  optional string title = 1 [json_name = "title"];
+  optional string description = 2 [json_name = "description"];
+  optional string location = 3 [json_name = "location"];
+}
+
+message UpdateTimeBlockDetail {
+  string reason = 1 [json_name = "reason"];
+}
+
+message CancelCalendarEventRequest {
+  string id = 1 [json_name = "id"];
+  CancelReason reason = 2 [json_name = "reason"];
+}
+
+message CancelCalendarEventResponse {}
+
+message RequestReminderResendRequest {
+  string calendar_event_id = 1 [json_name = "calendarEventId"];
+  string idempotency_key = 2 [json_name = "idempotencyKey"];
+}
+
+message CatalogService {
+  string id = 1 [json_name = "id"];
+  string name = 2 [json_name = "name"];
+  double price = 3 [json_name = "price"];
+  repeated string tags = 4 [json_name = "tags"];
+  string color = 5 [json_name = "color"];
+}
+
+message CreateServiceRequest {
+  string name = 1 [json_name = "name"];
+  double price = 2 [json_name = "price"];
+  repeated string tags = 3 [json_name = "tags"];
+  string color = 4 [json_name = "color"];
+}
+
+message UpdateServiceRequest {
+  string id = 1 [json_name = "id"];
+  optional double price = 2 [json_name = "price"];
+  repeated string tags = 3 [json_name = "tags"];
+  optional string color = 4 [json_name = "color"];
+  google.protobuf.FieldMask update_mask = 5 [json_name = "updateMask"];
+}
+
+message SearchServicesRequest {
+  string text = 1 [json_name = "text"];
+  int32 limit = 2 [json_name = "limit"];
+}
+
+message SearchServicesResponse {
+  repeated CatalogService services = 1 [json_name = "services"];
+}
+
+message ListServicesRequest {}
+
+message ListServicesResponse {
+  repeated CatalogService services = 1 [json_name = "services"];
+}
+
+message PageRequest {
+  int32 page = 1 [json_name = "page"];
+  int32 limit = 2 [json_name = "limit"];
+}
+
+message GetCustomerRankingRequest {
+  PageRequest page = 1 [json_name = "page"];
+}
+
+message CustomerRankingItem {
+  string customer_id = 1 [json_name = "customerId"];
+  string customer_name = 2 [json_name = "customerName"];
+  string customer_surname = 3 [json_name = "customerSurname"];
+  int32 number_of_appointments = 4 [json_name = "numberOfAppointments"];
+}
+
+message GetCustomerRankingResponse {
+  repeated CustomerRankingItem items = 1 [json_name = "items"];
+  string next_page = 2 [json_name = "nextPage"];
+}
+
+message GetCustomerCancellationRankingRequest {
+  PageRequest page = 1 [json_name = "page"];
+}
+
+message CustomerCancellationRankingItem {
+  string customer_id = 1 [json_name = "customerId"];
+  string customer_name = 2 [json_name = "customerName"];
+  string customer_surname = 3 [json_name = "customerSurname"];
+  int32 number_of_cancellations = 4 [json_name = "numberOfCancellations"];
+}
+
+message GetCustomerCancellationRankingResponse {
+  repeated CustomerCancellationRankingItem items = 1 [json_name = "items"];
+  string next_page = 2 [json_name = "nextPage"];
+}
+
+message GetInsightOverviewRequest {}
+
+message CancellationDayOfWeekCount {
+  string day_of_week = 1 [json_name = "dayOfWeek"];
+  int32 cancellation_count = 2 [json_name = "cancellationCount"];
+}
+
+message GetInsightOverviewResponse {
+  repeated CancellationDayOfWeekCount cancellation_day_of_week = 1 [json_name = "cancellationDayOfWeek"];
+}

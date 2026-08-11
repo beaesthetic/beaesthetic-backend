@@ -71,27 +71,99 @@ func (q *Queries) ExistsCustomerNotificationByIdempotencyKey(ctx context.Context
 	return exists, err
 }
 
-const markCustomerNotificationFailedBySMSGatewayMessageID = `-- name: MarkCustomerNotificationFailedBySMSGatewayMessageID :execrows
+const markCustomerNotificationDispatched = `-- name: MarkCustomerNotificationDispatched :execrows
 UPDATE customer_notifications
-SET status = 'failed', failed_at = $2
+SET status = 'dispatched', dispatched_at = $2
+WHERE id = $1
+  AND status = 'pending'
+`
+
+type MarkCustomerNotificationDispatchedParams struct {
+	ID           string             `json:"id"`
+	DispatchedAt pgtype.Timestamptz `json:"dispatched_at"`
+}
+
+func (q *Queries) MarkCustomerNotificationDispatched(ctx context.Context, arg MarkCustomerNotificationDispatchedParams) (int64, error) {
+	result, err := q.db.Exec(ctx, markCustomerNotificationDispatched, arg.ID, arg.DispatchedAt)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const markCustomerNotificationFailed = `-- name: MarkCustomerNotificationFailed :one
+UPDATE customer_notifications
+SET status = 'failed',
+    failed_at = $2,
+    failure_reason = $3,
+    failure_message = $4
+WHERE id = $1
+  AND status IN ('pending', 'dispatched')
+RETURNING correlation_key, idempotency_key, customer_id
+`
+
+type MarkCustomerNotificationFailedParams struct {
+	ID             string             `json:"id"`
+	FailedAt       pgtype.Timestamptz `json:"failed_at"`
+	FailureReason  pgtype.Text        `json:"failure_reason"`
+	FailureMessage pgtype.Text        `json:"failure_message"`
+}
+
+type MarkCustomerNotificationFailedRow struct {
+	CorrelationKey string `json:"correlation_key"`
+	IdempotencyKey string `json:"idempotency_key"`
+	CustomerID     string `json:"customer_id"`
+}
+
+func (q *Queries) MarkCustomerNotificationFailed(ctx context.Context, arg MarkCustomerNotificationFailedParams) (MarkCustomerNotificationFailedRow, error) {
+	row := q.db.QueryRow(ctx, markCustomerNotificationFailed,
+		arg.ID,
+		arg.FailedAt,
+		arg.FailureReason,
+		arg.FailureMessage,
+	)
+	var i MarkCustomerNotificationFailedRow
+	err := row.Scan(&i.CorrelationKey, &i.IdempotencyKey, &i.CustomerID)
+	return i, err
+}
+
+const markCustomerNotificationFailedBySMSGatewayMessageID = `-- name: MarkCustomerNotificationFailedBySMSGatewayMessageID :one
+UPDATE customer_notifications
+SET status = 'failed',
+    failed_at = $2,
+    failure_reason = $3,
+    failure_message = $4
 WHERE id = (
     SELECT customer_notification_id
     FROM customer_notification_sms_gateway_messages
     WHERE sms_gateway_message_id = $1
 )
+RETURNING correlation_key, idempotency_key, customer_id
 `
 
 type MarkCustomerNotificationFailedBySMSGatewayMessageIDParams struct {
 	SmsGatewayMessageID string             `json:"sms_gateway_message_id"`
 	FailedAt            pgtype.Timestamptz `json:"failed_at"`
+	FailureReason       pgtype.Text        `json:"failure_reason"`
+	FailureMessage      pgtype.Text        `json:"failure_message"`
 }
 
-func (q *Queries) MarkCustomerNotificationFailedBySMSGatewayMessageID(ctx context.Context, arg MarkCustomerNotificationFailedBySMSGatewayMessageIDParams) (int64, error) {
-	result, err := q.db.Exec(ctx, markCustomerNotificationFailedBySMSGatewayMessageID, arg.SmsGatewayMessageID, arg.FailedAt)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
+type MarkCustomerNotificationFailedBySMSGatewayMessageIDRow struct {
+	CorrelationKey string `json:"correlation_key"`
+	IdempotencyKey string `json:"idempotency_key"`
+	CustomerID     string `json:"customer_id"`
+}
+
+func (q *Queries) MarkCustomerNotificationFailedBySMSGatewayMessageID(ctx context.Context, arg MarkCustomerNotificationFailedBySMSGatewayMessageIDParams) (MarkCustomerNotificationFailedBySMSGatewayMessageIDRow, error) {
+	row := q.db.QueryRow(ctx, markCustomerNotificationFailedBySMSGatewayMessageID,
+		arg.SmsGatewayMessageID,
+		arg.FailedAt,
+		arg.FailureReason,
+		arg.FailureMessage,
+	)
+	var i MarkCustomerNotificationFailedBySMSGatewayMessageIDRow
+	err := row.Scan(&i.CorrelationKey, &i.IdempotencyKey, &i.CustomerID)
+	return i, err
 }
 
 const markCustomerNotificationSentBySMSGatewayMessageID = `-- name: MarkCustomerNotificationSentBySMSGatewayMessageID :one
@@ -102,7 +174,7 @@ WHERE id = (
     FROM customer_notification_sms_gateway_messages
     WHERE sms_gateway_message_id = $1
 )
-RETURNING correlation_key
+RETURNING correlation_key, idempotency_key, customer_id
 `
 
 type MarkCustomerNotificationSentBySMSGatewayMessageIDParams struct {
@@ -110,11 +182,17 @@ type MarkCustomerNotificationSentBySMSGatewayMessageIDParams struct {
 	SentAt              pgtype.Timestamptz `json:"sent_at"`
 }
 
-func (q *Queries) MarkCustomerNotificationSentBySMSGatewayMessageID(ctx context.Context, arg MarkCustomerNotificationSentBySMSGatewayMessageIDParams) (string, error) {
+type MarkCustomerNotificationSentBySMSGatewayMessageIDRow struct {
+	CorrelationKey string `json:"correlation_key"`
+	IdempotencyKey string `json:"idempotency_key"`
+	CustomerID     string `json:"customer_id"`
+}
+
+func (q *Queries) MarkCustomerNotificationSentBySMSGatewayMessageID(ctx context.Context, arg MarkCustomerNotificationSentBySMSGatewayMessageIDParams) (MarkCustomerNotificationSentBySMSGatewayMessageIDRow, error) {
 	row := q.db.QueryRow(ctx, markCustomerNotificationSentBySMSGatewayMessageID, arg.SmsGatewayMessageID, arg.SentAt)
-	var correlation_key string
-	err := row.Scan(&correlation_key)
-	return correlation_key, err
+	var i MarkCustomerNotificationSentBySMSGatewayMessageIDRow
+	err := row.Scan(&i.CorrelationKey, &i.IdempotencyKey, &i.CustomerID)
+	return i, err
 }
 
 const saveSMSGatewayDispatch = `-- name: SaveSMSGatewayDispatch :exec

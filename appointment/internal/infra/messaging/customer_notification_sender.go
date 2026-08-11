@@ -9,6 +9,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
+	domainv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain/v2"
 	notification "github.com/petretiandrea/beaesthetic-backend/core-contracts/notification"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -27,6 +28,28 @@ func NewCustomerNotificationSender(publisher outbox.Publisher) *CustomerNotifica
 
 func (sender *CustomerNotificationSender) SendAppointmentReminder(ctx context.Context, agendaEvent *domain.AgendaEvent) (string, error) {
 	return sender.sendAppointmentNotification(ctx, agendaEvent, application.NotificationTypeAppointmentReminder)
+}
+
+func (sender *CustomerNotificationSender) SendCalendarNotification(ctx context.Context, event domainv2.CalendarEvent, notificationType domainv2.NotificationType, idempotencyKey string) (string, error) {
+	appointment, ok := event.Detail.(domainv2.Appointment)
+	if !ok {
+		return "", fmt.Errorf("calendar event %s is not an appointment", event.ID)
+	}
+	body, err := structpb.NewStruct(map[string]any{
+		"eventId": event.ID,
+		"startAt": event.Range.Start.UTC().Format(time.RFC3339),
+		"endAt":   event.Range.End.UTC().Format(time.RFC3339),
+	})
+	if err != nil {
+		return "", fmt.Errorf("build customer notification body: %w", err)
+	}
+	return sender.publishCustomerNotification(ctx, &notification.CustomerNotificationRequested{
+		IdempotencyKey:      idempotencyKey,
+		CustomerIds:         []string{appointment.Customer.ID},
+		NotificationChannel: notification.NotificationChannel_NOTIFICATION_CHANNEL_SMS,
+		NotificationType:    string(notificationType),
+		Body:                body,
+	})
 }
 
 func (sender *CustomerNotificationSender) SendAppointmentConfirmation(ctx context.Context, agendaEvent *domain.AgendaEvent) (string, error) {

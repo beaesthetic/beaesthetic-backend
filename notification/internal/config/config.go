@@ -44,7 +44,6 @@ type MongoConfig struct {
 type RabbitMQConfig struct {
 	URL                       string `koanf:"url"`
 	NotificationQueue         string `koanf:"notification_queue"`
-	NotificationConfirmQueue  string `koanf:"notification_confirm_queue"`
 	CustomerNotificationQueue string `koanf:"customer_notification_queue"`
 }
 

@@ -96,7 +96,6 @@ func TestScheduleReminderSchedulesAndSavesInTransaction(t *testing.T) {
 	handler := NewAppointmentLifecycleHandler(
 		service,
 		repo,
-		&customerRegistryStub{},
 		scheduler,
 		notificationSenderStub{},
 		fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)},
@@ -115,14 +114,14 @@ func TestScheduleReminderSchedulesAndSavesInTransaction(t *testing.T) {
 	if !scheduler.txContext {
 		t.Fatal("expected scheduler to be called inside repository transaction")
 	}
-	if repo.saved == nil {
-		t.Fatal("expected agenda event to be saved")
+	if repo.savedReminder == nil {
+		t.Fatal("expected appointment reminder to be saved")
 	}
-	if repo.saved.ReminderStatus != domain.ReminderScheduled {
-		t.Fatalf("reminder status = %s, want %s", repo.saved.ReminderStatus, domain.ReminderScheduled)
+	if repo.savedReminder.ReminderStatus != domain.ReminderScheduled {
+		t.Fatalf("reminder status = %s, want %s", repo.savedReminder.ReminderStatus, domain.ReminderScheduled)
 	}
-	if !repo.saveTxContext {
-		t.Fatal("expected agenda event save to happen inside repository transaction")
+	if !repo.saveReminderTxContext {
+		t.Fatal("expected appointment reminder save to happen inside repository transaction")
 	}
 }
 
@@ -133,7 +132,6 @@ func TestScheduleReminderDoesNotSaveScheduledStateWhenSchedulerFails(t *testing.
 	handler := NewAppointmentLifecycleHandler(
 		service,
 		repo,
-		&customerRegistryStub{},
 		scheduler,
 		notificationSenderStub{},
 		fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)},
@@ -153,14 +151,12 @@ func TestScheduleReminderDoesNotSaveScheduledStateWhenSchedulerFails(t *testing.
 }
 
 func TestHandleScheduledRunsReminderAndConfirmationInSingleTransaction(t *testing.T) {
-	phoneNumber := "+390000000000"
 	repo := &appointmentRepoStub{txContextKey: lifecycleTxContextKey{}}
 	service := NewAppointmentService(repo, &customerRegistryStub{}, 2*time.Hour, fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)})
 	scheduler := &reminderSchedulerStub{}
 	handler := NewAppointmentLifecycleHandler(
 		service,
 		repo,
-		&customerRegistryStub{customer: &Customer{ID: "customer-1", DisplayName: "Jane Doe", PhoneNumber: &phoneNumber}},
 		scheduler,
 		notificationSenderStub{},
 		fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)},
@@ -179,14 +175,38 @@ func TestHandleScheduledRunsReminderAndConfirmationInSingleTransaction(t *testin
 	if !scheduler.txContext {
 		t.Fatal("expected scheduler to be called inside repository transaction")
 	}
-	if !repo.saveTxContext {
-		t.Fatal("expected agenda event save to happen inside repository transaction")
+	if !repo.saveReminderTxContext {
+		t.Fatal("expected appointment reminder save to happen inside repository transaction")
 	}
 	if repo.pendingNotification == nil {
 		t.Fatal("expected pending confirmation notification to be tracked")
 	}
 	if !repo.pendingTxContext {
 		t.Fatal("expected pending notification tracking to happen inside repository transaction")
+	}
+}
+
+func TestHandleCalendarEventCreatedRunsScheduledLifecycle(t *testing.T) {
+	event := newLifecycleTestAgendaEvent(t)
+	repo := &appointmentRepoStub{txContextKey: lifecycleTxContextKey{}, agendaLookup: event}
+	service := NewAppointmentService(repo, &customerRegistryStub{}, 2*time.Hour, fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)})
+	scheduler := &reminderSchedulerStub{}
+	handler := NewAppointmentLifecycleHandler(
+		service,
+		repo,
+		scheduler,
+		notificationSenderStub{},
+		fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)},
+		30*time.Minute,
+		2*time.Minute,
+		nil,
+	)
+
+	if err := handler.Handle(context.Background(), "CalendarEventCreated", event.ID); err != nil {
+		t.Fatalf("Handle() error = %v", err)
+	}
+	if !scheduler.called {
+		t.Fatal("expected scheduler to be called")
 	}
 }
 
@@ -197,7 +217,6 @@ func TestHandleDeletedUnschedulesReminderInTransaction(t *testing.T) {
 	handler := NewAppointmentLifecycleHandler(
 		service,
 		repo,
-		&customerRegistryStub{},
 		scheduler,
 		notificationSenderStub{},
 		fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)},
@@ -216,14 +235,38 @@ func TestHandleDeletedUnschedulesReminderInTransaction(t *testing.T) {
 	if !scheduler.unscheduleTxContext {
 		t.Fatal("expected scheduler unschedule to be called inside repository transaction")
 	}
-	if repo.saved == nil {
-		t.Fatal("expected agenda event to be saved")
+	if repo.savedReminder == nil {
+		t.Fatal("expected appointment reminder to be saved")
 	}
-	if repo.saved.ReminderStatus != domain.ReminderDeleted {
-		t.Fatalf("reminder status = %s, want %s", repo.saved.ReminderStatus, domain.ReminderDeleted)
+	if repo.savedReminder.ReminderStatus != domain.ReminderDeleted {
+		t.Fatalf("reminder status = %s, want %s", repo.savedReminder.ReminderStatus, domain.ReminderDeleted)
 	}
-	if !repo.saveTxContext {
-		t.Fatal("expected agenda event save to happen inside repository transaction")
+	if !repo.saveReminderTxContext {
+		t.Fatal("expected appointment reminder save to happen inside repository transaction")
+	}
+}
+
+func TestHandleCalendarEventCanceledRunsDeletedLifecycle(t *testing.T) {
+	event := newLifecycleTestAgendaEvent(t)
+	repo := &appointmentRepoStub{txContextKey: lifecycleTxContextKey{}, agendaLookup: event}
+	service := NewAppointmentService(repo, &customerRegistryStub{}, 2*time.Hour, fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)})
+	scheduler := &reminderSchedulerStub{}
+	handler := NewAppointmentLifecycleHandler(
+		service,
+		repo,
+		scheduler,
+		notificationSenderStub{},
+		fixedClock{now: time.Date(2026, time.July, 4, 12, 0, 0, 0, time.UTC)},
+		30*time.Minute,
+		2*time.Minute,
+		nil,
+	)
+
+	if err := handler.Handle(context.Background(), "CalendarEventCanceled", event.ID); err != nil {
+		t.Fatalf("Handle() error = %v", err)
+	}
+	if !scheduler.unscheduleCalled {
+		t.Fatal("expected scheduler unschedule to be called")
 	}
 }
 

@@ -100,6 +100,11 @@ func (event *AgendaEvent) MarkReminderUnprocessable(now time.Time) {
 	event.UpdatedAt = now.UTC()
 }
 
+func (event *AgendaEvent) MarkReminderFailToSend(now time.Time) {
+	event.ReminderStatus = ReminderFailToSend
+	event.UpdatedAt = now.UTC()
+}
+
 func (event *AgendaEvent) MarkReminderSentRequested(now time.Time) {
 	event.ReminderStatus = ReminderSentRequested
 	event.UpdatedAt = now.UTC()

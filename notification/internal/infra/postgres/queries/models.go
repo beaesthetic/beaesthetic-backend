@@ -20,8 +20,11 @@ type CustomerNotification struct {
 	TemplateValues      json.RawMessage    `json:"template_values"`
 	Status              string             `json:"status"`
 	CreatedAt           pgtype.Timestamptz `json:"created_at"`
+	DispatchedAt        pgtype.Timestamptz `json:"dispatched_at"`
 	SentAt              pgtype.Timestamptz `json:"sent_at"`
 	FailedAt            pgtype.Timestamptz `json:"failed_at"`
+	FailureReason       pgtype.Text        `json:"failure_reason"`
+	FailureMessage      pgtype.Text        `json:"failure_message"`
 }
 
 type CustomerNotificationSmsGatewayMessage struct {

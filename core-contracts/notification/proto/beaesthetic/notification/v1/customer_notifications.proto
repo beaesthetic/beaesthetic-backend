@@ -20,3 +20,17 @@ message CustomerNotificationRequested {
   google.protobuf.Struct body = 5 [json_name = "body"];
 }
 
+enum CustomerNotificationOutcomeStatus {
+  CUSTOMER_NOTIFICATION_OUTCOME_STATUS_UNSPECIFIED = 0;
+  CUSTOMER_NOTIFICATION_OUTCOME_STATUS_SENT = 1;
+  CUSTOMER_NOTIFICATION_OUTCOME_STATUS_FAILED = 2;
+}
+
+message CustomerNotificationOutcome {
+  string notification_id = 1 [json_name = "notificationId"];
+  CustomerNotificationOutcomeStatus status = 2 [json_name = "status"];
+  string reason = 3 [json_name = "reason"];
+  string message = 4 [json_name = "message"];
+  string idempotency_key = 5 [json_name = "idempotencyKey"];
+  string customer_id = 6 [json_name = "customerId"];
+}

@@ -18,6 +18,18 @@ var (
 	ErrCustomerPhoneRequired                  = errors.New("customer phone is required")
 )
 
+const (
+	CustomerNotificationStatusPending    = "pending"
+	CustomerNotificationStatusDispatched = "dispatched"
+	CustomerNotificationStatusSent       = "sent"
+	CustomerNotificationStatusFailed     = "failed"
+
+	CustomerNotificationReasonMissingCustomerContact = "missing_customer_contact"
+	CustomerNotificationReasonTemplateRenderFailed   = "template_render_failed"
+	CustomerNotificationReasonProviderRejected       = "provider_rejected"
+	CustomerNotificationReasonProviderDeliveryFailed = "provider_delivery_failed"
+)
+
 type CustomerNotificationCommand struct {
 	IdempotencyKey      string         `json:"idempotencyKey"`
 	CustomerIDs         []string       `json:"customerIds"`
@@ -77,8 +89,10 @@ type CustomerNotificationRepository interface {
 	Exists(ctx context.Context, idempotencyKey string) (bool, error)
 	CreatePending(ctx context.Context, notification CustomerNotificationRecord) (bool, error)
 	SaveSMSGatewayDispatch(ctx context.Context, dispatch SMSGatewayDispatch) error
+	MarkDispatched(ctx context.Context, notificationID string, dispatchedAt time.Time) error
+	MarkFailed(ctx context.Context, notificationID string, reason string, message string, failedAt time.Time) (bool, error)
 	MarkSentBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, sentAt time.Time) (bool, error)
-	MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, failedAt time.Time) (bool, error)
+	MarkFailedBySMSGatewayMessageID(ctx context.Context, smsGatewayMessageID string, reason string, message string, failedAt time.Time) (bool, error)
 }
 
 type CustomerNotificationService struct {
@@ -113,7 +127,13 @@ func (service *CustomerNotificationService) ConfirmSMSGatewayMessageSent(ctx con
 }
 
 func (service *CustomerNotificationService) MarkSMSGatewayMessageFailed(ctx context.Context, smsGatewayMessageID string) (bool, error) {
-	return service.repository.MarkFailedBySMSGatewayMessageID(ctx, smsGatewayMessageID, service.now().UTC())
+	return service.repository.MarkFailedBySMSGatewayMessageID(
+		ctx,
+		smsGatewayMessageID,
+		CustomerNotificationReasonProviderDeliveryFailed,
+		"sms gateway reported delivery failure",
+		service.now().UTC(),
+	)
 }
 
 func (service *CustomerNotificationService) processCustomer(ctx context.Context, command CustomerNotificationCommand, customerID string) error {
@@ -149,10 +169,12 @@ func (service *CustomerNotificationService) processCustomer(ctx context.Context,
 
 	customer, err := service.customers.GetCustomer(ctx, customerID)
 	if err != nil {
-		return err
+		_, markErr := service.repository.MarkFailed(ctx, newNotificationID, CustomerNotificationReasonMissingCustomerContact, err.Error(), service.now().UTC())
+		return markErr
 	}
 	if strings.TrimSpace(customer.Phone) == "" {
-		return fmt.Errorf("%w: %s", ErrCustomerPhoneRequired, customerID)
+		_, err := service.repository.MarkFailed(ctx, newNotificationID, CustomerNotificationReasonMissingCustomerContact, fmt.Sprintf("%s: sms channel requires customer phone", ErrCustomerPhoneRequired.Error()), service.now().UTC())
+		return err
 	}
 	templateValues := command.TemplateValues(customer)
 	content, err := service.templates.Render(ctx, CustomerNotificationTemplateData{
@@ -161,22 +183,27 @@ func (service *CustomerNotificationService) processCustomer(ctx context.Context,
 		Values:              templateValues,
 	})
 	if err != nil {
-		return err
+		_, markErr := service.repository.MarkFailed(ctx, newNotificationID, CustomerNotificationReasonTemplateRenderFailed, err.Error(), service.now().UTC())
+		return markErr
 	}
 
 	smsGatewayMessageID, err := service.smsDispatcher.Send(ctx, newNotificationID, customer.Phone, content)
 	if err != nil {
-		return err
+		_, markErr := service.repository.MarkFailed(ctx, newNotificationID, CustomerNotificationReasonProviderRejected, err.Error(), service.now().UTC())
+		return markErr
 	}
 	if smsGatewayMessageID == "" {
 		return nil
 	}
-	return service.repository.SaveSMSGatewayDispatch(ctx, SMSGatewayDispatch{
+	if err := service.repository.SaveSMSGatewayDispatch(ctx, SMSGatewayDispatch{
 		ID:                     uuid.NewString(),
 		CustomerNotificationID: newNotificationID,
 		SMSGatewayMessageID:    smsGatewayMessageID,
 		CreatedAt:              service.now().UTC(),
-	})
+	}); err != nil {
+		return err
+	}
+	return service.repository.MarkDispatched(ctx, newNotificationID, service.now().UTC())
 }
 
 func (command CustomerNotificationCommand) Validate() error {

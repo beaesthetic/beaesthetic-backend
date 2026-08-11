@@ -12,17 +12,20 @@ import (
 type AppointmentRepository interface {
 	Tx(ctx context.Context, atomicFn func(ctx context.Context) error) error
 	SaveAgendaEvent(context.Context, *domain.AgendaEvent) error
+	SaveAppointmentReminder(context.Context, *domain.AgendaEvent) error
 	FindAgendaEvent(context.Context, string) (*domain.AgendaEvent, error)
 	SearchAgendaEvents(context.Context, string, *time.Time, *time.Time) ([]domain.AgendaEvent, error)
 	FindFutureAppointments(context.Context, time.Time) ([]domain.AgendaEvent, error)
-	FindPendingNotification(context.Context, string) (*PendingNotification, error)
-	RemovePendingNotification(context.Context, string) error
-	SavePendingNotification(context.Context, PendingNotification) error
+	FindAppointmentNotificationTracking(context.Context, string) (*AppointmentNotificationTracking, error)
+	SaveAppointmentNotificationTracking(context.Context, AppointmentNotificationTracking) error
+	MarkAppointmentNotificationSent(context.Context, string, time.Time) error
+	MarkAppointmentNotificationFailed(context.Context, string, string, string, time.Time) error
 }
 
-type PendingNotification struct {
+type AppointmentNotificationTracking struct {
 	CorrelationKey string
 	AgendaEventID  string
+	Kind           string
 	Type           string
 }
 
@@ -58,6 +61,10 @@ func (s *AppointmentService) GetAgenda(ctx context.Context, id string) (*domain.
 
 func (s *AppointmentService) SaveAgendaEvent(ctx context.Context, event *domain.AgendaEvent) error {
 	return s.repo.SaveAgendaEvent(ctx, event)
+}
+
+func (s *AppointmentService) SaveAppointmentReminder(ctx context.Context, event *domain.AgendaEvent) error {
+	return s.repo.SaveAppointmentReminder(ctx, event)
 }
 
 func (s *AppointmentService) SearchAgenda(ctx context.Context, attendee string, start, end *time.Time) ([]domain.AgendaEvent, error) {
@@ -123,44 +130,91 @@ func (s *AppointmentService) ProcessReminderTimesUp(ctx context.Context, eventID
 		}
 		e.MarkReminderSentRequested(s.clock.Now())
 		event = e
-		return s.repo.SaveAgendaEvent(ctx, e)
+		return s.repo.SaveAppointmentReminder(ctx, e)
 	})
 	return event, err
 }
 
-func (s *AppointmentService) TrackPendingNotification(ctx context.Context, correlationKey, agendaEventID, notificationType string) error {
-	return s.repo.SavePendingNotification(ctx, PendingNotification{
+func (s *AppointmentService) TrackAppointmentNotification(ctx context.Context, correlationKey, agendaEventID, notificationType string) error {
+	return s.repo.SaveAppointmentNotificationTracking(ctx, AppointmentNotificationTracking{
 		CorrelationKey: correlationKey,
 		AgendaEventID:  agendaEventID,
+		Kind:           NotificationKind(notificationType),
 		Type:           notificationType,
 	})
 }
 
 func (s *AppointmentService) ConfirmNotification(ctx context.Context, correlationKey string) (*domain.AgendaEvent, error) {
 	var event *domain.AgendaEvent
+	now := s.clock.Now()
 	err := s.repo.Tx(ctx, func(ctx context.Context) error {
-		pending, err := s.repo.FindPendingNotification(ctx, correlationKey)
-		if err != nil || pending == nil {
+		notification, err := s.repo.FindAppointmentNotificationTracking(ctx, correlationKey)
+		if err != nil || notification == nil {
 			return err
 		}
-		if pending.Type != "reminder" && pending.Type != "Reminder" {
-			return s.repo.RemovePendingNotification(ctx, correlationKey)
+		if err := s.repo.MarkAppointmentNotificationSent(ctx, correlationKey, now); err != nil {
+			return err
 		}
-		e, err := s.repo.FindAgendaEvent(ctx, pending.AgendaEventID)
+		if !notification.IsReminder() {
+			return nil
+		}
+		e, err := s.repo.FindAgendaEvent(ctx, notification.AgendaEventID)
 		if err != nil {
 			return err
 		}
 		if e == nil {
-			return fmt.Errorf("No event with id %s found", pending.AgendaEventID)
+			return fmt.Errorf("No event with id %s found", notification.AgendaEventID)
 		}
-		e.MarkReminderSent(s.clock.Now())
+		e.MarkReminderSent(now)
 		event = e
-		if err := s.repo.SaveAgendaEvent(ctx, e); err != nil {
-			return err
-		}
-		return s.repo.RemovePendingNotification(ctx, correlationKey)
+		return s.repo.SaveAppointmentReminder(ctx, e)
 	})
 	return event, err
+}
+
+func (s *AppointmentService) FailNotification(ctx context.Context, correlationKey string) (*domain.AgendaEvent, error) {
+	var event *domain.AgendaEvent
+	now := s.clock.Now()
+	err := s.repo.Tx(ctx, func(ctx context.Context) error {
+		notification, err := s.repo.FindAppointmentNotificationTracking(ctx, correlationKey)
+		if err != nil || notification == nil {
+			return err
+		}
+		if err := s.repo.MarkAppointmentNotificationFailed(ctx, correlationKey, "notification_failed", "", now); err != nil {
+			return err
+		}
+		if !notification.IsReminder() {
+			return nil
+		}
+		e, err := s.repo.FindAgendaEvent(ctx, notification.AgendaEventID)
+		if err != nil {
+			return err
+		}
+		if e == nil {
+			return fmt.Errorf("No event with id %s found", notification.AgendaEventID)
+		}
+		e.MarkReminderFailToSend(now)
+		event = e
+		return s.repo.SaveAppointmentReminder(ctx, e)
+	})
+	return event, err
+}
+
+func (notification AppointmentNotificationTracking) IsReminder() bool {
+	return notification.Kind == "reminder" || notification.Kind == "Reminder" || notification.Type == NotificationTypeAppointmentReminder
+}
+
+func NotificationKind(notificationType string) string {
+	switch notificationType {
+	case NotificationTypeAppointmentConfirmation:
+		return "confirmation"
+	case NotificationTypeAppointmentRescheduled:
+		return "rescheduled"
+	case NotificationTypeAppointmentReminder, "reminder", "Reminder":
+		return "reminder"
+	default:
+		return notificationType
+	}
 }
 
 func (s *AppointmentService) saveAgenda(ctx context.Context, event *domain.AgendaEvent) error {

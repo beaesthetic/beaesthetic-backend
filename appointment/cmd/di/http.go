@@ -18,6 +18,7 @@ func (d *DiContainer) GetHttpHandlers() *server.HttpHandlers {
 	return singleton(d, "httpHandlers", func() *server.HttpHandlers {
 		return &server.HttpHandlers{
 			Appointment:   d.AppointmentHttpHandler(),
+			Calendar:      d.AppointmentHttpHandler(),
 			HealthChecker: d.HealthCheckHandler(),
 		}
 	})
@@ -25,7 +26,7 @@ func (d *DiContainer) GetHttpHandlers() *server.HttpHandlers {
 
 func (d *DiContainer) AppointmentHttpHandler() *server.Server {
 	return singleton(d, "appointmentHttpHandler", func() *server.Server {
-		return server.NewServer(d.GetAppointmentService(), d.GetServiceService(), d.Log)
+		return server.NewServer(d.GetAppointmentService(), d.GetAppointmentLifecycleServiceV2(), d.GetCalendarService(), d.GetServiceService(), d.Log)
 	})
 }
 
