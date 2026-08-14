@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.1](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.15.0...appointment-service-v1.15.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* typo ([adfc62e](https://github.com/beaesthetic/beaesthetic-backend/commit/adfc62eaca33700edfdbd8c30ecc88798b345f9c))
+
 ## [1.15.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.14.0...appointment-service-v1.15.0) (2026-07-23)
 
 
