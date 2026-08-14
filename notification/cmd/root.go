@@ -55,7 +55,7 @@ func appCommand(envFile *string) *cobra.Command {
 			runner := appruntime.NewRunner(c.Log)
 			runner.Add(appruntime.HTTPServer("http server", httpServer, 10*time.Second))
 			if customerNotificationConsumer != nil {
-				runner.Add(appruntime.Consumer("customer notification consumer", customerNotificationConsumer))
+				runner.Add(appruntime.Consumer("customer notifications consumer", customerNotificationConsumer))
 			}
 
 			return runner.Run(ctx)
