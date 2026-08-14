@@ -50,7 +50,7 @@ func appCommand(envFile *string) *cobra.Command {
 		runner.Add(appruntime.HTTPServer("http server", httpServer, 10*time.Second))
 		runner.Add(appruntime.Consumer("appointment lifecycle consumer", appointmentLifecycleConsumer))
 		runner.Add(appruntime.Consumer("scheduler queue consumer", schedulerConsumer))
-		runner.Add(appruntime.Consumer("notification outcome consumer", notificationOutcomeConsumer))
+		runner.Add(appruntime.Consumer("notification outcomes consumer", notificationOutcomeConsumer))
 
 		return runner.Run(ctx)
 	}}
