@@ -167,10 +167,7 @@ func (s *Server) createCalendarEvent(ctx context.Context, request *appointmentco
 	}
 	switch detail := request.GetDetail().(type) {
 	case *appointmentcontracts.CreateCalendarEventRequest_Appointment:
-		remindBefore, err := reminderBeforeFromProto(detail.Appointment.RemindBeforeSeconds)
-		if err != nil {
-			return domain.CalendarEvent{}, err
-		}
+		remindBefore := reminderBeforeFromProto(detail.Appointment.RemindBeforeSeconds)
 		services, err := s.serviceItemsFromProto(ctx, detail.Appointment.GetServices())
 		if err != nil {
 			return domain.CalendarEvent{}, err
@@ -698,15 +695,8 @@ type calendarEventBase struct {
 	Visibility  domain.Visibility
 }
 
-func reminderBeforeFromProto(value *int32) (time.Duration, error) {
-	seconds := defaultReminderBeforeSeconds
-	if value != nil {
-		seconds = *value
-	}
-	if seconds <= 0 {
-		return 0, fmt.Errorf("remindBeforeSeconds must be greater than zero")
-	}
-	return time.Duration(seconds) * time.Second, nil
+func reminderBeforeFromProto(_ *int32) time.Duration {
+	return time.Duration(defaultReminderBeforeSeconds) * time.Second
 }
 
 func v2CreateAppointmentCommand(base calendarEventBase, customerID string, services []domain.ServiceItem, remindBefore time.Duration) applicationv2.CreateAppointmentCommand {

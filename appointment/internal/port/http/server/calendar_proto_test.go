@@ -11,20 +11,10 @@ import (
 	"google.golang.org/protobuf/types/known/fieldmaskpb"
 )
 
-func TestReminderBeforeFromProtoDefaultsTo24Hours(t *testing.T) {
-	value, err := reminderBeforeFromProto(nil)
-	if err != nil {
-		t.Fatalf("reminderBeforeFromProto() error = %v", err)
-	}
-	if value != 24*time.Hour {
+func TestReminderBeforeFromProtoAlwaysUsesBackendDefault(t *testing.T) {
+	frontendValue := int32(0)
+	if value := reminderBeforeFromProto(&frontendValue); value != 24*time.Hour {
 		t.Fatalf("reminder before = %s, want 24h", value)
-	}
-}
-
-func TestReminderBeforeFromProtoRejectsZero(t *testing.T) {
-	zero := int32(0)
-	if _, err := reminderBeforeFromProto(&zero); err == nil {
-		t.Fatal("reminderBeforeFromProto() error = nil, want invalid reminder error")
 	}
 }
 

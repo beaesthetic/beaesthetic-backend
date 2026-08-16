@@ -1064,7 +1064,7 @@ type CreateAppointmentDetail struct {
 	state      protoimpl.MessageState         `protogen:"open.v1"`
 	CustomerId string                         `protobuf:"bytes,1,opt,name=customer_id,json=customerId,proto3" json:"customer_id,omitempty"`
 	Services   []*AppointmentServiceSelection `protobuf:"bytes,2,rep,name=services,proto3" json:"services,omitempty"`
-	// Defaults to 24 hours when omitted.
+	// Ignored by the backend; reminder timing is configured server-side.
 	RemindBeforeSeconds *int32 `protobuf:"varint,3,opt,name=remind_before_seconds,json=remindBeforeSeconds,proto3,oneof" json:"remind_before_seconds,omitempty"`
 	unknownFields       protoimpl.UnknownFields
 	sizeCache           protoimpl.SizeCache

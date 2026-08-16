@@ -157,7 +157,7 @@ message CreateCalendarEventRequest {
 message CreateAppointmentDetail {
   string customer_id = 1 [json_name = "customerId"];
   repeated AppointmentServiceSelection services = 2 [json_name = "services"];
-  // Defaults to 24 hours when omitted.
+  // Ignored by the backend; reminder timing is configured server-side.
   optional int32 remind_before_seconds = 3 [json_name = "remindBeforeSeconds"];
 }
 
