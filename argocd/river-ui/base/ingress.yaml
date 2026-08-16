@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: river-ui
+  labels:
+    app.kubernetes.io/name: river-ui
+    app.kubernetes.io/part-of: beaesthetic
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-issuer
+    nginx.ingress.kubernetes.io/backend-protocol: HTTP
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: river-ui.internal.k8s
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: river-ui
+                port:
+                  number: 8080
+  tls:
+    - hosts:
+        - river-ui.internal.k8s
+      secretName: river-ui-tls

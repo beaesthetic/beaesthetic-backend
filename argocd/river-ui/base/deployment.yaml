@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: river-ui
+  labels:
+    app.kubernetes.io/name: river-ui
+    app.kubernetes.io/part-of: beaesthetic
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: river-ui
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: river-ui
+        app.kubernetes.io/part-of: beaesthetic
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        - name: river-ui
+          image: ghcr.io/riverqueue/riverui:v0.16.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: appointment-secrets-v2
+                  key: postgres-dsn
+            - name: RIVER_JOB_LIST_HIDE_ARGS_BY_DEFAULT
+              value: "true"
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 25m
+              memory: 64Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi

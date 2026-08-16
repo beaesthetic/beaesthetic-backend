@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: river-ui
+  labels:
+    app.kubernetes.io/name: river-ui
+    app.kubernetes.io/part-of: beaesthetic
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: river-ui
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http
+      protocol: TCP
