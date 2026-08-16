@@ -19,7 +19,7 @@ spec:
       automountServiceAccountToken: false
       containers:
         - name: river-ui
-          image: ghcr.io/riverqueue/riverui:v0.16.0
+          image: ghcr.io/riverqueue/riverui:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
