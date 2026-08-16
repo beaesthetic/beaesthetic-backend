@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.1](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.9.0...notification-service-v2.9.1) (2026-08-14)
+
+
+### Bug Fixes
+
+* typo ([02f294b](https://github.com/beaesthetic/beaesthetic-backend/commit/02f294bd89ec8cb1c599e7d80364cde8abbc1512))
+
 ## [2.9.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.8.0...notification-service-v2.9.0) (2026-07-23)
 
 
