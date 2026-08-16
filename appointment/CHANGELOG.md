@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.2](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.15.1...appointment-service-v1.15.2) (2026-08-16)
+
+
+### Bug Fixes
+
+* ignore reminder before ([67b07aa](https://github.com/beaesthetic/beaesthetic-backend/commit/67b07aa2559533f298d8edf333f59d1100e9d49e))
+
 ## [1.15.1](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.15.0...appointment-service-v1.15.1) (2026-08-14)
 
 
