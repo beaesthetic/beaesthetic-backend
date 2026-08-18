@@ -7,7 +7,6 @@ type AppointmentServiceRef struct {
 type AppointmentService struct {
 	ID    string
 	Name  string
-	Price float64
 	Tags  []string
 	Color *string
 }

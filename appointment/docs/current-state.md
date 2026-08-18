@@ -6,7 +6,7 @@ The current appointment service is implemented with Quarkus + Kotlin. It owns ag
 
 ## Runtime Entrypoints
 
-- REST API: `api-spec/openapi.yaml`, implemented mainly by `AgendaController` and `ApplicationServiceController`.
+- Calendar API: the `calendars/v1` protobuf contract, served by the calendar-event HTTP handlers.
 - Scheduler queue consumer: consumes reminder times-up events from the scheduler queue.
 - Notification confirmation consumer: consumes notification confirmation events and correlates `notificationId` back to agenda reminders.
 - Failed reminder monitor: periodically recovers reminders stuck in failed/in-progress states.
@@ -31,7 +31,7 @@ The current appointment service is implemented with Quarkus + Kotlin. It owns ag
 
 ## Migration Constraints
 
-- REST contract must remain compatible with `api-spec/openapi.yaml`.
+- The calendar API contract is defined by the `calendars/v1` protobuf messages.
 - Mongo optimistic versioning maps to Postgres integer version checks.
 - Save plus lifecycle publication should move to transactional outbox.
 - Redis correlation should move to Postgres or a durable table to avoid split storage.

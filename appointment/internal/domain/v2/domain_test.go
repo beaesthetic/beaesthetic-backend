@@ -61,7 +61,7 @@ func TestAppointmentOwnsCustomerAndServicesOnly(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewCustomerRef() error = %v", err)
 	}
-	service, err := NewServiceItem(nil, "Haircut", nil, 99)
+	service, err := NewServiceItem(nil, "Haircut", 99)
 	if err != nil {
 		t.Fatalf("NewServiceItem() error = %v", err)
 	}

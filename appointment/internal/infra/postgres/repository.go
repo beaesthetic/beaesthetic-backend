@@ -137,7 +137,6 @@ func (r *Repository) SaveService(ctx context.Context, s domain.AppointmentServic
 	err := queries.New(r.db).SaveAppointmentService(ctx, queries.SaveAppointmentServiceParams{
 		ID:       s.ID,
 		Name:     s.Name,
-		Price:    s.Price,
 		Tags:     tags,
 		ColorHex: nullableText(s.Color),
 	})
@@ -151,7 +150,7 @@ func (r *Repository) FindServices(ctx context.Context) ([]domain.AppointmentServ
 	}
 	out := make([]domain.AppointmentService, 0, len(rows))
 	for _, row := range rows {
-		service, err := appointmentServiceFromFields(row.ID, row.Name, row.Price, row.Tags, row.ColorHex)
+		service, err := appointmentServiceFromFields(row.ID, row.Name, row.Tags, row.ColorHex)
 		if err != nil {
 			return nil, err
 		}
@@ -174,7 +173,7 @@ func (r *Repository) SearchServices(ctx context.Context, text string, limit int)
 	}
 	out := make([]domain.AppointmentService, 0, len(rows))
 	for _, row := range rows {
-		service, err := appointmentServiceFromFields(row.ID, row.Name, row.Price, row.Tags, row.ColorHex)
+		service, err := appointmentServiceFromFields(row.ID, row.Name, row.Tags, row.ColorHex)
 		if err != nil {
 			return nil, err
 		}
@@ -191,7 +190,7 @@ func (r *Repository) FindService(ctx context.Context, id string) (*domain.Appoin
 	if err != nil {
 		return nil, err
 	}
-	service, err := appointmentServiceFromFields(row.ID, row.Name, row.Price, row.Tags, row.ColorHex)
+	service, err := appointmentServiceFromFields(row.ID, row.Name, row.Tags, row.ColorHex)
 	return &service, err
 }
 
@@ -268,7 +267,6 @@ func (r *Repository) saveAppointmentDetails(ctx context.Context, e *domain.Agend
 			AgendaEventID: e.ID,
 			ServiceID:     pgtype.Text{},
 			ServiceName:   service.Name,
-			Price:         pgtype.Float8{},
 			Position:      int32(i),
 		}); err != nil {
 			return err
@@ -419,7 +417,7 @@ func agendaEventFromDetailsRow(row queries.FindAgendaEventFromDetailsRow) (*doma
 	}, nil
 }
 
-func appointmentServiceFromFields(id string, name string, price float64, tagsBytes []byte, color pgtype.Text) (domain.AppointmentService, error) {
+func appointmentServiceFromFields(id string, name string, tagsBytes []byte, color pgtype.Text) (domain.AppointmentService, error) {
 	var tags []string
 	if err := json.Unmarshal(tagsBytes, &tags); err != nil {
 		return domain.AppointmentService{}, err
@@ -427,7 +425,6 @@ func appointmentServiceFromFields(id string, name string, price float64, tagsByt
 	return domain.AppointmentService{
 		ID:    id,
 		Name:  name,
-		Price: price,
 		Tags:  tags,
 		Color: textPointer(color),
 	}, nil

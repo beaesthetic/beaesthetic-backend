@@ -69,15 +69,13 @@ INSERT INTO appointment_service_items (
     agenda_event_id,
     service_id,
     service_name,
-    price,
     position
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4
 )
 ON CONFLICT (agenda_event_id, position) DO UPDATE SET
     service_id = $2,
-    service_name = $3,
-    price = $4;
+    service_name = $3;
 
 -- name: SaveAppointmentReminder :exec
 INSERT INTO appointment_reminders (
@@ -230,7 +228,6 @@ SELECT
             jsonb_build_object(
                 'Name', si.service_name,
                 'serviceId', si.service_id,
-                'price', si.price,
                 'position', si.position
             )
             ORDER BY si.position

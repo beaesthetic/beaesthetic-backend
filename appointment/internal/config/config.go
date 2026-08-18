@@ -41,7 +41,6 @@ type RemoteConfig struct {
 }
 type RabbitMQConfig struct {
 	URL                               string `koanf:"url"`
-	SchedulerQueue                    string `koanf:"scheduler_queue"`
 	AppointmentInternalJobQueue       string `koanf:"appointment_internal_job_queue"`
 	CustomerNotificationOutcomesQueue string `koanf:"customer_notification_outcomes_queue"`
 }

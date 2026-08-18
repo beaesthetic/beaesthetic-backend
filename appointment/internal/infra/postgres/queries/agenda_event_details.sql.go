@@ -60,7 +60,6 @@ SELECT
             jsonb_build_object(
                 'Name', si.service_name,
                 'serviceId', si.service_id,
-                'price', si.price,
                 'position', si.position
             )
             ORDER BY si.position
@@ -639,23 +638,20 @@ INSERT INTO appointment_service_items (
     agenda_event_id,
     service_id,
     service_name,
-    price,
     position
 ) VALUES (
-    $1, $2, $3, $4, $5
+    $1, $2, $3, $4
 )
 ON CONFLICT (agenda_event_id, position) DO UPDATE SET
     service_id = $2,
-    service_name = $3,
-    price = $4
+    service_name = $3
 `
 
 type SaveAppointmentServiceItemParams struct {
-	AgendaEventID string        `json:"agenda_event_id"`
-	ServiceID     pgtype.Text   `json:"service_id"`
-	ServiceName   string        `json:"service_name"`
-	Price         pgtype.Float8 `json:"price"`
-	Position      int32         `json:"position"`
+	AgendaEventID string      `json:"agenda_event_id"`
+	ServiceID     pgtype.Text `json:"service_id"`
+	ServiceName   string      `json:"service_name"`
+	Position      int32       `json:"position"`
 }
 
 func (q *Queries) SaveAppointmentServiceItem(ctx context.Context, arg SaveAppointmentServiceItemParams) error {
@@ -663,7 +659,6 @@ func (q *Queries) SaveAppointmentServiceItem(ctx context.Context, arg SaveAppoin
 		arg.AgendaEventID,
 		arg.ServiceID,
 		arg.ServiceName,
-		arg.Price,
 		arg.Position,
 	)
 	return err

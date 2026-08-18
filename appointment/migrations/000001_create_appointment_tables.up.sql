@@ -25,7 +25,6 @@ CREATE INDEX IF NOT EXISTS idx_agenda_events_reminder_status ON agenda_events (r
 CREATE TABLE IF NOT EXISTS appointment_services (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
-    price DOUBLE PRECISION NOT NULL,
     tags JSONB NOT NULL DEFAULT '[]'::jsonb,
     color_hex TEXT NULL,
     search_text TEXT GENERATED ALWAYS AS (

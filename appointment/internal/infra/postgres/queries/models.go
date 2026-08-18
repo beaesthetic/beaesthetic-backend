@@ -91,18 +91,16 @@ type AppointmentReminder struct {
 type AppointmentService struct {
 	ID         string          `json:"id"`
 	Name       string          `json:"name"`
-	Price      float64         `json:"price"`
 	Tags       json.RawMessage `json:"tags"`
 	ColorHex   pgtype.Text     `json:"color_hex"`
 	SearchText pgtype.Text     `json:"search_text"`
 }
 
 type AppointmentServiceItem struct {
-	AgendaEventID string        `json:"agenda_event_id"`
-	ServiceID     pgtype.Text   `json:"service_id"`
-	ServiceName   string        `json:"service_name"`
-	Price         pgtype.Float8 `json:"price"`
-	Position      int32         `json:"position"`
+	AgendaEventID string      `json:"agenda_event_id"`
+	ServiceID     pgtype.Text `json:"service_id"`
+	ServiceName   string      `json:"service_name"`
+	Position      int32       `json:"position"`
 }
 
 type PendingNotification struct {

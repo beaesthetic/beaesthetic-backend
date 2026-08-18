@@ -204,7 +204,7 @@ func TestCreateAppointmentBuildsAppointmentAggregate(t *testing.T) {
 	now := time.Date(2026, 7, 26, 10, 0, 0, 0, time.UTC)
 	service := NewCalendarService(repository, customers, clockStub{now: now})
 
-	item, err := domain.NewServiceItem(nil, "Haircut", nil, 0)
+	item, err := domain.NewServiceItem(nil, "Haircut", 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -310,7 +310,7 @@ func TestUpdateDispatchesAppointmentChangesInOneTransaction(t *testing.T) {
 	repository.found = &event
 	service := NewCalendarService(repository, nil, clockStub{now: now.Add(time.Hour)})
 	newTitle := "New title"
-	item, err := domain.NewServiceItem(nil, "Haircut", nil, 0)
+	item, err := domain.NewServiceItem(nil, "Haircut", 0)
 	if err != nil {
 		t.Fatal(err)
 	}

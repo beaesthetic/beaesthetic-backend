@@ -234,7 +234,6 @@ Relazione tra appointment e servizi scelti.
 agenda_event_id UUID NOT NULL
 service_id TEXT NULL
 service_name TEXT NOT NULL
-price DOUBLE PRECISION NULL
 position INTEGER NOT NULL
 ```
 
@@ -242,7 +241,6 @@ Perche' sia `service_id` che `service_name`:
 
 - `service_id` collega al catalogo quando disponibile.
 - `service_name` conserva snapshot storico.
-- `price` conserva snapshot prezzo al momento della prenotazione.
 
 Questo rimuove `services JSONB` da `agenda_events`.
 
@@ -446,7 +444,6 @@ erDiagram
         uuid agenda_event_id FK
         text service_id
         text service_name
-        double price
         int position
     }
 
@@ -579,7 +576,6 @@ classDiagram
     class ServiceItem {
         +string serviceId
         +string serviceName
-        +float price
         +int position
     }
 

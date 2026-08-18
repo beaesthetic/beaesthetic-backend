@@ -1,6 +1,0 @@
-package: generated
-generate:
-  models: true
-  gin-server: true
-  strict-server: true
-

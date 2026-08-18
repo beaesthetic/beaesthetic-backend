@@ -1,0 +1,8 @@
+ALTER TABLE appointment_services
+    ADD COLUMN IF NOT EXISTS price DOUBLE PRECISION NOT NULL DEFAULT 0;
+
+ALTER TABLE appointment_services
+    ALTER COLUMN price DROP DEFAULT;
+
+ALTER TABLE appointment_service_items
+    ADD COLUMN IF NOT EXISTS price DOUBLE PRECISION NULL;

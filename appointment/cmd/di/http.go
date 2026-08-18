@@ -17,16 +17,15 @@ func (d *DiContainer) GetHttpServer() *nethttp.Server {
 func (d *DiContainer) GetHttpHandlers() *server.HttpHandlers {
 	return singleton(d, "httpHandlers", func() *server.HttpHandlers {
 		return &server.HttpHandlers{
-			Appointment:   d.AppointmentHttpHandler(),
-			Calendar:      d.AppointmentHttpHandler(),
+			Calendar:      d.CalendarHttpHandler(),
 			HealthChecker: d.HealthCheckHandler(),
 		}
 	})
 }
 
-func (d *DiContainer) AppointmentHttpHandler() *server.Server {
-	return singleton(d, "appointmentHttpHandler", func() *server.Server {
-		return server.NewServer(d.GetAppointmentService(), d.GetAppointmentLifecycleServiceV2(), d.GetCalendarService(), d.GetServiceService(), d.Log)
+func (d *DiContainer) CalendarHttpHandler() *server.Server {
+	return singleton(d, "calendarHttpHandler", func() *server.Server {
+		return server.NewServer(d.GetAppointmentLifecycleServiceV2(), d.GetCalendarService(), d.GetServiceService(), d.Log)
 	})
 }
 

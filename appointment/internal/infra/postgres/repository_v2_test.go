@@ -58,14 +58,14 @@ func TestAppointmentReminderV2FromDetailsReconstitutesFullState(t *testing.T) {
 	}
 }
 
-func TestServiceItemsV2FromJSONKeepsSnapshotFields(t *testing.T) {
-	data := `[{"Name":"Haircut","serviceId":"service-1","price":42.5,"position":0}]`
+func TestServiceItemsV2FromJSONKeepsServiceFields(t *testing.T) {
+	data := `[{"Name":"Haircut","serviceId":"service-1","position":0}]`
 
 	items, err := serviceItemsV2FromJSON(data)
 	if err != nil {
 		t.Fatalf("serviceItemsV2FromJSON() error = %v", err)
 	}
-	if len(items) != 1 || items[0].ServiceID == nil || *items[0].ServiceID != "service-1" || items[0].Price == nil || *items[0].Price != 42.5 {
+	if len(items) != 1 || items[0].ServiceID == nil || *items[0].ServiceID != "service-1" {
 		t.Fatalf("service items = %#v", items)
 	}
 }

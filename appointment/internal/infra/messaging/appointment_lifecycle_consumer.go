@@ -30,7 +30,7 @@ func (consumer *AppointmentLifecycleConsumer) Process(ctx context.Context, deliv
 	if err != nil {
 		return err
 	}
-	eventID := event.EventID()
+	eventID := event.CalendarEventID
 	if eventID == "" {
 		consumer.log.Debug("unhandled lifecycle event without event id", zap.String("type", event.Type))
 		return nil
@@ -58,14 +58,6 @@ func appointmentLifecycleEventFromDelivery(delivery amqp.Delivery) (appointmentL
 }
 
 type appointmentLifecycleEvent struct {
-	Type                string `json:"type"`
-	CalendarEventID     string `json:"calendarEventId"`
-	LegacyAgendaEventID string `json:"agendaEventId"`
-}
-
-func (event appointmentLifecycleEvent) EventID() string {
-	if event.CalendarEventID != "" {
-		return event.CalendarEventID
-	}
-	return event.LegacyAgendaEventID
+	Type            string `json:"type"`
+	CalendarEventID string `json:"calendarEventId"`
 }
