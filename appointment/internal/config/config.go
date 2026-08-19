@@ -16,7 +16,6 @@ type Config struct {
 	App      AppConfig      `koanf:"app"`
 	HTTP     HTTPConfig     `koanf:"http"`
 	Postgres PostgresConfig `koanf:"postgres"`
-	Mongo    MongoConfig    `koanf:"mongo"`
 	Remote   RemoteConfig   `koanf:"remote"`
 	Reminder ReminderConfig `koanf:"reminder"`
 	River    RiverConfig    `koanf:"river"`
@@ -31,10 +30,6 @@ type HTTPConfig struct {
 }
 type PostgresConfig struct {
 	DSN string `koanf:"dsn"`
-}
-type MongoConfig struct {
-	URI      string `koanf:"uri"`
-	Database string `koanf:"database"`
 }
 type RemoteConfig struct {
 	CustomerURL string `koanf:"customer_url"`

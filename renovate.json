@@ -17,10 +17,6 @@
       "groupName": "Notification Service"
     },
     {
-      "matchFileNames": ["scheduler/**"],
-      "groupName": "Scheduler Service"
-    },
-    {
       "matchFileNames": [".github/workflows/*.yml", ".github/workflows/*.yaml"],
       "groupName": "GitHub Actions Workflows"
     }

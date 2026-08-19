@@ -41,7 +41,7 @@ func TestLoadOverridesFromEnvironment(t *testing.T) {
 
 func TestLoadOverridesFromDotEnvFile(t *testing.T) {
 	envFile := filepath.Join(t.TempDir(), ".env")
-	content := []byte("POSTGRES__DSN=postgres://file\nMONGO__DATABASE=notifications-file\n")
+	content := []byte("POSTGRES__DSN=postgres://file\nRABBITMQ__URL=amqp://file\n")
 	if err := os.WriteFile(envFile, content, 0600); err != nil {
 		t.Fatal(err)
 	}
@@ -53,7 +53,7 @@ func TestLoadOverridesFromDotEnvFile(t *testing.T) {
 	if cfg.Postgres.DSN != "postgres://file" {
 		t.Fatalf("Postgres.DSN = %q", cfg.Postgres.DSN)
 	}
-	if cfg.Mongo.Database != "notifications-file" {
-		t.Fatalf("Mongo.Database = %q", cfg.Mongo.Database)
+	if cfg.RabbitMQ.URL != "amqp://file" {
+		t.Fatalf("RabbitMQ.URL = %q", cfg.RabbitMQ.URL)
 	}
 }

@@ -23,8 +23,6 @@ spec:
                   path: appointment/helm
                 - service: customer
                   path: customer/helm
-                - service: scheduler
-                  path: scheduler/helm
                 - service: notification
                   path: notification/helm
           - list:
