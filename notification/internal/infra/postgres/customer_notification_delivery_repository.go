@@ -10,9 +10,11 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	notificationcontracts "github.com/petretiandrea/beaesthetic-backend/core-contracts/notification"
+	contractsmessaging "github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime/messaging"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/infra/postgres/queries"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
+	"go.opentelemetry.io/otel/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -153,14 +155,20 @@ func (repo *CustomerNotificationRepository) publishCustomerNotificationOutcome(c
 	if err != nil {
 		return fmt.Errorf("marshal customer notification outcome event: %w", err)
 	}
-	if err := repo.publisher.Publish(ctx, outbox.Message{
+	publishCtx, span := contractsmessaging.StartProducer(ctx, channelCustomerNotificationsOutcome)
+	defer span.End()
+	metadata := outbox.Metadata{}
+	contractsmessaging.Inject(publishCtx, metadata)
+	if err := repo.publisher.Publish(publishCtx, outbox.Message{
 		ID:          uuid.NewString(),
 		Channel:     outbox.Channel(channelCustomerNotificationsOutcome),
 		AffinityKey: outbox.AffinityKey(identity.CorrelationKey),
 		Payload:     payload,
-		Metadata:    outbox.Metadata{},
+		Metadata:    metadata,
 		OccurredAt:  occurredAt,
 	}); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return fmt.Errorf("publish customer notification outcome event: %w", err)
 	}
 	return nil

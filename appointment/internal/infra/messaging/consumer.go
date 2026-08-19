@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	contractsmessaging "github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime/messaging"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel/codes"
 	"go.uber.org/zap"
 )
 
@@ -55,15 +57,23 @@ func (consumer *Consumer) Run(ctx context.Context) error {
 
 	for delivery := range deliveries {
 		consumer.log.Debug("received rabbitmq message", zap.Uint64("delivery_tag", delivery.DeliveryTag), zap.String("exchange", delivery.Exchange), zap.String("routing_key", delivery.RoutingKey))
-		if err := consumer.handler.Process(ctx, delivery); err != nil {
+		messageCtx, span := contractsmessaging.StartConsumer(ctx, consumer.queue, delivery)
+		if err := consumer.handler.Process(messageCtx, delivery); err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			span.End()
 			consumer.log.Error("failed to process rabbitmq message", zap.Uint64("delivery_tag", delivery.DeliveryTag), zap.Error(err))
 			_ = delivery.Nack(false, false)
 			continue
 		}
 		if err := delivery.Ack(false); err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			span.End()
 			consumer.log.Error("failed to ack rabbitmq message", zap.Uint64("delivery_tag", delivery.DeliveryTag), zap.Error(err))
 			continue
 		}
+		span.End()
 		consumer.log.Debug("acked rabbitmq message", zap.Uint64("delivery_tag", delivery.DeliveryTag))
 	}
 	consumer.log.Info("rabbitmq consumer stopped")

@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	contractsmessaging "github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime/messaging"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel/codes"
 	"go.uber.org/zap"
 )
 
@@ -50,12 +52,20 @@ func (consumer *Consumer) Run(ctx context.Context) error {
 		return fmt.Errorf("consume queue %q: %w", consumer.queue, err)
 	}
 	for delivery := range deliveries {
-		if err := consumer.handler.Process(ctx, delivery); err != nil {
+		messageCtx, span := contractsmessaging.StartConsumer(ctx, consumer.queue, delivery)
+		if err := consumer.handler.Process(messageCtx, delivery); err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+			span.End()
 			consumer.log.Error("failed to process rabbitmq message", zap.Error(err))
 			_ = delivery.Nack(false, false)
 			continue
 		}
-		_ = delivery.Ack(false)
+		if err := delivery.Ack(false); err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, err.Error())
+		}
+		span.End()
 	}
 	return ctx.Err()
 }

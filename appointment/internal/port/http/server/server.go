@@ -1,12 +1,14 @@
 package server
 
 import (
+	nethttp "net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
 	applicationv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/application/v2"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/health"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.uber.org/zap"
 )
 
@@ -15,12 +17,15 @@ type HttpHandlers struct {
 	HealthChecker health.HealthCheckHandler
 }
 
-func New(handlers *HttpHandlers, log *zap.Logger) *gin.Engine {
+func New(handlers *HttpHandlers, log *zap.Logger, serviceName string) *gin.Engine {
 	if log == nil {
 		log = zap.NewNop()
 	}
 	r := gin.New()
 	r.Use(gin.Recovery())
+	r.Use(otelgin.Middleware(serviceName, otelgin.WithFilter(func(request *nethttp.Request) bool {
+		return request.URL.Path != "/health"
+	})))
 	r.Use(ginErrorLogger(log))
 	if handlers.Calendar != nil {
 		registerCalendarProtoRoutes(r, handlers.Calendar)

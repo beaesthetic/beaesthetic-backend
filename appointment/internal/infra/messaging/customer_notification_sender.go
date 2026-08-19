@@ -11,7 +11,9 @@ import (
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
 	domainv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain/v2"
 	notification "github.com/petretiandrea/beaesthetic-backend/core-contracts/notification"
+	contractsmessaging "github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime/messaging"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
+	"go.opentelemetry.io/otel/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 )
@@ -88,14 +90,20 @@ func (sender *CustomerNotificationSender) publishCustomerNotification(ctx contex
 		return "", fmt.Errorf("marshal customer notification request: %w", err)
 	}
 	customerID := request.GetCustomerIds()[0]
-	if err := sender.publisher.Publish(ctx, outbox.Message{
+	publishCtx, span := contractsmessaging.StartProducer(ctx, ChannelCustomerNotifications)
+	defer span.End()
+	metadata := outbox.Metadata{}
+	contractsmessaging.Inject(publishCtx, metadata)
+	if err := sender.publisher.Publish(publishCtx, outbox.Message{
 		ID:          uuid.NewString(),
 		Channel:     outbox.Channel(ChannelCustomerNotifications),
 		AffinityKey: outbox.AffinityKey(customerID),
 		Payload:     payload,
-		Metadata:    outbox.Metadata{},
+		Metadata:    metadata,
 		OccurredAt:  time.Now().UTC(),
 	}); err != nil {
+		span.RecordError(err)
+		span.SetStatus(codes.Error, err.Error())
 		return "", fmt.Errorf("publish customer notification request: %w", err)
 	}
 	return idempotencyKey, nil
