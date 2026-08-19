@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.16.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.15.2...appointment-service-v1.16.0) (2026-08-19)
+
+
+### Features
+
+* **appointment:** complete calendar v1 migration ([#96](https://github.com/beaesthetic/beaesthetic-backend/issues/96)) ([2435a6f](https://github.com/beaesthetic/beaesthetic-backend/commit/2435a6f645decc081c434ec84697649cf6dcd19b))
+
 ## [1.15.2](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.15.1...appointment-service-v1.15.2) (2026-08-16)
 
 
