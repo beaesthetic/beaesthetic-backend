@@ -12,7 +12,7 @@ on:
 
 jobs:
   detect-changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
@@ -34,7 +34,7 @@ jobs:
           
   run-code-quality:
     needs: detect-changes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     strategy:
       matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
     name: Check ${{ matrix.folder }}
