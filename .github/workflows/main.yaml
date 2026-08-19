@@ -19,7 +19,7 @@ env:
 
 jobs:
   changes:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     outputs:
       appointment: ${{ steps.release.outputs.appointment }}
       customer: ${{ steps.release.outputs.customer }}
@@ -55,7 +55,7 @@ jobs:
 
   build:
     needs: changes
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     name: Build ${{ matrix.key }} prod image
     strategy:
       fail-fast: false

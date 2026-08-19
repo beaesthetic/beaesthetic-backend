@@ -2156,6 +2156,310 @@ func (x *CatalogService) GetColor() string {
 	return ""
 }
 
+type CreateServiceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Tags          []string               `protobuf:"bytes,2,rep,name=tags,proto3" json:"tags,omitempty"`
+	Color         *string                `protobuf:"bytes,3,opt,name=color,proto3,oneof" json:"color,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateServiceRequest) Reset() {
+	*x = CreateServiceRequest{}
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateServiceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateServiceRequest) ProtoMessage() {}
+
+func (x *CreateServiceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateServiceRequest.ProtoReflect.Descriptor instead.
+func (*CreateServiceRequest) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *CreateServiceRequest) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *CreateServiceRequest) GetTags() []string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *CreateServiceRequest) GetColor() string {
+	if x != nil && x.Color != nil {
+		return *x.Color
+	}
+	return ""
+}
+
+type CreateServiceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Service       *CatalogService        `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CreateServiceResponse) Reset() {
+	*x = CreateServiceResponse{}
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CreateServiceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CreateServiceResponse) ProtoMessage() {}
+
+func (x *CreateServiceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CreateServiceResponse.ProtoReflect.Descriptor instead.
+func (*CreateServiceResponse) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *CreateServiceResponse) GetService() *CatalogService {
+	if x != nil {
+		return x.Service
+	}
+	return nil
+}
+
+type UpdateServiceRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	Tags          []string               `protobuf:"bytes,2,rep,name=tags,proto3" json:"tags,omitempty"`
+	Color         *string                `protobuf:"bytes,3,opt,name=color,proto3,oneof" json:"color,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateServiceRequest) Reset() {
+	*x = UpdateServiceRequest{}
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[31]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateServiceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateServiceRequest) ProtoMessage() {}
+
+func (x *UpdateServiceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[31]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateServiceRequest.ProtoReflect.Descriptor instead.
+func (*UpdateServiceRequest) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{31}
+}
+
+func (x *UpdateServiceRequest) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *UpdateServiceRequest) GetTags() []string {
+	if x != nil {
+		return x.Tags
+	}
+	return nil
+}
+
+func (x *UpdateServiceRequest) GetColor() string {
+	if x != nil && x.Color != nil {
+		return *x.Color
+	}
+	return ""
+}
+
+type UpdateServiceResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Service       *CatalogService        `protobuf:"bytes,1,opt,name=service,proto3" json:"service,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *UpdateServiceResponse) Reset() {
+	*x = UpdateServiceResponse{}
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[32]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *UpdateServiceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateServiceResponse) ProtoMessage() {}
+
+func (x *UpdateServiceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[32]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateServiceResponse.ProtoReflect.Descriptor instead.
+func (*UpdateServiceResponse) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{32}
+}
+
+func (x *UpdateServiceResponse) GetService() *CatalogService {
+	if x != nil {
+		return x.Service
+	}
+	return nil
+}
+
+type SearchServicesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Query         string                 `protobuf:"bytes,1,opt,name=query,proto3" json:"query,omitempty"`
+	Limit         int32                  `protobuf:"varint,2,opt,name=limit,proto3" json:"limit,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchServicesRequest) Reset() {
+	*x = SearchServicesRequest{}
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[33]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchServicesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchServicesRequest) ProtoMessage() {}
+
+func (x *SearchServicesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[33]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchServicesRequest.ProtoReflect.Descriptor instead.
+func (*SearchServicesRequest) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{33}
+}
+
+func (x *SearchServicesRequest) GetQuery() string {
+	if x != nil {
+		return x.Query
+	}
+	return ""
+}
+
+func (x *SearchServicesRequest) GetLimit() int32 {
+	if x != nil {
+		return x.Limit
+	}
+	return 0
+}
+
+type SearchServicesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Services      []*CatalogService      `protobuf:"bytes,1,rep,name=services,proto3" json:"services,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *SearchServicesResponse) Reset() {
+	*x = SearchServicesResponse{}
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[34]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *SearchServicesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*SearchServicesResponse) ProtoMessage() {}
+
+func (x *SearchServicesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[34]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use SearchServicesResponse.ProtoReflect.Descriptor instead.
+func (*SearchServicesResponse) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{34}
+}
+
+func (x *SearchServicesResponse) GetServices() []*CatalogService {
+	if x != nil {
+		return x.Services
+	}
+	return nil
+}
+
 // ListServicesRequest filters the appointment service catalog when query is set.
 type ListServicesRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -2167,7 +2471,7 @@ type ListServicesRequest struct {
 
 func (x *ListServicesRequest) Reset() {
 	*x = ListServicesRequest{}
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[29]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[35]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2179,7 +2483,7 @@ func (x *ListServicesRequest) String() string {
 func (*ListServicesRequest) ProtoMessage() {}
 
 func (x *ListServicesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[29]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[35]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2192,7 +2496,7 @@ func (x *ListServicesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListServicesRequest.ProtoReflect.Descriptor instead.
 func (*ListServicesRequest) Descriptor() ([]byte, []int) {
-	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{29}
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{35}
 }
 
 func (x *ListServicesRequest) GetQuery() string {
@@ -2218,7 +2522,7 @@ type ListServicesResponse struct {
 
 func (x *ListServicesResponse) Reset() {
 	*x = ListServicesResponse{}
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[30]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[36]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2230,7 +2534,7 @@ func (x *ListServicesResponse) String() string {
 func (*ListServicesResponse) ProtoMessage() {}
 
 func (x *ListServicesResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[30]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[36]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2243,7 +2547,7 @@ func (x *ListServicesResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ListServicesResponse.ProtoReflect.Descriptor instead.
 func (*ListServicesResponse) Descriptor() ([]byte, []int) {
-	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{30}
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{36}
 }
 
 func (x *ListServicesResponse) GetServices() []*CatalogService {
@@ -2263,7 +2567,7 @@ type PageRequest struct {
 
 func (x *PageRequest) Reset() {
 	*x = PageRequest{}
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[31]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[37]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2275,7 +2579,7 @@ func (x *PageRequest) String() string {
 func (*PageRequest) ProtoMessage() {}
 
 func (x *PageRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[31]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[37]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2288,7 +2592,7 @@ func (x *PageRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use PageRequest.ProtoReflect.Descriptor instead.
 func (*PageRequest) Descriptor() ([]byte, []int) {
-	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{31}
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{37}
 }
 
 func (x *PageRequest) GetPage() int32 {
@@ -2314,7 +2618,7 @@ type GetCustomerRankingRequest struct {
 
 func (x *GetCustomerRankingRequest) Reset() {
 	*x = GetCustomerRankingRequest{}
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[32]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[38]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2326,7 +2630,7 @@ func (x *GetCustomerRankingRequest) String() string {
 func (*GetCustomerRankingRequest) ProtoMessage() {}
 
 func (x *GetCustomerRankingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[32]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[38]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2339,7 +2643,7 @@ func (x *GetCustomerRankingRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCustomerRankingRequest.ProtoReflect.Descriptor instead.
 func (*GetCustomerRankingRequest) Descriptor() ([]byte, []int) {
-	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{32}
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{38}
 }
 
 func (x *GetCustomerRankingRequest) GetPage() *PageRequest {
@@ -2361,7 +2665,7 @@ type CustomerRankingItem struct {
 
 func (x *CustomerRankingItem) Reset() {
 	*x = CustomerRankingItem{}
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[33]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[39]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2373,7 +2677,7 @@ func (x *CustomerRankingItem) String() string {
 func (*CustomerRankingItem) ProtoMessage() {}
 
 func (x *CustomerRankingItem) ProtoReflect() protoreflect.Message {
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[33]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[39]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2386,7 +2690,7 @@ func (x *CustomerRankingItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CustomerRankingItem.ProtoReflect.Descriptor instead.
 func (*CustomerRankingItem) Descriptor() ([]byte, []int) {
-	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{33}
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{39}
 }
 
 func (x *CustomerRankingItem) GetCustomerId() string {
@@ -2427,7 +2731,7 @@ type GetCustomerRankingResponse struct {
 
 func (x *GetCustomerRankingResponse) Reset() {
 	*x = GetCustomerRankingResponse{}
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[34]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[40]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2439,7 +2743,7 @@ func (x *GetCustomerRankingResponse) String() string {
 func (*GetCustomerRankingResponse) ProtoMessage() {}
 
 func (x *GetCustomerRankingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[34]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[40]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2452,7 +2756,7 @@ func (x *GetCustomerRankingResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCustomerRankingResponse.ProtoReflect.Descriptor instead.
 func (*GetCustomerRankingResponse) Descriptor() ([]byte, []int) {
-	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{34}
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{40}
 }
 
 func (x *GetCustomerRankingResponse) GetItems() []*CustomerRankingItem {
@@ -2478,7 +2782,7 @@ type GetCustomerCancellationRankingRequest struct {
 
 func (x *GetCustomerCancellationRankingRequest) Reset() {
 	*x = GetCustomerCancellationRankingRequest{}
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[35]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[41]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2490,7 +2794,7 @@ func (x *GetCustomerCancellationRankingRequest) String() string {
 func (*GetCustomerCancellationRankingRequest) ProtoMessage() {}
 
 func (x *GetCustomerCancellationRankingRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[35]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[41]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2503,7 +2807,7 @@ func (x *GetCustomerCancellationRankingRequest) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use GetCustomerCancellationRankingRequest.ProtoReflect.Descriptor instead.
 func (*GetCustomerCancellationRankingRequest) Descriptor() ([]byte, []int) {
-	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{35}
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{41}
 }
 
 func (x *GetCustomerCancellationRankingRequest) GetPage() *PageRequest {
@@ -2525,7 +2829,7 @@ type CustomerCancellationRankingItem struct {
 
 func (x *CustomerCancellationRankingItem) Reset() {
 	*x = CustomerCancellationRankingItem{}
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[36]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[42]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2537,7 +2841,7 @@ func (x *CustomerCancellationRankingItem) String() string {
 func (*CustomerCancellationRankingItem) ProtoMessage() {}
 
 func (x *CustomerCancellationRankingItem) ProtoReflect() protoreflect.Message {
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[36]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[42]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2550,7 +2854,7 @@ func (x *CustomerCancellationRankingItem) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CustomerCancellationRankingItem.ProtoReflect.Descriptor instead.
 func (*CustomerCancellationRankingItem) Descriptor() ([]byte, []int) {
-	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{36}
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{42}
 }
 
 func (x *CustomerCancellationRankingItem) GetCustomerId() string {
@@ -2591,7 +2895,7 @@ type GetCustomerCancellationRankingResponse struct {
 
 func (x *GetCustomerCancellationRankingResponse) Reset() {
 	*x = GetCustomerCancellationRankingResponse{}
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[37]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[43]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2603,7 +2907,7 @@ func (x *GetCustomerCancellationRankingResponse) String() string {
 func (*GetCustomerCancellationRankingResponse) ProtoMessage() {}
 
 func (x *GetCustomerCancellationRankingResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[37]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[43]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2616,7 +2920,7 @@ func (x *GetCustomerCancellationRankingResponse) ProtoReflect() protoreflect.Mes
 
 // Deprecated: Use GetCustomerCancellationRankingResponse.ProtoReflect.Descriptor instead.
 func (*GetCustomerCancellationRankingResponse) Descriptor() ([]byte, []int) {
-	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{37}
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{43}
 }
 
 func (x *GetCustomerCancellationRankingResponse) GetItems() []*CustomerCancellationRankingItem {
@@ -2641,7 +2945,7 @@ type GetInsightOverviewRequest struct {
 
 func (x *GetInsightOverviewRequest) Reset() {
 	*x = GetInsightOverviewRequest{}
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[38]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[44]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2653,7 +2957,7 @@ func (x *GetInsightOverviewRequest) String() string {
 func (*GetInsightOverviewRequest) ProtoMessage() {}
 
 func (x *GetInsightOverviewRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[38]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[44]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2666,7 +2970,7 @@ func (x *GetInsightOverviewRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetInsightOverviewRequest.ProtoReflect.Descriptor instead.
 func (*GetInsightOverviewRequest) Descriptor() ([]byte, []int) {
-	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{38}
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{44}
 }
 
 type CancellationDayOfWeekCount struct {
@@ -2679,7 +2983,7 @@ type CancellationDayOfWeekCount struct {
 
 func (x *CancellationDayOfWeekCount) Reset() {
 	*x = CancellationDayOfWeekCount{}
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[39]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[45]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2691,7 +2995,7 @@ func (x *CancellationDayOfWeekCount) String() string {
 func (*CancellationDayOfWeekCount) ProtoMessage() {}
 
 func (x *CancellationDayOfWeekCount) ProtoReflect() protoreflect.Message {
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[39]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[45]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2704,7 +3008,7 @@ func (x *CancellationDayOfWeekCount) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CancellationDayOfWeekCount.ProtoReflect.Descriptor instead.
 func (*CancellationDayOfWeekCount) Descriptor() ([]byte, []int) {
-	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{39}
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{45}
 }
 
 func (x *CancellationDayOfWeekCount) GetDayOfWeek() string {
@@ -2730,7 +3034,7 @@ type GetInsightOverviewResponse struct {
 
 func (x *GetInsightOverviewResponse) Reset() {
 	*x = GetInsightOverviewResponse{}
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[40]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[46]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -2742,7 +3046,7 @@ func (x *GetInsightOverviewResponse) String() string {
 func (*GetInsightOverviewResponse) ProtoMessage() {}
 
 func (x *GetInsightOverviewResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[40]
+	mi := &file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[46]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2755,7 +3059,7 @@ func (x *GetInsightOverviewResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetInsightOverviewResponse.ProtoReflect.Descriptor instead.
 func (*GetInsightOverviewResponse) Descriptor() ([]byte, []int) {
-	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{40}
+	return file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP(), []int{46}
 }
 
 func (x *GetInsightOverviewResponse) GetCancellationDayOfWeek() []*CancellationDayOfWeekCount {
@@ -2923,7 +3227,26 @@ const file_beaesthetic_appointment_v1_appointment_api_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12\x12\n" +
 	"\x04tags\x18\x04 \x03(\tR\x04tags\x12\x14\n" +
-	"\x05color\x18\x05 \x01(\tR\x05colorJ\x04\b\x03\x10\x04R\x05price\"A\n" +
+	"\x05color\x18\x05 \x01(\tR\x05colorJ\x04\b\x03\x10\x04R\x05price\"c\n" +
+	"\x14CreateServiceRequest\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x12\n" +
+	"\x04tags\x18\x02 \x03(\tR\x04tags\x12\x19\n" +
+	"\x05color\x18\x03 \x01(\tH\x00R\x05color\x88\x01\x01B\b\n" +
+	"\x06_color\"]\n" +
+	"\x15CreateServiceResponse\x12D\n" +
+	"\aservice\x18\x01 \x01(\v2*.beaesthetic.appointment.v1.CatalogServiceR\aservice\"_\n" +
+	"\x14UpdateServiceRequest\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
+	"\x04tags\x18\x02 \x03(\tR\x04tags\x12\x19\n" +
+	"\x05color\x18\x03 \x01(\tH\x00R\x05color\x88\x01\x01B\b\n" +
+	"\x06_color\"]\n" +
+	"\x15UpdateServiceResponse\x12D\n" +
+	"\aservice\x18\x01 \x01(\v2*.beaesthetic.appointment.v1.CatalogServiceR\aservice\"C\n" +
+	"\x15SearchServicesRequest\x12\x14\n" +
+	"\x05query\x18\x01 \x01(\tR\x05query\x12\x14\n" +
+	"\x05limit\x18\x02 \x01(\x05R\x05limit\"`\n" +
+	"\x16SearchServicesResponse\x12F\n" +
+	"\bservices\x18\x01 \x03(\v2*.beaesthetic.appointment.v1.CatalogServiceR\bservices\"A\n" +
 	"\x13ListServicesRequest\x12\x14\n" +
 	"\x05query\x18\x01 \x01(\tR\x05query\x12\x14\n" +
 	"\x05limit\x18\x02 \x01(\x05R\x05limit\"^\n" +
@@ -2988,8 +3311,11 @@ const file_beaesthetic_appointment_v1_appointment_api_proto_rawDesc = "" +
 	"\x12ListCalendarEvents\x125.beaesthetic.appointment.v1.ListCalendarEventsRequest\x1a6.beaesthetic.appointment.v1.ListCalendarEventsResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/calendar-events\x12\xab\x01\n" +
 	"\x13UpdateCalendarEvent\x126.beaesthetic.appointment.v1.UpdateCalendarEventRequest\x1a7.beaesthetic.appointment.v1.UpdateCalendarEventResponse\"#\x82\xd3\xe4\x93\x02\x1d:\x01*2\x18/v1/calendar-events/{id}\x12\xa8\x01\n" +
 	"\x13CancelCalendarEvent\x126.beaesthetic.appointment.v1.CancelCalendarEventRequest\x1a7.beaesthetic.appointment.v1.CancelCalendarEventResponse\" \x82\xd3\xe4\x93\x02\x1a*\x18/v1/calendar-events/{id}\x12\xd0\x01\n" +
-	"\x15RequestReminderResend\x128.beaesthetic.appointment.v1.RequestReminderResendRequest\x1a9.beaesthetic.appointment.v1.RequestReminderResendResponse\"B\x82\xd3\xe4\x93\x02<:\x01*\"7/v1/calendar-events/{calendar_event_id}/reminder/resend2\xa1\x01\n" +
-	"\x15ServiceCatalogService\x12\x87\x01\n" +
+	"\x15RequestReminderResend\x128.beaesthetic.appointment.v1.RequestReminderResendRequest\x1a9.beaesthetic.appointment.v1.RequestReminderResendResponse\"B\x82\xd3\xe4\x93\x02<:\x01*\"7/v1/calendar-events/{calendar_event_id}/reminder/resend2\xdd\x04\n" +
+	"\x15ServiceCatalogService\x12\x8d\x01\n" +
+	"\rCreateService\x120.beaesthetic.appointment.v1.CreateServiceRequest\x1a1.beaesthetic.appointment.v1.CreateServiceResponse\"\x17\x82\xd3\xe4\x93\x02\x11:\x01*\"\f/v1/services\x12\x92\x01\n" +
+	"\rUpdateService\x120.beaesthetic.appointment.v1.UpdateServiceRequest\x1a1.beaesthetic.appointment.v1.UpdateServiceResponse\"\x1c\x82\xd3\xe4\x93\x02\x16:\x01*2\x11/v1/services/{id}\x12\x94\x01\n" +
+	"\x0eSearchServices\x121.beaesthetic.appointment.v1.SearchServicesRequest\x1a2.beaesthetic.appointment.v1.SearchServicesResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/v1/services:search\x12\x87\x01\n" +
 	"\fListServices\x12/.beaesthetic.appointment.v1.ListServicesRequest\x1a0.beaesthetic.appointment.v1.ListServicesResponse\"\x14\x82\xd3\xe4\x93\x02\x0e\x12\f/v1/services2\xd1\x03\n" +
 	"\x19AppointmentInsightService\x12\x83\x01\n" +
 	"\x12GetCustomerRanking\x125.beaesthetic.appointment.v1.GetCustomerRankingRequest\x1a6.beaesthetic.appointment.v1.GetCustomerRankingResponse\x12\xa7\x01\n" +
@@ -3009,7 +3335,7 @@ func file_beaesthetic_appointment_v1_appointment_api_proto_rawDescGZIP() []byte 
 }
 
 var file_beaesthetic_appointment_v1_appointment_api_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes = make([]protoimpl.MessageInfo, 41)
+var file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes = make([]protoimpl.MessageInfo, 47)
 var file_beaesthetic_appointment_v1_appointment_api_proto_goTypes = []any{
 	(CalendarEventType)(0),                         // 0: beaesthetic.appointment.v1.CalendarEventType
 	(CalendarEventVisibility)(0),                   // 1: beaesthetic.appointment.v1.CalendarEventVisibility
@@ -3044,30 +3370,36 @@ var file_beaesthetic_appointment_v1_appointment_api_proto_goTypes = []any{
 	(*RequestReminderResendRequest)(nil),           // 30: beaesthetic.appointment.v1.RequestReminderResendRequest
 	(*RequestReminderResendResponse)(nil),          // 31: beaesthetic.appointment.v1.RequestReminderResendResponse
 	(*CatalogService)(nil),                         // 32: beaesthetic.appointment.v1.CatalogService
-	(*ListServicesRequest)(nil),                    // 33: beaesthetic.appointment.v1.ListServicesRequest
-	(*ListServicesResponse)(nil),                   // 34: beaesthetic.appointment.v1.ListServicesResponse
-	(*PageRequest)(nil),                            // 35: beaesthetic.appointment.v1.PageRequest
-	(*GetCustomerRankingRequest)(nil),              // 36: beaesthetic.appointment.v1.GetCustomerRankingRequest
-	(*CustomerRankingItem)(nil),                    // 37: beaesthetic.appointment.v1.CustomerRankingItem
-	(*GetCustomerRankingResponse)(nil),             // 38: beaesthetic.appointment.v1.GetCustomerRankingResponse
-	(*GetCustomerCancellationRankingRequest)(nil),  // 39: beaesthetic.appointment.v1.GetCustomerCancellationRankingRequest
-	(*CustomerCancellationRankingItem)(nil),        // 40: beaesthetic.appointment.v1.CustomerCancellationRankingItem
-	(*GetCustomerCancellationRankingResponse)(nil), // 41: beaesthetic.appointment.v1.GetCustomerCancellationRankingResponse
-	(*GetInsightOverviewRequest)(nil),              // 42: beaesthetic.appointment.v1.GetInsightOverviewRequest
-	(*CancellationDayOfWeekCount)(nil),             // 43: beaesthetic.appointment.v1.CancellationDayOfWeekCount
-	(*GetInsightOverviewResponse)(nil),             // 44: beaesthetic.appointment.v1.GetInsightOverviewResponse
-	(*timestamppb.Timestamp)(nil),                  // 45: google.protobuf.Timestamp
-	(*fieldmaskpb.FieldMask)(nil),                  // 46: google.protobuf.FieldMask
+	(*CreateServiceRequest)(nil),                   // 33: beaesthetic.appointment.v1.CreateServiceRequest
+	(*CreateServiceResponse)(nil),                  // 34: beaesthetic.appointment.v1.CreateServiceResponse
+	(*UpdateServiceRequest)(nil),                   // 35: beaesthetic.appointment.v1.UpdateServiceRequest
+	(*UpdateServiceResponse)(nil),                  // 36: beaesthetic.appointment.v1.UpdateServiceResponse
+	(*SearchServicesRequest)(nil),                  // 37: beaesthetic.appointment.v1.SearchServicesRequest
+	(*SearchServicesResponse)(nil),                 // 38: beaesthetic.appointment.v1.SearchServicesResponse
+	(*ListServicesRequest)(nil),                    // 39: beaesthetic.appointment.v1.ListServicesRequest
+	(*ListServicesResponse)(nil),                   // 40: beaesthetic.appointment.v1.ListServicesResponse
+	(*PageRequest)(nil),                            // 41: beaesthetic.appointment.v1.PageRequest
+	(*GetCustomerRankingRequest)(nil),              // 42: beaesthetic.appointment.v1.GetCustomerRankingRequest
+	(*CustomerRankingItem)(nil),                    // 43: beaesthetic.appointment.v1.CustomerRankingItem
+	(*GetCustomerRankingResponse)(nil),             // 44: beaesthetic.appointment.v1.GetCustomerRankingResponse
+	(*GetCustomerCancellationRankingRequest)(nil),  // 45: beaesthetic.appointment.v1.GetCustomerCancellationRankingRequest
+	(*CustomerCancellationRankingItem)(nil),        // 46: beaesthetic.appointment.v1.CustomerCancellationRankingItem
+	(*GetCustomerCancellationRankingResponse)(nil), // 47: beaesthetic.appointment.v1.GetCustomerCancellationRankingResponse
+	(*GetInsightOverviewRequest)(nil),              // 48: beaesthetic.appointment.v1.GetInsightOverviewRequest
+	(*CancellationDayOfWeekCount)(nil),             // 49: beaesthetic.appointment.v1.CancellationDayOfWeekCount
+	(*GetInsightOverviewResponse)(nil),             // 50: beaesthetic.appointment.v1.GetInsightOverviewResponse
+	(*timestamppb.Timestamp)(nil),                  // 51: google.protobuf.Timestamp
+	(*fieldmaskpb.FieldMask)(nil),                  // 52: google.protobuf.FieldMask
 }
 var file_beaesthetic_appointment_v1_appointment_api_proto_depIdxs = []int32{
-	45, // 0: beaesthetic.appointment.v1.TimeRange.start_at:type_name -> google.protobuf.Timestamp
-	45, // 1: beaesthetic.appointment.v1.TimeRange.end_at:type_name -> google.protobuf.Timestamp
+	51, // 0: beaesthetic.appointment.v1.TimeRange.start_at:type_name -> google.protobuf.Timestamp
+	51, // 1: beaesthetic.appointment.v1.TimeRange.end_at:type_name -> google.protobuf.Timestamp
 	3,  // 2: beaesthetic.appointment.v1.CalendarEventCancellation.reason:type_name -> beaesthetic.appointment.v1.CancelReason
-	45, // 3: beaesthetic.appointment.v1.CalendarEventCancellation.canceled_at:type_name -> google.protobuf.Timestamp
+	51, // 3: beaesthetic.appointment.v1.CalendarEventCancellation.canceled_at:type_name -> google.protobuf.Timestamp
 	0,  // 4: beaesthetic.appointment.v1.CalendarEvent.event_type:type_name -> beaesthetic.appointment.v1.CalendarEventType
 	4,  // 5: beaesthetic.appointment.v1.CalendarEvent.time_range:type_name -> beaesthetic.appointment.v1.TimeRange
-	45, // 6: beaesthetic.appointment.v1.CalendarEvent.created_at:type_name -> google.protobuf.Timestamp
-	45, // 7: beaesthetic.appointment.v1.CalendarEvent.updated_at:type_name -> google.protobuf.Timestamp
+	51, // 6: beaesthetic.appointment.v1.CalendarEvent.created_at:type_name -> google.protobuf.Timestamp
+	51, // 7: beaesthetic.appointment.v1.CalendarEvent.updated_at:type_name -> google.protobuf.Timestamp
 	5,  // 8: beaesthetic.appointment.v1.CalendarEvent.cancellation:type_name -> beaesthetic.appointment.v1.CalendarEventCancellation
 	1,  // 9: beaesthetic.appointment.v1.CalendarEvent.visibility:type_name -> beaesthetic.appointment.v1.CalendarEventVisibility
 	7,  // 10: beaesthetic.appointment.v1.CalendarEvent.appointment:type_name -> beaesthetic.appointment.v1.AppointmentDetail
@@ -3077,10 +3409,10 @@ var file_beaesthetic_appointment_v1_appointment_api_proto_depIdxs = []int32{
 	9,  // 14: beaesthetic.appointment.v1.AppointmentDetail.services:type_name -> beaesthetic.appointment.v1.AppointmentServiceItem
 	10, // 15: beaesthetic.appointment.v1.AppointmentDetail.reminder:type_name -> beaesthetic.appointment.v1.AppointmentReminder
 	2,  // 16: beaesthetic.appointment.v1.AppointmentReminder.status:type_name -> beaesthetic.appointment.v1.AppointmentReminderStatus
-	45, // 17: beaesthetic.appointment.v1.AppointmentReminder.scheduled_at:type_name -> google.protobuf.Timestamp
-	45, // 18: beaesthetic.appointment.v1.AppointmentReminder.sent_requested_at:type_name -> google.protobuf.Timestamp
-	45, // 19: beaesthetic.appointment.v1.AppointmentReminder.sent_at:type_name -> google.protobuf.Timestamp
-	45, // 20: beaesthetic.appointment.v1.AppointmentReminder.failed_at:type_name -> google.protobuf.Timestamp
+	51, // 17: beaesthetic.appointment.v1.AppointmentReminder.scheduled_at:type_name -> google.protobuf.Timestamp
+	51, // 18: beaesthetic.appointment.v1.AppointmentReminder.sent_requested_at:type_name -> google.protobuf.Timestamp
+	51, // 19: beaesthetic.appointment.v1.AppointmentReminder.sent_at:type_name -> google.protobuf.Timestamp
+	51, // 20: beaesthetic.appointment.v1.AppointmentReminder.failed_at:type_name -> google.protobuf.Timestamp
 	4,  // 21: beaesthetic.appointment.v1.CreateCalendarEventRequest.time_range:type_name -> beaesthetic.appointment.v1.TimeRange
 	1,  // 22: beaesthetic.appointment.v1.CreateCalendarEventRequest.visibility:type_name -> beaesthetic.appointment.v1.CalendarEventVisibility
 	14, // 23: beaesthetic.appointment.v1.CreateCalendarEventRequest.appointment:type_name -> beaesthetic.appointment.v1.CreateAppointmentDetail
@@ -3089,12 +3421,12 @@ var file_beaesthetic_appointment_v1_appointment_api_proto_depIdxs = []int32{
 	15, // 26: beaesthetic.appointment.v1.CreateAppointmentDetail.services:type_name -> beaesthetic.appointment.v1.AppointmentServiceSelection
 	6,  // 27: beaesthetic.appointment.v1.GetCalendarEventResponse.event:type_name -> beaesthetic.appointment.v1.CalendarEvent
 	6,  // 28: beaesthetic.appointment.v1.UpdateCalendarEventResponse.event:type_name -> beaesthetic.appointment.v1.CalendarEvent
-	45, // 29: beaesthetic.appointment.v1.ListCalendarEventsRequest.start_at:type_name -> google.protobuf.Timestamp
-	45, // 30: beaesthetic.appointment.v1.ListCalendarEventsRequest.end_at:type_name -> google.protobuf.Timestamp
+	51, // 29: beaesthetic.appointment.v1.ListCalendarEventsRequest.start_at:type_name -> google.protobuf.Timestamp
+	51, // 30: beaesthetic.appointment.v1.ListCalendarEventsRequest.end_at:type_name -> google.protobuf.Timestamp
 	0,  // 31: beaesthetic.appointment.v1.ListCalendarEventsRequest.event_types:type_name -> beaesthetic.appointment.v1.CalendarEventType
 	6,  // 32: beaesthetic.appointment.v1.ListCalendarEventsResponse.events:type_name -> beaesthetic.appointment.v1.CalendarEvent
 	4,  // 33: beaesthetic.appointment.v1.UpdateCalendarEventRequest.time_range:type_name -> beaesthetic.appointment.v1.TimeRange
-	46, // 34: beaesthetic.appointment.v1.UpdateCalendarEventRequest.update_mask:type_name -> google.protobuf.FieldMask
+	52, // 34: beaesthetic.appointment.v1.UpdateCalendarEventRequest.update_mask:type_name -> google.protobuf.FieldMask
 	1,  // 35: beaesthetic.appointment.v1.UpdateCalendarEventRequest.visibility:type_name -> beaesthetic.appointment.v1.CalendarEventVisibility
 	25, // 36: beaesthetic.appointment.v1.UpdateCalendarEventRequest.appointment:type_name -> beaesthetic.appointment.v1.UpdateAppointmentDetail
 	26, // 37: beaesthetic.appointment.v1.UpdateCalendarEventRequest.manual_event:type_name -> beaesthetic.appointment.v1.UpdateManualEventDetail
@@ -3102,37 +3434,46 @@ var file_beaesthetic_appointment_v1_appointment_api_proto_depIdxs = []int32{
 	15, // 39: beaesthetic.appointment.v1.UpdateAppointmentDetail.services:type_name -> beaesthetic.appointment.v1.AppointmentServiceSelection
 	3,  // 40: beaesthetic.appointment.v1.CancelCalendarEventRequest.reason:type_name -> beaesthetic.appointment.v1.CancelReason
 	6,  // 41: beaesthetic.appointment.v1.RequestReminderResendResponse.event:type_name -> beaesthetic.appointment.v1.CalendarEvent
-	32, // 42: beaesthetic.appointment.v1.ListServicesResponse.services:type_name -> beaesthetic.appointment.v1.CatalogService
-	35, // 43: beaesthetic.appointment.v1.GetCustomerRankingRequest.page:type_name -> beaesthetic.appointment.v1.PageRequest
-	37, // 44: beaesthetic.appointment.v1.GetCustomerRankingResponse.items:type_name -> beaesthetic.appointment.v1.CustomerRankingItem
-	35, // 45: beaesthetic.appointment.v1.GetCustomerCancellationRankingRequest.page:type_name -> beaesthetic.appointment.v1.PageRequest
-	40, // 46: beaesthetic.appointment.v1.GetCustomerCancellationRankingResponse.items:type_name -> beaesthetic.appointment.v1.CustomerCancellationRankingItem
-	43, // 47: beaesthetic.appointment.v1.GetInsightOverviewResponse.cancellation_day_of_week:type_name -> beaesthetic.appointment.v1.CancellationDayOfWeekCount
-	13, // 48: beaesthetic.appointment.v1.CalendarService.CreateCalendarEvent:input_type -> beaesthetic.appointment.v1.CreateCalendarEventRequest
-	19, // 49: beaesthetic.appointment.v1.CalendarService.GetCalendarEvent:input_type -> beaesthetic.appointment.v1.GetCalendarEventRequest
-	22, // 50: beaesthetic.appointment.v1.CalendarService.ListCalendarEvents:input_type -> beaesthetic.appointment.v1.ListCalendarEventsRequest
-	24, // 51: beaesthetic.appointment.v1.CalendarService.UpdateCalendarEvent:input_type -> beaesthetic.appointment.v1.UpdateCalendarEventRequest
-	28, // 52: beaesthetic.appointment.v1.CalendarService.CancelCalendarEvent:input_type -> beaesthetic.appointment.v1.CancelCalendarEventRequest
-	30, // 53: beaesthetic.appointment.v1.CalendarService.RequestReminderResend:input_type -> beaesthetic.appointment.v1.RequestReminderResendRequest
-	33, // 54: beaesthetic.appointment.v1.ServiceCatalogService.ListServices:input_type -> beaesthetic.appointment.v1.ListServicesRequest
-	36, // 55: beaesthetic.appointment.v1.AppointmentInsightService.GetCustomerRanking:input_type -> beaesthetic.appointment.v1.GetCustomerRankingRequest
-	39, // 56: beaesthetic.appointment.v1.AppointmentInsightService.GetCustomerCancellationRanking:input_type -> beaesthetic.appointment.v1.GetCustomerCancellationRankingRequest
-	42, // 57: beaesthetic.appointment.v1.AppointmentInsightService.GetInsightOverview:input_type -> beaesthetic.appointment.v1.GetInsightOverviewRequest
-	18, // 58: beaesthetic.appointment.v1.CalendarService.CreateCalendarEvent:output_type -> beaesthetic.appointment.v1.CreateCalendarEventResponse
-	20, // 59: beaesthetic.appointment.v1.CalendarService.GetCalendarEvent:output_type -> beaesthetic.appointment.v1.GetCalendarEventResponse
-	23, // 60: beaesthetic.appointment.v1.CalendarService.ListCalendarEvents:output_type -> beaesthetic.appointment.v1.ListCalendarEventsResponse
-	21, // 61: beaesthetic.appointment.v1.CalendarService.UpdateCalendarEvent:output_type -> beaesthetic.appointment.v1.UpdateCalendarEventResponse
-	29, // 62: beaesthetic.appointment.v1.CalendarService.CancelCalendarEvent:output_type -> beaesthetic.appointment.v1.CancelCalendarEventResponse
-	31, // 63: beaesthetic.appointment.v1.CalendarService.RequestReminderResend:output_type -> beaesthetic.appointment.v1.RequestReminderResendResponse
-	34, // 64: beaesthetic.appointment.v1.ServiceCatalogService.ListServices:output_type -> beaesthetic.appointment.v1.ListServicesResponse
-	38, // 65: beaesthetic.appointment.v1.AppointmentInsightService.GetCustomerRanking:output_type -> beaesthetic.appointment.v1.GetCustomerRankingResponse
-	41, // 66: beaesthetic.appointment.v1.AppointmentInsightService.GetCustomerCancellationRanking:output_type -> beaesthetic.appointment.v1.GetCustomerCancellationRankingResponse
-	44, // 67: beaesthetic.appointment.v1.AppointmentInsightService.GetInsightOverview:output_type -> beaesthetic.appointment.v1.GetInsightOverviewResponse
-	58, // [58:68] is the sub-list for method output_type
-	48, // [48:58] is the sub-list for method input_type
-	48, // [48:48] is the sub-list for extension type_name
-	48, // [48:48] is the sub-list for extension extendee
-	0,  // [0:48] is the sub-list for field type_name
+	32, // 42: beaesthetic.appointment.v1.CreateServiceResponse.service:type_name -> beaesthetic.appointment.v1.CatalogService
+	32, // 43: beaesthetic.appointment.v1.UpdateServiceResponse.service:type_name -> beaesthetic.appointment.v1.CatalogService
+	32, // 44: beaesthetic.appointment.v1.SearchServicesResponse.services:type_name -> beaesthetic.appointment.v1.CatalogService
+	32, // 45: beaesthetic.appointment.v1.ListServicesResponse.services:type_name -> beaesthetic.appointment.v1.CatalogService
+	41, // 46: beaesthetic.appointment.v1.GetCustomerRankingRequest.page:type_name -> beaesthetic.appointment.v1.PageRequest
+	43, // 47: beaesthetic.appointment.v1.GetCustomerRankingResponse.items:type_name -> beaesthetic.appointment.v1.CustomerRankingItem
+	41, // 48: beaesthetic.appointment.v1.GetCustomerCancellationRankingRequest.page:type_name -> beaesthetic.appointment.v1.PageRequest
+	46, // 49: beaesthetic.appointment.v1.GetCustomerCancellationRankingResponse.items:type_name -> beaesthetic.appointment.v1.CustomerCancellationRankingItem
+	49, // 50: beaesthetic.appointment.v1.GetInsightOverviewResponse.cancellation_day_of_week:type_name -> beaesthetic.appointment.v1.CancellationDayOfWeekCount
+	13, // 51: beaesthetic.appointment.v1.CalendarService.CreateCalendarEvent:input_type -> beaesthetic.appointment.v1.CreateCalendarEventRequest
+	19, // 52: beaesthetic.appointment.v1.CalendarService.GetCalendarEvent:input_type -> beaesthetic.appointment.v1.GetCalendarEventRequest
+	22, // 53: beaesthetic.appointment.v1.CalendarService.ListCalendarEvents:input_type -> beaesthetic.appointment.v1.ListCalendarEventsRequest
+	24, // 54: beaesthetic.appointment.v1.CalendarService.UpdateCalendarEvent:input_type -> beaesthetic.appointment.v1.UpdateCalendarEventRequest
+	28, // 55: beaesthetic.appointment.v1.CalendarService.CancelCalendarEvent:input_type -> beaesthetic.appointment.v1.CancelCalendarEventRequest
+	30, // 56: beaesthetic.appointment.v1.CalendarService.RequestReminderResend:input_type -> beaesthetic.appointment.v1.RequestReminderResendRequest
+	33, // 57: beaesthetic.appointment.v1.ServiceCatalogService.CreateService:input_type -> beaesthetic.appointment.v1.CreateServiceRequest
+	35, // 58: beaesthetic.appointment.v1.ServiceCatalogService.UpdateService:input_type -> beaesthetic.appointment.v1.UpdateServiceRequest
+	37, // 59: beaesthetic.appointment.v1.ServiceCatalogService.SearchServices:input_type -> beaesthetic.appointment.v1.SearchServicesRequest
+	39, // 60: beaesthetic.appointment.v1.ServiceCatalogService.ListServices:input_type -> beaesthetic.appointment.v1.ListServicesRequest
+	42, // 61: beaesthetic.appointment.v1.AppointmentInsightService.GetCustomerRanking:input_type -> beaesthetic.appointment.v1.GetCustomerRankingRequest
+	45, // 62: beaesthetic.appointment.v1.AppointmentInsightService.GetCustomerCancellationRanking:input_type -> beaesthetic.appointment.v1.GetCustomerCancellationRankingRequest
+	48, // 63: beaesthetic.appointment.v1.AppointmentInsightService.GetInsightOverview:input_type -> beaesthetic.appointment.v1.GetInsightOverviewRequest
+	18, // 64: beaesthetic.appointment.v1.CalendarService.CreateCalendarEvent:output_type -> beaesthetic.appointment.v1.CreateCalendarEventResponse
+	20, // 65: beaesthetic.appointment.v1.CalendarService.GetCalendarEvent:output_type -> beaesthetic.appointment.v1.GetCalendarEventResponse
+	23, // 66: beaesthetic.appointment.v1.CalendarService.ListCalendarEvents:output_type -> beaesthetic.appointment.v1.ListCalendarEventsResponse
+	21, // 67: beaesthetic.appointment.v1.CalendarService.UpdateCalendarEvent:output_type -> beaesthetic.appointment.v1.UpdateCalendarEventResponse
+	29, // 68: beaesthetic.appointment.v1.CalendarService.CancelCalendarEvent:output_type -> beaesthetic.appointment.v1.CancelCalendarEventResponse
+	31, // 69: beaesthetic.appointment.v1.CalendarService.RequestReminderResend:output_type -> beaesthetic.appointment.v1.RequestReminderResendResponse
+	34, // 70: beaesthetic.appointment.v1.ServiceCatalogService.CreateService:output_type -> beaesthetic.appointment.v1.CreateServiceResponse
+	36, // 71: beaesthetic.appointment.v1.ServiceCatalogService.UpdateService:output_type -> beaesthetic.appointment.v1.UpdateServiceResponse
+	38, // 72: beaesthetic.appointment.v1.ServiceCatalogService.SearchServices:output_type -> beaesthetic.appointment.v1.SearchServicesResponse
+	40, // 73: beaesthetic.appointment.v1.ServiceCatalogService.ListServices:output_type -> beaesthetic.appointment.v1.ListServicesResponse
+	44, // 74: beaesthetic.appointment.v1.AppointmentInsightService.GetCustomerRanking:output_type -> beaesthetic.appointment.v1.GetCustomerRankingResponse
+	47, // 75: beaesthetic.appointment.v1.AppointmentInsightService.GetCustomerCancellationRanking:output_type -> beaesthetic.appointment.v1.GetCustomerCancellationRankingResponse
+	50, // 76: beaesthetic.appointment.v1.AppointmentInsightService.GetInsightOverview:output_type -> beaesthetic.appointment.v1.GetInsightOverviewResponse
+	64, // [64:77] is the sub-list for method output_type
+	51, // [51:64] is the sub-list for method input_type
+	51, // [51:51] is the sub-list for extension type_name
+	51, // [51:51] is the sub-list for extension extendee
+	0,  // [0:51] is the sub-list for field type_name
 }
 
 func init() { file_beaesthetic_appointment_v1_appointment_api_proto_init() }
@@ -3161,13 +3502,15 @@ func file_beaesthetic_appointment_v1_appointment_api_proto_init() {
 		(*UpdateCalendarEventRequest_TimeBlock)(nil),
 	}
 	file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[22].OneofWrappers = []any{}
+	file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[29].OneofWrappers = []any{}
+	file_beaesthetic_appointment_v1_appointment_api_proto_msgTypes[31].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_beaesthetic_appointment_v1_appointment_api_proto_rawDesc), len(file_beaesthetic_appointment_v1_appointment_api_proto_rawDesc)),
 			NumEnums:      4,
-			NumMessages:   41,
+			NumMessages:   47,
 			NumExtensions: 0,
 			NumServices:   3,
 		},

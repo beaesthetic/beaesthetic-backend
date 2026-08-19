@@ -37,7 +37,49 @@ func registerCalendarProtoRoutes(r gin.IRouter, handler *Server) {
 	r.PATCH("/v1/calendar-events/:id", handler.updateCalendarEventProto)
 	r.DELETE("/v1/calendar-events/:id", handler.cancelCalendarEventProto)
 	r.POST("/v1/calendar-events/:calendar_event_id/reminder/resend", handler.requestReminderResendProto)
+	r.POST("/v1/services", handler.createServiceProto)
+	r.PATCH("/v1/services/:id", handler.updateServiceProto)
+	r.GET("/v1/services:search", handler.searchServicesProto)
 	r.GET("/v1/services", handler.listServicesProto)
+}
+
+func (s *Server) createServiceProto(ctx *gin.Context) {
+	var request appointmentcontracts.CreateServiceRequest
+	if !s.readProtoJSON(ctx, &request) {
+		return
+	}
+	service, err := s.services.CreateService(ctx.Request.Context(), request.GetName(), request.Tags, request.Color)
+	if err != nil {
+		s.writeProtoError(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+	s.writeProtoJSON(ctx, http.StatusCreated, &appointmentcontracts.CreateServiceResponse{Service: catalogServiceProto(service)})
+}
+
+func (s *Server) updateServiceProto(ctx *gin.Context) {
+	var request appointmentcontracts.UpdateServiceRequest
+	if !s.readProtoJSON(ctx, &request) {
+		return
+	}
+	service, err := s.services.UpdateService(ctx.Request.Context(), ctx.Param("id"), request.Tags, request.Color)
+	if err != nil {
+		s.writeCalendarError(ctx, err)
+		return
+	}
+	if service == nil {
+		s.writeProtoError(ctx, http.StatusNotFound, "service not found")
+		return
+	}
+	s.writeProtoJSON(ctx, http.StatusOK, &appointmentcontracts.UpdateServiceResponse{Service: catalogServiceProto(*service)})
+}
+
+func (s *Server) searchServicesProto(ctx *gin.Context) {
+	request, err := searchServicesRequestFromQuery(ctx)
+	if err != nil {
+		s.writeProtoError(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+	s.writeServiceSearchResponse(ctx, request.GetQuery(), int(request.GetLimit()), true)
 }
 
 func (s *Server) listServicesProto(ctx *gin.Context) {
@@ -46,7 +88,11 @@ func (s *Server) listServicesProto(ctx *gin.Context) {
 		s.writeProtoError(ctx, http.StatusBadRequest, err.Error())
 		return
 	}
-	services, err := s.services.SearchServices(ctx.Request.Context(), request.GetQuery(), int(request.GetLimit()))
+	s.writeServiceSearchResponse(ctx, request.GetQuery(), int(request.GetLimit()), false)
+}
+
+func (s *Server) writeServiceSearchResponse(ctx *gin.Context, query string, limit int, search bool) {
+	services, err := s.services.SearchServices(ctx.Request.Context(), query, limit)
 	if err != nil {
 		s.writeCalendarError(ctx, err)
 		return
@@ -54,6 +100,10 @@ func (s *Server) listServicesProto(ctx *gin.Context) {
 	response := make([]*appointmentcontracts.CatalogService, 0, len(services))
 	for _, service := range services {
 		response = append(response, catalogServiceProto(service))
+	}
+	if search {
+		s.writeProtoJSON(ctx, http.StatusOK, &appointmentcontracts.SearchServicesResponse{Services: response})
+		return
 	}
 	s.writeProtoJSON(ctx, http.StatusOK, &appointmentcontracts.ListServicesResponse{Services: response})
 }
@@ -70,6 +120,14 @@ func listServicesRequestFromQuery(ctx *gin.Context) (*appointmentcontracts.ListS
 	}
 	request.Limit = int32(value)
 	return request, nil
+}
+
+func searchServicesRequestFromQuery(ctx *gin.Context) (*appointmentcontracts.SearchServicesRequest, error) {
+	request, err := listServicesRequestFromQuery(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return &appointmentcontracts.SearchServicesRequest{Query: request.GetQuery(), Limit: request.GetLimit()}, nil
 }
 
 func (s *Server) createCalendarEventProto(ctx *gin.Context) {

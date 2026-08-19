@@ -2,7 +2,10 @@ package application
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
+	"github.com/google/uuid"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
 )
 
@@ -19,6 +22,32 @@ type ServiceService struct {
 
 func NewServiceService(repo ServiceRepository) *ServiceService {
 	return &ServiceService{repo: repo}
+}
+
+func (s *ServiceService) CreateService(ctx context.Context, name string, tags []string, color *string) (domain.AppointmentService, error) {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return domain.AppointmentService{}, fmt.Errorf("service name is required")
+	}
+	return s.repo.SaveService(ctx, domain.AppointmentService{ID: uuid.NewString(), Name: name, Tags: tags, Color: color})
+}
+
+func (s *ServiceService) UpdateService(ctx context.Context, id string, tags []string, color *string) (*domain.AppointmentService, error) {
+	service, err := s.repo.FindService(ctx, id)
+	if err != nil || service == nil {
+		return service, err
+	}
+	if tags != nil {
+		service.Tags = tags
+	}
+	if color != nil {
+		service.Color = color
+	}
+	updated, err := s.repo.SaveService(ctx, *service)
+	if err != nil {
+		return nil, err
+	}
+	return &updated, nil
 }
 
 func (s *ServiceService) AllServices(ctx context.Context) ([]domain.AppointmentService, error) {
