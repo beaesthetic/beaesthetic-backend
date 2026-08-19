@@ -10,30 +10,16 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func TestInjectAndExtractAMQPContext(t *testing.T) {
+func TestExtractAMQPContext(t *testing.T) {
 	previous := otel.GetTextMapPropagator()
 	otel.SetTextMapPropagator(propagation.TraceContext{})
 	t.Cleanup(func() { otel.SetTextMapPropagator(previous) })
 
-	spanContext := trace.NewSpanContext(trace.SpanContextConfig{
-		TraceID:    trace.TraceID{1},
-		SpanID:     trace.SpanID{2},
-		TraceFlags: trace.FlagsSampled,
-	})
-	metadata := map[string]string{}
-	Inject(trace.ContextWithSpanContext(context.Background(), spanContext), metadata)
-
-	if metadata["traceparent"] == "" {
-		t.Fatal("traceparent was not injected")
-	}
-
 	headers := amqp.Table{}
-	for key, value := range metadata {
-		headers[key] = value
-	}
+	headers["traceparent"] = "00-00000000000000000000000000000001-0000000000000002-01"
 	extracted := otel.GetTextMapPropagator().Extract(context.Background(), amqpHeaderCarrier(headers))
 	got := trace.SpanContextFromContext(extracted)
-	if got.TraceID() != spanContext.TraceID() || got.SpanID() != spanContext.SpanID() || !got.IsRemote() {
+	if got.TraceID().String() != "00000000000000000000000000000001" || got.SpanID().String() != "0000000000000002" || !got.IsRemote() {
 		t.Fatalf("unexpected extracted span context: %+v", got)
 	}
 }

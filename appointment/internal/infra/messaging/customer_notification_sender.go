@@ -11,7 +11,6 @@ import (
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
 	domainv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain/v2"
 	notification "github.com/petretiandrea/beaesthetic-backend/core-contracts/notification"
-	contractsmessaging "github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime/messaging"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -89,14 +88,12 @@ func (sender *CustomerNotificationSender) publishCustomerNotification(ctx contex
 		return "", fmt.Errorf("marshal customer notification request: %w", err)
 	}
 	customerID := request.GetCustomerIds()[0]
-	metadata := outbox.Metadata{}
-	contractsmessaging.Inject(ctx, metadata)
 	if err := sender.publisher.Publish(ctx, outbox.Message{
 		ID:          uuid.NewString(),
 		Channel:     outbox.Channel(ChannelCustomerNotifications),
 		AffinityKey: outbox.AffinityKey(customerID),
 		Payload:     payload,
-		Metadata:    metadata,
+		Metadata:    outbox.Metadata{},
 		OccurredAt:  time.Now().UTC(),
 	}); err != nil {
 		return "", fmt.Errorf("publish customer notification request: %w", err)

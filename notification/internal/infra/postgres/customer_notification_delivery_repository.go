@@ -10,7 +10,6 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
 	notificationcontracts "github.com/petretiandrea/beaesthetic-backend/core-contracts/notification"
-	contractsmessaging "github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime/messaging"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/infra/postgres/queries"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
@@ -154,14 +153,12 @@ func (repo *CustomerNotificationRepository) publishCustomerNotificationOutcome(c
 	if err != nil {
 		return fmt.Errorf("marshal customer notification outcome event: %w", err)
 	}
-	metadata := outbox.Metadata{}
-	contractsmessaging.Inject(ctx, metadata)
 	if err := repo.publisher.Publish(ctx, outbox.Message{
 		ID:          uuid.NewString(),
 		Channel:     outbox.Channel(channelCustomerNotificationsOutcome),
 		AffinityKey: outbox.AffinityKey(identity.CorrelationKey),
 		Payload:     payload,
-		Metadata:    metadata,
+		Metadata:    outbox.Metadata{},
 		OccurredAt:  occurredAt,
 	}); err != nil {
 		return fmt.Errorf("publish customer notification outcome event: %w", err)

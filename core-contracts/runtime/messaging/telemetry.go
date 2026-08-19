@@ -12,12 +12,6 @@ import (
 
 const instrumentationName = "github.com/petretiandrea/beaesthetic-backend/rabbitmq"
 
-// Inject stores the active OpenTelemetry propagation context in outbox metadata.
-// The outbox forwarder maps this metadata to AMQP headers unchanged.
-func Inject(ctx context.Context, metadata map[string]string) {
-	otel.GetTextMapPropagator().Inject(ctx, metadataCarrier(metadata))
-}
-
 // StartConsumer extracts the propagated context from an AMQP delivery and starts
 // a consumer span as its child.
 func StartConsumer(ctx context.Context, queue string, delivery amqp.Delivery) (context.Context, trace.Span) {
@@ -39,20 +33,6 @@ func StartConsumer(ctx context.Context, queue string, delivery amqp.Delivery) (c
 		trace.WithSpanKind(trace.SpanKindConsumer),
 		trace.WithAttributes(attrs...),
 	)
-}
-
-type metadataCarrier map[string]string
-
-func (carrier metadataCarrier) Get(key string) string { return carrier[key] }
-
-func (carrier metadataCarrier) Set(key string, value string) { carrier[key] = value }
-
-func (carrier metadataCarrier) Keys() []string {
-	keys := make([]string, 0, len(carrier))
-	for key := range carrier {
-		keys = append(keys, key)
-	}
-	return keys
 }
 
 type amqpHeaderCarrier amqp.Table

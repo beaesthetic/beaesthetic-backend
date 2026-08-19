@@ -12,7 +12,6 @@ import (
 	applicationv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/application/v2"
 	domainv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain/v2"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/postgres/queries"
-	contractsmessaging "github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime/messaging"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
 )
 
@@ -317,7 +316,6 @@ func (r *Repository) publishCalendarLifecycleEvents(ctx context.Context, events 
 		if err != nil {
 			return err
 		}
-		contractsmessaging.Inject(ctx, message.Metadata)
 		messages = append(messages, message)
 	}
 	if err := r.publisher.Publish(ctx, messages...); err != nil {

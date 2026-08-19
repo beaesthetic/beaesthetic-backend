@@ -14,7 +14,6 @@ import (
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
 	domainv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain/v2"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/postgres/queries"
-	contractsmessaging "github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime/messaging"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
 )
 
@@ -553,7 +552,6 @@ func (r *Repository) publishLifecycleEvents(ctx context.Context, events []domain
 		if err != nil {
 			return err
 		}
-		contractsmessaging.Inject(ctx, message.Metadata)
 		messages = append(messages, message)
 	}
 	if err := r.publisher.Publish(ctx, messages...); err != nil {
