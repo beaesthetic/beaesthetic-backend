@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	applicationv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/application/v2"
 	outboxamqp "github.com/petretiandrea/outbox-go/pkg/outbox/amqp"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
@@ -13,12 +12,16 @@ import (
 
 const ChannelAppointmentInternalJob = "beaesthetic.appointments.internal.job"
 
+type LifecycleEventHandler interface {
+	Handle(ctx context.Context, eventType string, calendarEventID string) error
+}
+
 type AppointmentLifecycleConsumer struct {
-	handler applicationv2.LifecycleEventHandler
+	handler LifecycleEventHandler
 	log     *zap.Logger
 }
 
-func NewAppointmentLifecycleConsumer(handler applicationv2.LifecycleEventHandler, log *zap.Logger) *AppointmentLifecycleConsumer {
+func NewAppointmentLifecycleConsumer(handler LifecycleEventHandler, log *zap.Logger) *AppointmentLifecycleConsumer {
 	if log == nil {
 		log = zap.NewNop()
 	}
