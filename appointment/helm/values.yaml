@@ -14,7 +14,11 @@ service:
   ports:
     - 8080
 envConfig:
-  OTEL_COLLECTOR_GRPC_ENDPOINT: http://opentelemetry-collector.monitoring.svc.cluster.local:4317
+  OTEL_SERVICE_NAME: appointment-service
+  OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector.monitoring.svc.cluster.local:4318
+  OTEL_RESOURCE_ATTRIBUTES: deployment.environment=production,k8s.cluster.name=beaesthetic-k3s
+  OTEL_METRICS_EXPORTER: otlp
   REDIS_HOST: redis-headless.common.svc.cluster.local:6379
   ENV_APP_NAME: appointment-service-v2
   ENV_HTTP_ADDR: ':8080'

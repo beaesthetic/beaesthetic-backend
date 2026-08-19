@@ -15,7 +15,7 @@ func TestNewRegistersOnlyCalendarV1Routes(t *testing.T) {
 		HealthChecker: func(ctx *gin.Context) {
 			ctx.Status(http.StatusOK)
 		},
-	}, zap.NewNop())
+	}, zap.NewNop(), "appointment-service")
 
 	for _, path := range []string{
 		"/v1/calendar-events",

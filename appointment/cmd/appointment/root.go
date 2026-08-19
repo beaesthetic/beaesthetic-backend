@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -10,8 +11,10 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/cmd/di"
+	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/telemetry"
 	appruntime "github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime"
 	"github.com/spf13/cobra"
+	"go.uber.org/zap"
 )
 
 func NewRootCommand() *cobra.Command {
@@ -31,7 +34,16 @@ func appCommand(envFile *string) *cobra.Command {
 		if err != nil {
 			return err
 		}
+		shutdownTelemetry, err := telemetry.Init(ctx, c.Config.App.Name)
+		if err != nil {
+			return fmt.Errorf("initialize OpenTelemetry: %w", err)
+		}
 		defer func() {
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			defer cancel()
+			if err := shutdownTelemetry(shutdownCtx); err != nil {
+				c.Log.Error("shutdown OpenTelemetry", zap.Error(err))
+			}
 			c.GetPostgresDatabase().Close()
 			_ = c.Log.Sync()
 		}()
