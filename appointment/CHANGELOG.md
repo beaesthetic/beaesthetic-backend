@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.16.0...appointment-service-v1.17.0) (2026-08-19)
+
+
+### Features
+
+* **appointment:** restore service management APIs ([#98](https://github.com/beaesthetic/beaesthetic-backend/issues/98)) ([0cd3b3a](https://github.com/beaesthetic/beaesthetic-backend/commit/0cd3b3aca2c8bc09d41a6dec3cc6aff740bfab00))
+
 ## [1.16.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.15.2...appointment-service-v1.16.0) (2026-08-19)
 
 
