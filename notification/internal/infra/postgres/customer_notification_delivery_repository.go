@@ -14,7 +14,6 @@ import (
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/notification/internal/infra/postgres/queries"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
-	"go.opentelemetry.io/otel/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
@@ -155,11 +154,9 @@ func (repo *CustomerNotificationRepository) publishCustomerNotificationOutcome(c
 	if err != nil {
 		return fmt.Errorf("marshal customer notification outcome event: %w", err)
 	}
-	publishCtx, span := contractsmessaging.StartProducer(ctx, channelCustomerNotificationsOutcome)
-	defer span.End()
 	metadata := outbox.Metadata{}
-	contractsmessaging.Inject(publishCtx, metadata)
-	if err := repo.publisher.Publish(publishCtx, outbox.Message{
+	contractsmessaging.Inject(ctx, metadata)
+	if err := repo.publisher.Publish(ctx, outbox.Message{
 		ID:          uuid.NewString(),
 		Channel:     outbox.Channel(channelCustomerNotificationsOutcome),
 		AffinityKey: outbox.AffinityKey(identity.CorrelationKey),
@@ -167,8 +164,6 @@ func (repo *CustomerNotificationRepository) publishCustomerNotificationOutcome(c
 		Metadata:    metadata,
 		OccurredAt:  occurredAt,
 	}); err != nil {
-		span.RecordError(err)
-		span.SetStatus(codes.Error, err.Error())
 		return fmt.Errorf("publish customer notification outcome event: %w", err)
 	}
 	return nil

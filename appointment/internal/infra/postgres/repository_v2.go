@@ -14,8 +14,6 @@ import (
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/postgres/queries"
 	contractsmessaging "github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime/messaging"
 	"github.com/petretiandrea/outbox-go/pkg/outbox"
-	"go.opentelemetry.io/otel/codes"
-	"go.opentelemetry.io/otel/trace"
 )
 
 func (r *Repository) NextCalendarEventID() string {
@@ -314,27 +312,16 @@ func (r *Repository) publishCalendarLifecycleEvents(ctx context.Context, events 
 		return nil
 	}
 	messages := make([]outbox.Message, 0, len(events))
-	spans := make([]trace.Span, 0, len(events))
 	for _, event := range events {
 		message, err := newCalendarLifecycleOutboxMessage(event)
 		if err != nil {
 			return err
 		}
-		publishCtx, span := contractsmessaging.StartProducer(ctx, ChannelAppointmentInternalJob)
-		contractsmessaging.Inject(publishCtx, message.Metadata)
+		contractsmessaging.Inject(ctx, message.Metadata)
 		messages = append(messages, message)
-		spans = append(spans, span)
 	}
 	if err := r.publisher.Publish(ctx, messages...); err != nil {
-		for _, span := range spans {
-			span.RecordError(err)
-			span.SetStatus(codes.Error, err.Error())
-			span.End()
-		}
 		return fmt.Errorf("publish calendar lifecycle events: %w", err)
-	}
-	for _, span := range spans {
-		span.End()
 	}
 	return nil
 }

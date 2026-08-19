@@ -18,21 +18,6 @@ func Inject(ctx context.Context, metadata map[string]string) {
 	otel.GetTextMapPropagator().Inject(ctx, metadataCarrier(metadata))
 }
 
-// StartProducer starts a RabbitMQ producer span and returns the context that must
-// be injected into the outbox message metadata.
-func StartProducer(ctx context.Context, destination string) (context.Context, trace.Span) {
-	return otel.Tracer(instrumentationName).Start(
-		ctx,
-		"send "+destination,
-		trace.WithSpanKind(trace.SpanKindProducer),
-		trace.WithAttributes(
-			attribute.String("messaging.system", "rabbitmq"),
-			attribute.String("messaging.operation.name", "publish"),
-			attribute.String("messaging.destination.name", destination),
-		),
-	)
-}
-
 // StartConsumer extracts the propagated context from an AMQP delivery and starts
 // a consumer span as its child.
 func StartConsumer(ctx context.Context, queue string, delivery amqp.Delivery) (context.Context, trace.Span) {
