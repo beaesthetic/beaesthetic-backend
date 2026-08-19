@@ -80,10 +80,7 @@ Sequenza:
 
 ## Lifecycle dispatch
 
-Il consumer accetta entrambi i formati durante il cutover:
-
-- `CalendarEventCreated`, `CalendarEventRescheduled`, `CalendarEventCanceled` vengono gestiti da `AppointmentLifecycleService` v2;
-- `AgendaEventScheduled`, `AgendaEventRescheduled`, `AgendaEventDeleted` vengono inoltrati al vecchio handler finche' la coda legacy non e' drenata.
+Il consumer accetta solo `CalendarEventCreated`, `CalendarEventRescheduled` e `CalendarEventCanceled`, gestiti da `AppointmentLifecycleService`.
 
 L'evento lifecycle e' intenzionalmente generico. Il consumer successivo ricarica l'aggregate, osserva il detail e applica logica appointment solo quando necessaria.
 
@@ -170,31 +167,6 @@ Tipi usati:
 
 Il servizio appointment non verifica preventivamente la presenza del numero di telefono. Notification decide se il recipient e' raggiungibile e pubblica l'outcome con failure reason, per esempio contatto assente.
 
-## Legacy compatibility
+## Runtime attuale
 
-Restano intenzionalmente temporanei:
-
-- vecchie API OpenAPI basate su `domain.AgendaEvent`;
-- `SchedulerQueueConsumer` e `ReminderSender` per messaggi gia' presenti nella vecchia coda;
-- vecchi lifecycle event `AgendaEvent*`;
-- colonne e query legacy necessarie al backfill e al periodo di stabilizzazione.
-
-Il consumer outcome e il worker River non dipendono piu' da `domain.AgendaEvent`.
-
-## Operational cutover
-
-Usare la nuova immagine inizialmente come Job, senza avviare ancora `appointment app`.
-
-1. Eseguire `appointment migrate up`, incluse le migration River.
-2. Eseguire `appointment backfill-agenda-model` in dry-run e conservare il report.
-3. Bloccare il cutover se `skipped_invalid_customers` e' maggiore di zero; questi appointment non possono essere ricostruiti con un customer UUID valido.
-4. Eseguire `appointment schedule-future-reminders --dry-run` per stimare i job River da ricreare.
-5. Fermare il vecchio deployment appointment o metterlo in maintenance, cosi' non scrive durante la migrazione.
-6. Eseguire una sola volta `appointment backfill-agenda-model --execute`.
-7. Eseguire `appointment schedule-future-reminders`; pianifica solo reminder legacy `PENDING` o `SCHEDULED`.
-8. Avviare il nuovo deployment con `appointment app`.
-9. Eseguire smoke test create, update senza cambio orario, reschedule, cancel, reminder e outcome.
-10. Drenare la scheduler queue e i vecchi lifecycle event.
-11. Rimuovere API, consumer, dominio e storage legacy in una migration successiva.
-
-Il backfill normalizza gli eventi legacy `event` in `manual`. Non eseguirlo mentre il vecchio runtime sta ancora servendo traffico. Le notification legacy gia' scadute vengono riportate come `skipped_expired_notifications` e non vengono migrate come pending.
+Il servizio usa River per i reminder e processa esclusivamente lifecycle event `CalendarEvent*`. Le procedure di backfill e il consumer della scheduler queue legacy non fanno parte del runtime.

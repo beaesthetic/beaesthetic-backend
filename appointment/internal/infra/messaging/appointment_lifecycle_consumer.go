@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	applicationv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/application/v2"
 	outboxamqp "github.com/petretiandrea/outbox-go/pkg/outbox/amqp"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"go.uber.org/zap"
@@ -13,12 +12,16 @@ import (
 
 const ChannelAppointmentInternalJob = "beaesthetic.appointments.internal.job"
 
+type LifecycleEventHandler interface {
+	Handle(ctx context.Context, eventType string, calendarEventID string) error
+}
+
 type AppointmentLifecycleConsumer struct {
-	handler applicationv2.LifecycleEventHandler
+	handler LifecycleEventHandler
 	log     *zap.Logger
 }
 
-func NewAppointmentLifecycleConsumer(handler applicationv2.LifecycleEventHandler, log *zap.Logger) *AppointmentLifecycleConsumer {
+func NewAppointmentLifecycleConsumer(handler LifecycleEventHandler, log *zap.Logger) *AppointmentLifecycleConsumer {
 	if log == nil {
 		log = zap.NewNop()
 	}
@@ -30,7 +33,7 @@ func (consumer *AppointmentLifecycleConsumer) Process(ctx context.Context, deliv
 	if err != nil {
 		return err
 	}
-	eventID := event.EventID()
+	eventID := event.CalendarEventID
 	if eventID == "" {
 		consumer.log.Debug("unhandled lifecycle event without event id", zap.String("type", event.Type))
 		return nil
@@ -58,14 +61,6 @@ func appointmentLifecycleEventFromDelivery(delivery amqp.Delivery) (appointmentL
 }
 
 type appointmentLifecycleEvent struct {
-	Type                string `json:"type"`
-	CalendarEventID     string `json:"calendarEventId"`
-	LegacyAgendaEventID string `json:"agendaEventId"`
-}
-
-func (event appointmentLifecycleEvent) EventID() string {
-	if event.CalendarEventID != "" {
-		return event.CalendarEventID
-	}
-	return event.LegacyAgendaEventID
+	Type            string `json:"type"`
+	CalendarEventID string `json:"calendarEventId"`
 }

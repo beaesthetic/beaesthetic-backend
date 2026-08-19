@@ -7,12 +7,10 @@ import (
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
 	applicationv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/application/v2"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/health"
-	httpserver "github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/server/generated"
 	"go.uber.org/zap"
 )
 
 type HttpHandlers struct {
-	Appointment   httpserver.StrictServerInterface
 	Calendar      *Server
 	HealthChecker health.HealthCheckHandler
 }
@@ -24,16 +22,6 @@ func New(handlers *HttpHandlers, log *zap.Logger) *gin.Engine {
 	r := gin.New()
 	r.Use(gin.Recovery())
 	r.Use(ginErrorLogger(log))
-	httpserver.RegisterHandlers(r, httpserver.NewStrictHandlerWithOptions(handlers.Appointment, nil, httpserver.StrictGinServerOptions{
-		RequestErrorHandlerFunc: func(ctx *gin.Context, err error) {
-			log.Warn("http request error", zap.Error(err), zap.String("method", ctx.Request.Method), zap.String("path", ctx.FullPath()))
-			ctx.JSON(400, gin.H{"msg": err.Error()})
-		},
-		ResponseErrorHandlerFunc: func(ctx *gin.Context, err error) {
-			log.Error("http response error", zap.Error(err), zap.String("method", ctx.Request.Method), zap.String("path", ctx.FullPath()))
-			ctx.JSON(500, gin.H{"msg": err.Error()})
-		},
-	}))
 	if handlers.Calendar != nil {
 		registerCalendarProtoRoutes(r, handlers.Calendar)
 	}
@@ -69,18 +57,15 @@ func ginErrorLogger(log *zap.Logger) gin.HandlerFunc {
 }
 
 type Server struct {
-	appointments *application.AppointmentService
-	reminders    *applicationv2.AppointmentLifecycleService
-	calendar     *applicationv2.CalendarService
-	services     *application.ServiceService
-	log          *zap.Logger
+	reminders *applicationv2.AppointmentLifecycleService
+	calendar  *applicationv2.CalendarService
+	services  *application.ServiceService
+	log       *zap.Logger
 }
 
-func NewServer(appointments *application.AppointmentService, reminders *applicationv2.AppointmentLifecycleService, calendar *applicationv2.CalendarService, services *application.ServiceService, log *zap.Logger) *Server {
+func NewServer(reminders *applicationv2.AppointmentLifecycleService, calendar *applicationv2.CalendarService, services *application.ServiceService, log *zap.Logger) *Server {
 	if log == nil {
 		log = zap.NewNop()
 	}
-	return &Server{appointments: appointments, reminders: reminders, calendar: calendar, services: services, log: log}
+	return &Server{reminders: reminders, calendar: calendar, services: services, log: log}
 }
-
-var _ httpserver.StrictServerInterface = (*Server)(nil)

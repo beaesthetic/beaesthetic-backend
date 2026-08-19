@@ -17,15 +17,14 @@ func NewCustomerRef(id string, displayName string) (CustomerRef, error) {
 type ServiceItem struct {
 	ServiceID   *string
 	ServiceName string
-	Price       *float64
 	Position    int
 }
 
-func NewServiceItem(serviceID *string, serviceName string, price *float64, position int) (ServiceItem, error) {
+func NewServiceItem(serviceID *string, serviceName string, position int) (ServiceItem, error) {
 	if serviceName == "" || position < 0 {
 		return ServiceItem{}, ErrMissingRequiredData
 	}
-	return ServiceItem{ServiceID: serviceID, ServiceName: serviceName, Price: price, Position: position}, nil
+	return ServiceItem{ServiceID: serviceID, ServiceName: serviceName, Position: position}, nil
 }
 
 type Appointment struct {

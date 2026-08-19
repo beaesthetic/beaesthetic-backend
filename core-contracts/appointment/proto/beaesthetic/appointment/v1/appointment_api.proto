@@ -4,25 +4,37 @@ package beaesthetic.appointment.v1;
 
 import "google/protobuf/field_mask.proto";
 import "google/protobuf/timestamp.proto";
+import "google/api/annotations.proto";
 
 option go_package = "github.com/petretiandrea/beaesthetic-backend/core-contracts/appointment;appointment";
 
 // CalendarService is the API boundary for calendar events and their typed details.
 service CalendarService {
-  rpc CreateCalendarEvent(CreateCalendarEventRequest) returns (CreateCalendarEventResult);
-  rpc GetCalendarEvent(GetCalendarEventRequest) returns (GetCalendarEventResponse);
-  rpc ListCalendarEvents(ListCalendarEventsRequest) returns (ListCalendarEventsResponse);
-  rpc UpdateCalendarEvent(UpdateCalendarEventRequest) returns (GetCalendarEventResponse);
-  rpc CancelCalendarEvent(CancelCalendarEventRequest) returns (CancelCalendarEventResponse);
-  rpc RequestReminderResend(RequestReminderResendRequest) returns (GetCalendarEventResponse);
+  rpc CreateCalendarEvent(CreateCalendarEventRequest) returns (CreateCalendarEventResponse) {
+    option (google.api.http) = { post: "/v1/calendar-events" body: "*" };
+  }
+  rpc GetCalendarEvent(GetCalendarEventRequest) returns (GetCalendarEventResponse) {
+    option (google.api.http) = { get: "/v1/calendar-events/{id}" };
+  }
+  rpc ListCalendarEvents(ListCalendarEventsRequest) returns (ListCalendarEventsResponse) {
+    option (google.api.http) = { get: "/v1/calendar-events" };
+  }
+  rpc UpdateCalendarEvent(UpdateCalendarEventRequest) returns (UpdateCalendarEventResponse) {
+    option (google.api.http) = { patch: "/v1/calendar-events/{id}" body: "*" };
+  }
+  rpc CancelCalendarEvent(CancelCalendarEventRequest) returns (CancelCalendarEventResponse) {
+    option (google.api.http) = { delete: "/v1/calendar-events/{id}" };
+  }
+  rpc RequestReminderResend(RequestReminderResendRequest) returns (RequestReminderResendResponse) {
+    option (google.api.http) = { post: "/v1/calendar-events/{calendar_event_id}/reminder/resend" body: "*" };
+  }
 }
 
 // ServiceCatalogService manages the catalog items that can be selected for appointments.
 service ServiceCatalogService {
-  rpc CreateService(CreateServiceRequest) returns (CatalogService);
-  rpc UpdateService(UpdateServiceRequest) returns (CatalogService);
-  rpc SearchServices(SearchServicesRequest) returns (SearchServicesResponse);
-  rpc ListServices(ListServicesRequest) returns (ListServicesResponse);
+  rpc ListServices(ListServicesRequest) returns (ListServicesResponse) {
+    option (google.api.http) = { get: "/v1/services" };
+  }
 }
 
 service AppointmentInsightService {
@@ -110,9 +122,11 @@ message CustomerRef {
 }
 
 message AppointmentServiceItem {
+  reserved 3;
+  reserved "price";
+
   string service_id = 1 [json_name = "serviceId"];
   string service_name = 2 [json_name = "serviceName"];
-  double price = 3 [json_name = "price"];
   int32 position = 4 [json_name = "position"];
 }
 
@@ -178,8 +192,8 @@ message CreateTimeBlockDetail {
   string reason = 1 [json_name = "reason"];
 }
 
-message CreateCalendarEventResult {
-  string calendar_event_id = 1 [json_name = "calendarEventId"];
+message CreateCalendarEventResponse {
+	string calendar_event_id = 1 [json_name = "calendarEventId"];
 }
 
 message GetCalendarEventRequest {
@@ -187,7 +201,11 @@ message GetCalendarEventRequest {
 }
 
 message GetCalendarEventResponse {
-  CalendarEvent event = 1 [json_name = "event"];
+	CalendarEvent event = 1 [json_name = "event"];
+}
+
+message UpdateCalendarEventResponse {
+	CalendarEvent event = 1 [json_name = "event"];
 }
 
 message ListCalendarEventsRequest {
@@ -256,43 +274,29 @@ message CancelCalendarEventRequest {
 message CancelCalendarEventResponse {}
 
 message RequestReminderResendRequest {
-  string calendar_event_id = 1 [json_name = "calendarEventId"];
-  string idempotency_key = 2 [json_name = "idempotencyKey"];
+	string calendar_event_id = 1 [json_name = "calendarEventId"];
+	string idempotency_key = 2 [json_name = "idempotencyKey"];
+}
+
+message RequestReminderResendResponse {
+	CalendarEvent event = 1 [json_name = "event"];
 }
 
 message CatalogService {
+  reserved 3;
+  reserved "price";
+
   string id = 1 [json_name = "id"];
   string name = 2 [json_name = "name"];
-  double price = 3 [json_name = "price"];
   repeated string tags = 4 [json_name = "tags"];
   string color = 5 [json_name = "color"];
 }
 
-message CreateServiceRequest {
-  string name = 1 [json_name = "name"];
-  double price = 2 [json_name = "price"];
-  repeated string tags = 3 [json_name = "tags"];
-  string color = 4 [json_name = "color"];
-}
-
-message UpdateServiceRequest {
-  string id = 1 [json_name = "id"];
-  optional double price = 2 [json_name = "price"];
-  repeated string tags = 3 [json_name = "tags"];
-  optional string color = 4 [json_name = "color"];
-  google.protobuf.FieldMask update_mask = 5 [json_name = "updateMask"];
-}
-
-message SearchServicesRequest {
-  string text = 1 [json_name = "text"];
+// ListServicesRequest filters the appointment service catalog when query is set.
+message ListServicesRequest {
+  string query = 1 [json_name = "query"];
   int32 limit = 2 [json_name = "limit"];
 }
-
-message SearchServicesResponse {
-  repeated CatalogService services = 1 [json_name = "services"];
-}
-
-message ListServicesRequest {}
 
 message ListServicesResponse {
   repeated CatalogService services = 1 [json_name = "services"];

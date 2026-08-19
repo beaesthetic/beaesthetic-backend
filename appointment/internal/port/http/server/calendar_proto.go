@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	applicationv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/application/v2"
+	legacydomain "github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain"
 	domain "github.com/petretiandrea/beaesthetic-backend/appointment/internal/domain/v2"
 	appointmentcontracts "github.com/petretiandrea/beaesthetic-backend/core-contracts/appointment"
 	"go.uber.org/zap"
@@ -34,7 +36,40 @@ func registerCalendarProtoRoutes(r gin.IRouter, handler *Server) {
 	r.GET("/v1/calendar-events", handler.listCalendarEventsProto)
 	r.PATCH("/v1/calendar-events/:id", handler.updateCalendarEventProto)
 	r.DELETE("/v1/calendar-events/:id", handler.cancelCalendarEventProto)
-	r.POST("/v1/calendar-events/:id/reminder/resend", handler.requestReminderResendProto)
+	r.POST("/v1/calendar-events/:calendar_event_id/reminder/resend", handler.requestReminderResendProto)
+	r.GET("/v1/services", handler.listServicesProto)
+}
+
+func (s *Server) listServicesProto(ctx *gin.Context) {
+	request, err := listServicesRequestFromQuery(ctx)
+	if err != nil {
+		s.writeProtoError(ctx, http.StatusBadRequest, err.Error())
+		return
+	}
+	services, err := s.services.SearchServices(ctx.Request.Context(), request.GetQuery(), int(request.GetLimit()))
+	if err != nil {
+		s.writeCalendarError(ctx, err)
+		return
+	}
+	response := make([]*appointmentcontracts.CatalogService, 0, len(services))
+	for _, service := range services {
+		response = append(response, catalogServiceProto(service))
+	}
+	s.writeProtoJSON(ctx, http.StatusOK, &appointmentcontracts.ListServicesResponse{Services: response})
+}
+
+func listServicesRequestFromQuery(ctx *gin.Context) (*appointmentcontracts.ListServicesRequest, error) {
+	request := &appointmentcontracts.ListServicesRequest{Query: strings.TrimSpace(ctx.Query("query"))}
+	limit := strings.TrimSpace(ctx.Query("limit"))
+	if limit == "" {
+		return request, nil
+	}
+	value, err := strconv.ParseInt(limit, 10, 32)
+	if err != nil || value < 1 {
+		return nil, fmt.Errorf("limit must be a positive integer")
+	}
+	request.Limit = int32(value)
+	return request, nil
 }
 
 func (s *Server) createCalendarEventProto(ctx *gin.Context) {
@@ -47,7 +82,7 @@ func (s *Server) createCalendarEventProto(ctx *gin.Context) {
 		s.writeCalendarError(ctx, err)
 		return
 	}
-	s.writeProtoJSON(ctx, http.StatusCreated, &appointmentcontracts.CreateCalendarEventResult{CalendarEventId: event.ID})
+	s.writeProtoJSON(ctx, http.StatusCreated, &appointmentcontracts.CreateCalendarEventResponse{CalendarEventId: event.ID})
 }
 
 func (s *Server) getCalendarEventProto(ctx *gin.Context) {
@@ -106,7 +141,7 @@ func (s *Server) updateCalendarEventProto(ctx *gin.Context) {
 		s.writeProtoError(ctx, http.StatusNotFound, "calendar event not found")
 		return
 	}
-	s.writeProtoJSON(ctx, http.StatusOK, &appointmentcontracts.GetCalendarEventResponse{Event: calendarEventProto(*view)})
+	s.writeProtoJSON(ctx, http.StatusOK, &appointmentcontracts.UpdateCalendarEventResponse{Event: calendarEventProto(*view)})
 }
 
 func (s *Server) cancelCalendarEventProto(ctx *gin.Context) {
@@ -129,7 +164,7 @@ func (s *Server) cancelCalendarEventProto(ctx *gin.Context) {
 }
 
 func (s *Server) requestReminderResendProto(ctx *gin.Context) {
-	eventID := ctx.Param("id")
+	eventID := ctx.Param("calendar_event_id")
 	var request appointmentcontracts.RequestReminderResendRequest
 	if ctx.Request.Body != nil && ctx.Request.ContentLength != 0 {
 		if !s.readProtoJSON(ctx, &request) {
@@ -156,7 +191,7 @@ func (s *Server) requestReminderResendProto(ctx *gin.Context) {
 		s.writeProtoError(ctx, http.StatusNotFound, "calendar event not found")
 		return
 	}
-	response := appointmentcontracts.GetCalendarEventResponse{Event: calendarEventProto(*view)}
+	response := appointmentcontracts.RequestReminderResendResponse{Event: calendarEventProto(*view)}
 	s.writeProtoJSON(ctx, http.StatusOK, &response)
 }
 
@@ -277,7 +312,7 @@ func (s *Server) serviceItemsFromProto(ctx context.Context, selections []*appoin
 	for index, selection := range selections {
 		switch value := selection.GetValue().(type) {
 		case *appointmentcontracts.AppointmentServiceSelection_CustomServiceName:
-			item, err := domain.NewServiceItem(nil, value.CustomServiceName, nil, index)
+			item, err := domain.NewServiceItem(nil, value.CustomServiceName, index)
 			if err != nil {
 				return nil, err
 			}
@@ -291,8 +326,7 @@ func (s *Server) serviceItemsFromProto(ctx context.Context, selections []*appoin
 				return nil, fmt.Errorf("service %s not found", value.CatalogServiceId)
 			}
 			serviceID := service.ID
-			price := service.Price
-			item, err := domain.NewServiceItem(&serviceID, service.Name, &price, index)
+			item, err := domain.NewServiceItem(&serviceID, service.Name, index)
 			if err != nil {
 				return nil, err
 			}
@@ -449,7 +483,6 @@ func calendarEventProto(view applicationv2.CalendarEventView) *appointmentcontra
 			services = append(services, &appointmentcontracts.AppointmentServiceItem{
 				ServiceId:   stringValue(item.ServiceID),
 				ServiceName: item.ServiceName,
-				Price:       float64Value(item.Price),
 				Position:    int32(item.Position),
 			})
 		}
@@ -468,6 +501,15 @@ func calendarEventProto(view applicationv2.CalendarEventView) *appointmentcontra
 		out.Detail = &appointmentcontracts.CalendarEvent_TimeBlock{TimeBlock: &appointmentcontracts.TimeBlockDetail{Reason: detail.Reason}}
 	}
 	return out
+}
+
+func catalogServiceProto(service legacydomain.AppointmentService) *appointmentcontracts.CatalogService {
+	return &appointmentcontracts.CatalogService{
+		Id:    service.ID,
+		Name:  service.Name,
+		Tags:  service.Tags,
+		Color: stringValue(service.Color),
+	}
 }
 
 func appointmentReminderProto(reminder *domain.AppointmentReminder) *appointmentcontracts.AppointmentReminder {
@@ -607,13 +649,6 @@ func optionalString(value string) *string {
 func stringValue(value *string) string {
 	if value == nil {
 		return ""
-	}
-	return *value
-}
-
-func float64Value(value *float64) float64 {
-	if value == nil {
-		return 0
 	}
 	return *value
 }

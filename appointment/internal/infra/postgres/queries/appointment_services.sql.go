@@ -13,7 +13,7 @@ import (
 )
 
 const findAppointmentService = `-- name: FindAppointmentService :one
-SELECT id, name, price, tags, color_hex
+SELECT id, name, tags, color_hex
 FROM appointment_services
 WHERE id = $1
 `
@@ -21,7 +21,6 @@ WHERE id = $1
 type FindAppointmentServiceRow struct {
 	ID       string          `json:"id"`
 	Name     string          `json:"name"`
-	Price    float64         `json:"price"`
 	Tags     json.RawMessage `json:"tags"`
 	ColorHex pgtype.Text     `json:"color_hex"`
 }
@@ -32,7 +31,6 @@ func (q *Queries) FindAppointmentService(ctx context.Context, id string) (FindAp
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
-		&i.Price,
 		&i.Tags,
 		&i.ColorHex,
 	)
@@ -40,7 +38,7 @@ func (q *Queries) FindAppointmentService(ctx context.Context, id string) (FindAp
 }
 
 const findAppointmentServices = `-- name: FindAppointmentServices :many
-SELECT id, name, price, tags, color_hex
+SELECT id, name, tags, color_hex
 FROM appointment_services
 ORDER BY name
 `
@@ -48,7 +46,6 @@ ORDER BY name
 type FindAppointmentServicesRow struct {
 	ID       string          `json:"id"`
 	Name     string          `json:"name"`
-	Price    float64         `json:"price"`
 	Tags     json.RawMessage `json:"tags"`
 	ColorHex pgtype.Text     `json:"color_hex"`
 }
@@ -65,7 +62,6 @@ func (q *Queries) FindAppointmentServices(ctx context.Context) ([]FindAppointmen
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
-			&i.Price,
 			&i.Tags,
 			&i.ColorHex,
 		); err != nil {
@@ -80,19 +76,17 @@ func (q *Queries) FindAppointmentServices(ctx context.Context) ([]FindAppointmen
 }
 
 const saveAppointmentService = `-- name: SaveAppointmentService :exec
-INSERT INTO appointment_services (id, name, price, tags, color_hex)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO appointment_services (id, name, tags, color_hex)
+VALUES ($1, $2, $3, $4)
 ON CONFLICT (id) DO UPDATE SET
     name = $2,
-    price = $3,
-    tags = $4,
-    color_hex = $5
+    tags = $3,
+    color_hex = $4
 `
 
 type SaveAppointmentServiceParams struct {
 	ID       string          `json:"id"`
 	Name     string          `json:"name"`
-	Price    float64         `json:"price"`
 	Tags     json.RawMessage `json:"tags"`
 	ColorHex pgtype.Text     `json:"color_hex"`
 }
@@ -101,7 +95,6 @@ func (q *Queries) SaveAppointmentService(ctx context.Context, arg SaveAppointmen
 	_, err := q.db.Exec(ctx, saveAppointmentService,
 		arg.ID,
 		arg.Name,
-		arg.Price,
 		arg.Tags,
 		arg.ColorHex,
 	)
@@ -109,7 +102,7 @@ func (q *Queries) SaveAppointmentService(ctx context.Context, arg SaveAppointmen
 }
 
 const searchAppointmentServices = `-- name: SearchAppointmentServices :many
-SELECT id, name, price, tags, color_hex
+SELECT id, name, tags, color_hex
 FROM appointment_services
 WHERE search_text ILIKE '%' || $1::text || '%'
    OR search_text % $1::text
@@ -125,7 +118,6 @@ type SearchAppointmentServicesParams struct {
 type SearchAppointmentServicesRow struct {
 	ID       string          `json:"id"`
 	Name     string          `json:"name"`
-	Price    float64         `json:"price"`
 	Tags     json.RawMessage `json:"tags"`
 	ColorHex pgtype.Text     `json:"color_hex"`
 }
@@ -142,7 +134,6 @@ func (q *Queries) SearchAppointmentServices(ctx context.Context, arg SearchAppoi
 		if err := rows.Scan(
 			&i.ID,
 			&i.Name,
-			&i.Price,
 			&i.Tags,
 			&i.ColorHex,
 		); err != nil {

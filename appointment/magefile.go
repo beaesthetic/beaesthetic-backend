@@ -17,14 +17,6 @@ func Generate() error {
 	}
 	if err := run(
 		"go", "run", openAPIGenerator,
-		"--config", "internal/port/http/server/server.oapi-codegen.yaml",
-		"-o", "internal/port/http/server/generated/openapi.gen.go",
-		"api-spec/openapi.yaml",
-	); err != nil {
-		return err
-	}
-	if err := run(
-		"go", "run", openAPIGenerator,
 		"--config", "internal/port/http/client/customer/customer-client.oapi-codegen.yaml",
 		"-o", "internal/port/http/client/customer/customer.gen.go",
 		"api-spec/customer-api.yaml",

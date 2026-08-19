@@ -15,17 +15,6 @@ type RiverReminderConfig struct {
 	MaxAttempts int
 }
 
-func (d *DiContainer) GetAppointmentService() *application.AppointmentService {
-	return singleton(d, "appointmentService", func() *application.AppointmentService {
-		return application.NewAppointmentService(
-			d.GetAppointmentRepository(),
-			d.GetCustomerRegistry(),
-			d.Config.Reminder.TriggerBefore,
-			d.GetClock(),
-		)
-	})
-}
-
 func (d *DiContainer) GetCalendarService() *applicationv2.CalendarService {
 	return singleton(d, "calendarService", func() *applicationv2.CalendarService {
 		return applicationv2.NewCalendarService(
@@ -39,30 +28,6 @@ func (d *DiContainer) GetCalendarService() *applicationv2.CalendarService {
 func (d *DiContainer) GetServiceService() *application.ServiceService {
 	return singleton(d, "serviceService", func() *application.ServiceService {
 		return application.NewServiceService(d.GetServiceRepository())
-	})
-}
-
-func (d *DiContainer) GetAppointmentLifecycleHandler() *application.AppointmentLifecycleHandler {
-	return singleton(d, "appointmentLifecycleHandler", func() *application.AppointmentLifecycleHandler {
-		return application.NewAppointmentLifecycleHandler(
-			d.GetAppointmentService(),
-			d.GetAppointmentRepository(),
-			d.GetReminderScheduler(),
-			d.GetCustomerNotificationSender(),
-			d.GetClock(),
-			d.Config.Reminder.NoSendThreshold,
-			d.Config.Reminder.ImmediateSendThreshold,
-			d.Log,
-		)
-	})
-}
-
-func (d *DiContainer) GetCalendarLifecycleHandler() *applicationv2.CalendarLifecycleHandler {
-	return singleton(d, "calendarLifecycleHandler", func() *applicationv2.CalendarLifecycleHandler {
-		return applicationv2.NewCalendarLifecycleHandler(
-			d.GetAppointmentLifecycleServiceV2(),
-			d.GetAppointmentLifecycleHandler(),
-		)
 	})
 }
 
@@ -85,21 +50,9 @@ func (d *DiContainer) GetClock() application.Clock {
 	})
 }
 
-func (d *DiContainer) GetCustomerRegistry() application.CustomerRegistry {
-	return singletonWithError(d, "customerRegistry", func() (application.CustomerRegistry, error) {
-		return customer.NewCustomerRegistry(d.Config.Remote.CustomerURL)
-	})
-}
-
 func (d *DiContainer) GetCustomerResolver() applicationv2.CustomerResolver {
 	return singletonWithError(d, "customerResolver", func() (applicationv2.CustomerResolver, error) {
 		return customer.NewCustomerRegistry(d.Config.Remote.CustomerURL)
-	})
-}
-
-func (d *DiContainer) GetAppointmentRepository() application.AppointmentRepository {
-	return singleton(d, "appointmentRepository", func() application.AppointmentRepository {
-		return d.GetPostgresRepository()
 	})
 }
 
@@ -115,21 +68,9 @@ func (d *DiContainer) GetPostgresRepository() *postgres.Repository {
 	})
 }
 
-func (d *DiContainer) GetCustomerNotificationSender() application.NotificationSender {
-	return singleton(d, "customerNotificationSender", func() application.NotificationSender {
-		return messaging.NewCustomerNotificationSender(d.GetOutboxPublisher())
-	})
-}
-
 func (d *DiContainer) GetCustomerNotificationSenderV2() applicationv2.CalendarNotificationSender {
 	return singleton(d, "customerNotificationSenderV2", func() applicationv2.CalendarNotificationSender {
 		return messaging.NewCustomerNotificationSender(d.GetOutboxPublisher())
-	})
-}
-
-func (d *DiContainer) GetReminderSender() *application.ReminderSender {
-	return singleton(d, "reminderSender", func() *application.ReminderSender {
-		return application.NewReminderSender(d.GetAppointmentService(), d.GetCustomerNotificationSender(), d.Log)
 	})
 }
 

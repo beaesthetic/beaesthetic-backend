@@ -39,7 +39,6 @@ CREATE TABLE agenda_events (
 CREATE TABLE appointment_services (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL UNIQUE,
-    price DOUBLE PRECISION NOT NULL,
     tags JSONB NOT NULL DEFAULT '[]'::jsonb,
     color_hex TEXT NULL,
     search_text TEXT GENERATED ALWAYS AS (
@@ -85,7 +84,6 @@ CREATE TABLE appointment_service_items (
     agenda_event_id UUID NOT NULL REFERENCES appointments(agenda_event_id),
     service_id TEXT NULL,
     service_name TEXT NOT NULL,
-    price DOUBLE PRECISION NULL,
     position INTEGER NOT NULL,
     PRIMARY KEY (agenda_event_id, position)
 );

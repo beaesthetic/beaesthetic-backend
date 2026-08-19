@@ -167,7 +167,6 @@ func (r *Repository) saveAppointment(ctx context.Context, event domainv2.Calenda
 			AgendaEventID: event.ID,
 			ServiceID:     nullableText(service.ServiceID),
 			ServiceName:   service.ServiceName,
-			Price:         nullableFloat8(service.Price),
 			Position:      int32(service.Position),
 		}); err != nil {
 			return err
@@ -384,10 +383,9 @@ func appointmentV2FromDetails(row queries.FindAgendaEventFromDetailsRow) (domain
 
 func serviceItemsV2FromJSON(data string) ([]domainv2.ServiceItem, error) {
 	var rows []struct {
-		Name      string   `json:"Name"`
-		ServiceID *string  `json:"serviceId"`
-		Price     *float64 `json:"price"`
-		Position  int      `json:"position"`
+		Name      string  `json:"Name"`
+		ServiceID *string `json:"serviceId"`
+		Position  int     `json:"position"`
 	}
 	if err := json.Unmarshal([]byte(data), &rows); err != nil {
 		return nil, err
@@ -398,7 +396,7 @@ func serviceItemsV2FromJSON(data string) ([]domainv2.ServiceItem, error) {
 		if position < 0 {
 			position = i
 		}
-		item, err := domainv2.NewServiceItem(row.ServiceID, row.Name, row.Price, position)
+		item, err := domainv2.NewServiceItem(row.ServiceID, row.Name, position)
 		if err != nil {
 			return nil, err
 		}
@@ -420,11 +418,4 @@ func nullableTime(value pgtype.Timestamptz) *time.Time {
 	}
 	utc := value.Time.UTC()
 	return &utc
-}
-
-func nullableFloat8(value *float64) pgtype.Float8 {
-	if value == nil {
-		return pgtype.Float8{}
-	}
-	return pgtype.Float8{Float64: *value, Valid: true}
 }

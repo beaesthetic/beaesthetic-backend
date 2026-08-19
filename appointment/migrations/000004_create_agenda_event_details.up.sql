@@ -36,7 +36,6 @@ CREATE TABLE IF NOT EXISTS appointment_service_items (
     agenda_event_id UUID NOT NULL REFERENCES appointments(agenda_event_id),
     service_id TEXT NULL,
     service_name TEXT NOT NULL,
-    price DOUBLE PRECISION NULL,
     position INTEGER NOT NULL,
     PRIMARY KEY (agenda_event_id, position)
 );
