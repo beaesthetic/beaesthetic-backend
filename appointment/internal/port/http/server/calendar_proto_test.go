@@ -168,13 +168,74 @@ func TestListServicesProtoReturnsTheCatalogWithoutPrice(t *testing.T) {
 	}
 }
 
+func TestCreateServiceProtoCreatesAServiceWithoutPrice(t *testing.T) {
+	repository := &serviceRepositoryStub{}
+	recorder := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(recorder)
+	context.Request = httptest.NewRequest(http.MethodPost, "/v1/services", strings.NewReader(`{"name":" Facial treatment ","tags":["facial"],"color":"#f00"}`))
+	context.Request.Header.Set("Content-Type", "application/json")
+
+	(&Server{services: application.NewServiceService(repository)}).createServiceProto(context)
+
+	if recorder.Code != http.StatusCreated {
+		t.Fatalf("status = %d, want %d: %s", recorder.Code, http.StatusCreated, recorder.Body.String())
+	}
+	if repository.saved.Name != "Facial treatment" || repository.saved.Color == nil || *repository.saved.Color != "#f00" {
+		t.Fatalf("saved service = %#v", repository.saved)
+	}
+	if repository.saved.ID == "" || strings.Contains(recorder.Body.String(), "price") {
+		t.Fatalf("response = %s", recorder.Body.String())
+	}
+}
+
+func TestUpdateServiceProtoUpdatesCatalogMetadata(t *testing.T) {
+	initial := legacydomain.AppointmentService{ID: "service-1", Name: "Facial treatment", Tags: []string{"facial"}}
+	repository := &serviceRepositoryStub{found: &initial}
+	recorder := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(recorder)
+	context.Params = gin.Params{{Key: "id", Value: "service-1"}}
+	context.Request = httptest.NewRequest(http.MethodPatch, "/v1/services/service-1", strings.NewReader(`{"tags":["face","skin"],"color":"#0f0"}`))
+	context.Request.Header.Set("Content-Type", "application/json")
+
+	(&Server{services: application.NewServiceService(repository)}).updateServiceProto(context)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d: %s", recorder.Code, http.StatusOK, recorder.Body.String())
+	}
+	if got, want := repository.saved.Tags, []string{"face", "skin"}; len(got) != len(want) || got[0] != want[0] || got[1] != want[1] {
+		t.Fatalf("saved tags = %#v, want %#v", got, want)
+	}
+	if repository.saved.Color == nil || *repository.saved.Color != "#0f0" || strings.Contains(recorder.Body.String(), "price") {
+		t.Fatalf("response = %s", recorder.Body.String())
+	}
+}
+
+func TestSearchServicesProtoReturnsTheSearchResponse(t *testing.T) {
+	repository := &serviceRepositoryStub{searchResults: []legacydomain.AppointmentService{{ID: "service-1", Name: "Facial treatment"}}}
+	recorder := httptest.NewRecorder()
+	context, _ := gin.CreateTestContext(recorder)
+	context.Request = httptest.NewRequest(http.MethodGet, "/v1/services:search?query=facial&limit=2", nil)
+
+	(&Server{services: application.NewServiceService(repository)}).searchServicesProto(context)
+
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("status = %d, want %d: %s", recorder.Code, http.StatusOK, recorder.Body.String())
+	}
+	if repository.query != "facial" || repository.limit != 2 || !strings.Contains(recorder.Body.String(), "services") {
+		t.Fatalf("search = (%q, %d), response = %s", repository.query, repository.limit, recorder.Body.String())
+	}
+}
+
 type serviceRepositoryStub struct {
 	searchResults []legacydomain.AppointmentService
+	found         *legacydomain.AppointmentService
+	saved         legacydomain.AppointmentService
 	query         string
 	limit         int
 }
 
 func (s *serviceRepositoryStub) SaveService(_ context.Context, service legacydomain.AppointmentService) (legacydomain.AppointmentService, error) {
+	s.saved = service
 	return service, nil
 }
 
@@ -189,5 +250,5 @@ func (s *serviceRepositoryStub) SearchServices(_ context.Context, query string, 
 }
 
 func (s *serviceRepositoryStub) FindService(_ context.Context, _ string) (*legacydomain.AppointmentService, error) {
-	return nil, nil
+	return s.found, nil
 }

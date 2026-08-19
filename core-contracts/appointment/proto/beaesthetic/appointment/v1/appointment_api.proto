@@ -32,6 +32,15 @@ service CalendarService {
 
 // ServiceCatalogService manages the catalog items that can be selected for appointments.
 service ServiceCatalogService {
+  rpc CreateService(CreateServiceRequest) returns (CreateServiceResponse) {
+    option (google.api.http) = { post: "/v1/services" body: "*" };
+  }
+  rpc UpdateService(UpdateServiceRequest) returns (UpdateServiceResponse) {
+    option (google.api.http) = { patch: "/v1/services/{id}" body: "*" };
+  }
+  rpc SearchServices(SearchServicesRequest) returns (SearchServicesResponse) {
+    option (google.api.http) = { get: "/v1/services:search" };
+  }
   rpc ListServices(ListServicesRequest) returns (ListServicesResponse) {
     option (google.api.http) = { get: "/v1/services" };
   }
@@ -290,6 +299,35 @@ message CatalogService {
   string name = 2 [json_name = "name"];
   repeated string tags = 4 [json_name = "tags"];
   string color = 5 [json_name = "color"];
+}
+
+message CreateServiceRequest {
+  string name = 1 [json_name = "name"];
+  repeated string tags = 2 [json_name = "tags"];
+  optional string color = 3 [json_name = "color"];
+}
+
+message CreateServiceResponse {
+  CatalogService service = 1 [json_name = "service"];
+}
+
+message UpdateServiceRequest {
+  string id = 1 [json_name = "id"];
+  repeated string tags = 2 [json_name = "tags"];
+  optional string color = 3 [json_name = "color"];
+}
+
+message UpdateServiceResponse {
+  CatalogService service = 1 [json_name = "service"];
+}
+
+message SearchServicesRequest {
+  string query = 1 [json_name = "query"];
+  int32 limit = 2 [json_name = "limit"];
+}
+
+message SearchServicesResponse {
+  repeated CatalogService services = 1 [json_name = "services"];
 }
 
 // ListServicesRequest filters the appointment service catalog when query is set.
