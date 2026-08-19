@@ -514,7 +514,7 @@ Il modello DDD target viene introdotto in parallelo nel package:
 appointment/internal/domain/v2
 ```
 
-Il vecchio `appointment/internal/domain.AgendaEvent` resta temporaneamente come adapter per HTTP legacy, scheduler e consumer esistenti. Non deve guidare nuove feature.
+Il vecchio `appointment/internal/domain.AgendaEvent` resta temporaneamente come adapter per i consumer esistenti. Non deve guidare nuove feature.
 
 ```mermaid
 classDiagram
@@ -970,85 +970,6 @@ Non replica:
 - opt-in
 
 Questi rimangono responsabilita' di `notification/customer`.
-
-## Migration incrementale
-
-### Step 1: nuove tabelle, senza switch
-
-Creare:
-
-- `appointments`
-- `agenda_manual_events`
-- `agenda_time_blocks`
-- `appointment_service_items`
-- `appointment_reminders`
-- `appointment_notifications`
-
-Nessun cambio comportamento.
-
-### Step 2: dual write temporaneo pre-cutover
-
-Su create/update/delete:
-
-- continuare a scrivere `agenda_events` legacy
-- iniziare a scrivere le nuove tabelle
-
-Questo serve solo durante la finestra di transizione mentre il vecchio codice e il nuovo modello convivono.
-
-### Step 3: backfill manuale
-
-Eseguire il comando operativo:
-
-```bash
-appointment backfill-agenda-model --env-file .env.local
-```
-
-Senza flag aggiuntivi il comando fa dry-run e stampa i conteggi.
-
-Per applicare:
-
-```bash
-appointment backfill-agenda-model --env-file .env.local --execute
-```
-
-Il comando migra:
-
-- `agenda_events[event_type=appointment]` -> `appointments`
-- `agenda_events[event_type=event]` -> `agenda_manual_events`
-- `agenda_events.services` -> `appointment_service_items`
-- stato reminder legacy -> `appointment_reminders`
-- `pending_notifications` -> `appointment_notifications`
-
-Gli appointment legacy con `attendee_id` non UUID vengono saltati e contati come `skipped_invalid_customers`.
-
-### Step 4: cutover diretto al nuovo modello
-
-Spostare read/query e write principali sulle nuove tabelle. Non prevedere fallback runtime sul legacy.
-
-### Step 5: reminder switch
-
-Spostare reminder state da `agenda_events` a `appointment_reminders`.
-
-### Step 6: notification switch
-
-Spostare pending notification da `pending_notifications` a `appointment_notifications`.
-
-### Step 7: cleanup
-
-Rimuovere da `agenda_events`:
-
-- `title`
-- `description`
-- `attendee_id`
-- `attendee_display_name`
-- `services`
-- `reminder_status`
-- `reminder_sent_at`
-- `remind_before_seconds`
-
-Rimuovere tabella legacy:
-
-- `pending_notifications`
 
 ## Decisioni aperte
 

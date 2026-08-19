@@ -52,20 +52,6 @@
       ],
       "changelog-path": "CHANGELOG.md"
     },
-    "scheduler": {
-      "release-type": "simple",
-      "package-name": "scheduler-service",
-      "include-component-in-tag": true,
-      "component": "scheduler-service",
-      "extra-files": [
-        {
-          "type": "yaml",
-          "path": "helm/Chart.yaml",
-          "jsonpath": "$.appVersion"
-        }
-      ],
-      "changelog-path": "CHANGELOG.md"
-    },
     "consent-service": {
       "release-type": "simple",
       "package-name": "consent-service",

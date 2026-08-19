@@ -14,7 +14,6 @@ type Config struct {
 	App      AppConfig      `koanf:"app"`
 	HTTP     HTTPConfig     `koanf:"http"`
 	Postgres PostgresConfig `koanf:"postgres"`
-	Mongo    MongoConfig    `koanf:"mongo"`
 	Redis    RedisConfig    `koanf:"redis"`
 }
 
@@ -29,11 +28,6 @@ type HTTPConfig struct {
 
 type PostgresConfig struct {
 	DSN string `koanf:"dsn"`
-}
-
-type MongoConfig struct {
-	URI      string `koanf:"uri"`
-	Database string `koanf:"database"`
 }
 
 type RedisConfig struct {
@@ -52,8 +46,6 @@ func Load(envFile string) (Config, error) {
 	_ = k.Set("app.name", "beaesthetic-customers")
 	_ = k.Set("app.env", "local")
 	_ = k.Set("http.addr", ":8080")
-	_ = k.Set("mongo.uri", "mongodb://localhost:27017")
-	_ = k.Set("mongo.database", "customer")
 	_ = k.Set("redis.uri", "redis://localhost:6379")
 	_ = k.Set("redis.customers_ttl", "1h")
 	_ = k.Set("redis.customers_search_ttl", "5m")

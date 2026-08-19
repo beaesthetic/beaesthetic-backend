@@ -1,23 +1,22 @@
 # Appointment application flows
 
-Questo documento descrive i flussi runtime correnti. Il nuovo percorso usa il modello `domain/v2`; le vecchie API OpenAPI e la coda scheduler restano temporaneamente attive come compatibilita' legacy.
+Questo documento descrive i flussi runtime correnti basati sul modello `domain/v2`.
 
 ## Runtime
 
 Il comando `appointment app` avvia tramite il runtime condiviso:
 
-- API HTTP legacy e API Calendar ProtoJSON;
+- API Calendar ProtoJSON;
 - River client runtime con il worker `appointment.send_reminder`;
 - consumer RabbitMQ dei lifecycle event;
 - consumer della coda outcome `customer.notifications.outcomes`;
-- consumer della vecchia scheduler queue, solo per drenare job gia' pubblicati.
 
 River usa due client distinti:
 
 - il client runtime registra e avvia i worker;
 - il client producer e' usato da `RiverJobInserter` per `InsertTx`, `JobListTx` e `JobCancelTx` dentro la transazione presente nel `ContextDB`.
 
-La separazione evita una dipendenza DI circolare tra worker, lifecycle service, scheduler e client River.
+La separazione evita una dipendenza DI circolare tra worker, lifecycle service e client River.
 
 ## Calendar create
 
@@ -169,4 +168,4 @@ Il servizio appointment non verifica preventivamente la presenza del numero di t
 
 ## Runtime attuale
 
-Il servizio usa River per i reminder e processa esclusivamente lifecycle event `CalendarEvent*`. Le procedure di backfill e il consumer della scheduler queue legacy non fanno parte del runtime.
+Il servizio usa River per i reminder e processa esclusivamente lifecycle event `CalendarEvent*`.

@@ -23,8 +23,6 @@ envConfig:
   RABBITMQ__CUSTOMER_NOTIFICATION_QUEUE: customer.notifications
   CUSTOMER_SERVICE__URL: http://customer-service-v2.beaesthetic.svc.cluster.local:8080
   TEMPLATES__PATH: /app/templates
-  MONGO__DATABASE: notifications-v2
-  MONGO__COLLECTION: notifications
 resources:
   requests:
     memory: 100Mi
@@ -39,9 +37,6 @@ secretKeyRef:
   - name: RABBITMQ__URL
     secretRefName: notification-secrets
     key: rabbitmq-url
-  - name: MONGO__URI
-    secretRefName: notification-service
-    key: MONGO_DB_URI
   - name: SMS_GATEWAY__API_KEY
     secretRefName: notification-secrets
     key: SMS_GATEWAY_API_KEY

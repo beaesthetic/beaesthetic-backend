@@ -15,7 +15,6 @@ type Config struct {
 	App             AppConfig             `koanf:"app"`
 	HTTP            HTTPConfig            `koanf:"http"`
 	Postgres        PostgresConfig        `koanf:"postgres"`
-	Mongo           MongoConfig           `koanf:"mongo"`
 	RabbitMQ        RabbitMQConfig        `koanf:"rabbitmq"`
 	SMSGateway      SMSGatewayConfig      `koanf:"sms_gateway"`
 	CustomerService CustomerServiceConfig `koanf:"customer_service"`
@@ -33,12 +32,6 @@ type HTTPConfig struct {
 
 type PostgresConfig struct {
 	DSN string `koanf:"dsn"`
-}
-
-type MongoConfig struct {
-	URI        string `koanf:"uri"`
-	Database   string `koanf:"database"`
-	Collection string `koanf:"collection"`
 }
 
 type RabbitMQConfig struct {
