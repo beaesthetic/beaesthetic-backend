@@ -9,7 +9,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.10.0
 	github.com/knadh/koanf/parsers/dotenv v1.1.0
-	github.com/knadh/koanf/providers/env v1.1.0
+	github.com/knadh/koanf/providers/env/v2 v2.0.1
 	github.com/knadh/koanf/providers/file v1.2.0
 	github.com/knadh/koanf/v2 v2.2.2
 	github.com/oapi-codegen/runtime v1.4.2
@@ -21,7 +21,10 @@ require (
 	golang.org/x/sync v0.21.0 // indirect
 )
 
-require github.com/goodsign/monday v1.0.2
+require (
+	github.com/goodsign/monday v1.0.2
+	github.com/knadh/koanf/providers/env v1.1.0
+)
 
 require (
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
