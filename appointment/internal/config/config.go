@@ -47,9 +47,10 @@ type ReminderConfig struct {
 }
 
 type RiverConfig struct {
-	Queue       string `koanf:"queue"`
-	Workers     int    `koanf:"workers"`
-	MaxAttempts int    `koanf:"max_attempts"`
+	Queue           string        `koanf:"queue"`
+	Workers         int           `koanf:"workers"`
+	MaxAttempts     int           `koanf:"max_attempts"`
+	SoftStopTimeout time.Duration `koanf:"soft_stop_timeout"`
 }
 
 func Load(envFile string) (Config, error) {

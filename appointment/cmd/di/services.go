@@ -1,6 +1,8 @@
 package di
 
 import (
+	"time"
+
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
 	applicationv2 "github.com/petretiandrea/beaesthetic-backend/appointment/internal/application/v2"
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/infra/jobs"
@@ -10,9 +12,10 @@ import (
 )
 
 type RiverReminderConfig struct {
-	Queue       string
-	Workers     int
-	MaxAttempts int
+	Queue           string
+	Workers         int
+	MaxAttempts     int
+	SoftStopTimeout time.Duration
 }
 
 func (d *DiContainer) GetCalendarService() *applicationv2.CalendarService {
@@ -88,9 +91,10 @@ func (d *DiContainer) GetReminderScheduler() *jobs.ReminderScheduler {
 
 func (d *DiContainer) GetRiverReminderConfig() RiverReminderConfig {
 	cfg := RiverReminderConfig{
-		Queue:       d.Config.River.Queue,
-		Workers:     d.Config.River.Workers,
-		MaxAttempts: d.Config.River.MaxAttempts,
+		Queue:           d.Config.River.Queue,
+		Workers:         d.Config.River.Workers,
+		MaxAttempts:     d.Config.River.MaxAttempts,
+		SoftStopTimeout: d.Config.River.SoftStopTimeout,
 	}
 	if cfg.Queue == "" {
 		cfg.Queue = "appointment_reminders"
@@ -100,6 +104,9 @@ func (d *DiContainer) GetRiverReminderConfig() RiverReminderConfig {
 	}
 	if cfg.MaxAttempts <= 0 {
 		cfg.MaxAttempts = 3
+	}
+	if cfg.SoftStopTimeout <= 0 {
+		cfg.SoftStopTimeout = 8 * time.Second
 	}
 	return cfg
 }

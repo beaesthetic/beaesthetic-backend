@@ -17,6 +17,8 @@ import (
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"github.com/riverqueue/river/rivermigrate"
+	"github.com/riverqueue/river/rivertype"
+	"github.com/riverqueue/rivercontrib/otelriver"
 )
 
 func (d *DiContainer) GetPostgresDatabase() *pgxpool.Pool {
@@ -61,17 +63,29 @@ func (d *DiContainer) GetRiverClient() *river.Client[pgx.Tx] {
 			return nil, err
 		}
 		return river.NewClient(riverpgxv5.New(d.GetPostgresDatabase()), &river.Config{
+			Middleware: []rivertype.Middleware{
+				otelriver.NewMiddleware(&otelriver.MiddlewareConfig{
+					EnableSemanticMetrics: true,
+				}),
+			},
 			Queues: map[string]river.QueueConfig{
 				riverConfig.Queue: {MaxWorkers: riverConfig.Workers},
 			},
-			Workers: workers,
+			SoftStopTimeout: riverConfig.SoftStopTimeout,
+			Workers:         workers,
 		})
 	})
 }
 
 func (d *DiContainer) GetRiverInsertClient() *river.Client[pgx.Tx] {
 	return singletonWithError(d, "riverInsertClient", func() (*river.Client[pgx.Tx], error) {
-		return river.NewClient(riverpgxv5.New(d.GetPostgresDatabase()), &river.Config{})
+		return river.NewClient(riverpgxv5.New(d.GetPostgresDatabase()), &river.Config{
+			Middleware: []rivertype.Middleware{
+				otelriver.NewMiddleware(&otelriver.MiddlewareConfig{
+					EnableSemanticMetrics: true,
+				}),
+			},
+		})
 	})
 }
 
