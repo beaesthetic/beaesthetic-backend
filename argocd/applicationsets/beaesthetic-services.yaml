@@ -28,13 +28,18 @@ spec:
           - list:
               elements:
                 - environment: dev
+                  enabled: "true"
                   namespace: beaesthetic-dev
                   valuesFile: values-dev.yaml
                   targetRevision: HEAD
                 - environment: prod
+                  enabled: "true"
                   namespace: beaesthetic
                   valuesFile: values.yaml
                   targetRevision: HEAD
+        selector:
+          matchLabels:
+            enabled: "true"
   template:
     metadata:
       name: "{{.service}}-{{.environment}}"
