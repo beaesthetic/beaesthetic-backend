@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.17.0...appointment-service-v1.18.0) (2026-09-13)
+
+
+### Features
+
+* integrate OpenTelemetry for tracing and metrics ([1ded1fd](https://github.com/beaesthetic/beaesthetic-backend/commit/1ded1fd9b08b4ab3dd7e26e09708384304fed540))
+
 ## [1.17.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.16.0...appointment-service-v1.17.0) (2026-08-19)
 
 
