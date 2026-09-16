@@ -9,7 +9,6 @@ import (
 
 type Config struct {
 	HTTP              HTTPConfig
-	GRPC              GRPCConfig
 	Token             TokenConfig
 	InternalAPIKey    string
 	PostgresDSN       string
@@ -17,10 +16,6 @@ type Config struct {
 }
 
 type HTTPConfig struct {
-	Addr string
-}
-
-type GRPCConfig struct {
 	Addr string
 }
 
@@ -45,7 +40,6 @@ func Load() (Config, error) {
 	}
 	cfg := Config{
 		HTTP: HTTPConfig{Addr: envOrDefault("ENV_HTTP_ADDR", ":8080")},
-		GRPC: GRPCConfig{Addr: envOrDefault("ENV_GRPC_ADDR", ":9090")},
 		Token: TokenConfig{
 			Issuer:        envOrDefault("ENV_TOKEN_ISSUER", "beaesthetic-identity"),
 			ActiveKeyID:   os.Getenv("ENV_TOKEN_ACTIVE_KEY_ID"),

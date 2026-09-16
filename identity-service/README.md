@@ -15,11 +15,8 @@ All `/v1/internal/*` endpoints require `X-Internal-API-Key`.
 - `POST /v1/internal/tokens` issues a token from a trusted, normalized identity.
 - `POST /v1/internal/tokens/verify` verifies a token for a requested audience; this is useful for diagnostics, but services should normally verify locally.
 - `GET /v1/internal/keys` returns the active and retained public keys for offline verification.
-- `GET /v1/internal/organizations/{organization_id}/users/{user_id}/authorization` returns an active membership's effective roles and permissions.
 - `GET /health` is unauthenticated for Kubernetes probes.
-- `POST /oauth/token` accepts JSON matching `ExchangeTokenRequest`: `grantType=urn:ietf:params:oauth:grant-type:token-exchange`, `subjectAssertion.tokenType=urn:ietf:params:oauth:token-type:jwt`, `subjectAssertion.authenticator=firebase`, `authorizer=membership`, a Firebase `subjectAssertion.token`, `audience`, and `organizationId`.
-
-gRPC listens on `ENV_GRPC_ADDR` (default `:9090`) and implements `TokenService` and `MembershipService` from `core-contracts/identity`. `ExchangeToken` is public; every other RPC requires gRPC metadata `x-internal-api-key`.
+- `POST /oauth/token` accepts `grant_type=urn:ietf:params:oauth:grant-type:token-exchange`, `subject_token_type=urn:ietf:params:oauth:token-type:jwt`, `authenticator=firebase`, `authorizer=membership`, a Firebase `subject_token`, `audience`, and `organization_id`.
 
 `Authenticator` and `Authorizer` are independent registries: one validates and normalizes an external identity; the other maps it to local authorization. OIDC, mTLS, partner credentials, and authorization policies can be added without modifying PASETO issuance.
 
@@ -30,10 +27,10 @@ Example issue request:
 ```json
 {
   "subject": "user_123",
-  "identityType": "IDENTITY_TYPE_HUMAN",
+  "identity_type": "human",
   "audience": "appointment",
   "permissions": ["appointments:read"],
-  "authMethod": "provider:xyz"
+  "auth_method": "provider:xyz"
 }
 ```
 
@@ -42,14 +39,3 @@ Example issue request:
 Set `ENV_TOKEN_ACTIVE_KEY_ID` and its 64-byte raw Ed25519 private key encoded with base64url (no padding). Keep old public keys in `ENV_TOKEN_VERIFY_KEYS_JSON`, e.g. `{"2026-06":"<base64url-public-key>"}`. Tokens carry the signing `kid`; verifiers can retain all advertised keys until all tokens signed by the old key expire.
 
 The private key is never exposed. Store it in a Kubernetes Secret; do not place it in Helm values or source control.
-
-## Developer commands
-
-Uses Mage, matching `appointment`:
-
-```bash
-mage lint   # go fmt ./... + go vet ./...
-mage test
-mage check
-mage build
-```
