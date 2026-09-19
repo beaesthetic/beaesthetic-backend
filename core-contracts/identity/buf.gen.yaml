@@ -1,0 +1,12 @@
+version: v2
+plugins:
+  - remote: buf.build/protocolbuffers/go:v1.36.10
+    out: .
+    opt:
+      - paths=import
+      - module=github.com/petretiandrea/beaesthetic-backend/core-contracts/identity
+  - remote: buf.build/grpc/go:v1.5.1
+    out: .
+    opt:
+      - paths=import
+      - module=github.com/petretiandrea/beaesthetic-backend/core-contracts/identity
