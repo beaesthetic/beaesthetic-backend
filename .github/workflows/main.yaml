@@ -24,6 +24,7 @@ jobs:
       appointment: ${{ steps.release.outputs.appointment }}
       customer: ${{ steps.release.outputs.customer }}
       notification: ${{ steps.release.outputs.notification }}
+      identity: ${{ steps.release.outputs.identity }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -37,7 +38,7 @@ jobs:
           before="${{ github.event.before }}"
           manifest=".release-please-manifest.json"
 
-          for service in appointment customer notification; do
+          for service in appointment customer notification identity; do
             current="$(jq -r --arg service "$service" '.[$service] // empty' "$manifest")"
             previous=""
             if [ -n "$before" ] && git cat-file -e "$before:$manifest" 2>/dev/null; then
@@ -73,6 +74,10 @@ jobs:
             image: petretiandrea/notification-service-v2
             context: ./notification
             dockerfile: ./notification/Dockerfile
+          - key: identity
+            image: petretiandrea/identity-service
+            context: ./identity-service
+            dockerfile: ./identity-service/Dockerfile
             
     steps:
       - name: Checkout repository
