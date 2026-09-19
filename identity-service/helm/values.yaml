@@ -3,7 +3,7 @@ name: identity-service
 replicaCount: 1
 image:
   repository: petretiandrea/identity-service
-  tag: 0.1.0
+  tag: 0.2.0
   pullPolicy: IfNotPresent
 service:
   port: 8080
