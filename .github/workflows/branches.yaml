@@ -104,8 +104,13 @@ jobs:
 
       - name: Run tests
         if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
-        run: go run github.com/magefile/mage@v1.15.0 -v test
-        working-directory: ${{ matrix.context }}
+        run: |
+          cd "${{ matrix.context }}"
+          if [ ! -f go.mod ]; then
+            echo "No Go module in ${{ matrix.context }}; skipping Go tests"
+            exit 0
+          fi
+          go test ./...
 
       - name: Extract Docker metadata
         if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'

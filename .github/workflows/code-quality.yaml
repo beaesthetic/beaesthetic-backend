@@ -2,52 +2,51 @@ name: Code Quality
 
 on:
   pull_request:
-    paths:
-      - '**/*.kt'
-      - '**/*.java'
-      - '**/build.gradle*'
   push:
     branches:
       - main
 
 jobs:
-  detect-changes:
+  go-quality:
     runs-on: ubuntu-24.04-arm
-    outputs:
-      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    name: Go quality
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Detect changed services
-        id: set-matrix
-        run: |
-          changed=$(git diff --name-only ${{ github.event.pull_request.base.sha || github.event.before }} ${{ github.sha }} \
-            | cut -d/ -f1 \
-            | grep -E '^service-' \
-            | sort -u | uniq)
-
-          echo "Changed services:"
-          echo "$changed"
-
-          json_array=$(echo "$changed" | jq -R . | jq -s .)
-          echo "matrix={\"folder\":$json_array}" >> $GITHUB_OUTPUT
-          
-  run-code-quality:
-    needs: detect-changes
-    runs-on: ubuntu-24.04-arm
-    strategy:
-      matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
-    name: Check ${{ matrix.folder }}
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      - uses: actions/setup-go@v5
         with:
-          distribution: temurin
-          java-version: 21
+          go-version: '1.25.0'
 
-      - name: Run ./gradlew check in ${{ matrix.folder }}
+      - name: Check formatting and vet every Go module
+        shell: bash
         run: |
-          cd ${{ matrix.folder }}
-          ./gradlew check
+          while IFS= read -r module; do
+            directory="$(dirname "$module")"
+            echo "Checking $directory"
+            unformatted="$(find "$directory" -name '*.go' -not -path '*/vendor/*' -print0 | xargs -0 gofmt -l)"
+            if [ -n "$unformatted" ]; then
+              echo "Unformatted Go files:"
+              echo "$unformatted"
+              exit 1
+            fi
+            (cd "$directory" && go vet ./...)
+          done < <(find . -name go.mod -not -path '*/vendor/*' | sort)
+
+  helm-quality:
+    runs-on: ubuntu-24.04-arm
+    name: Helm quality
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+
+      - name: Lint and render every chart
+        shell: bash
+        run: |
+          while IFS= read -r chart; do
+            chart_dir="$(dirname "$chart")"
+            echo "Checking $chart_dir"
+            helm lint "$chart_dir"
+            helm template "$(basename "$(dirname "$chart_dir")")" "$chart_dir" >/dev/null
+          done < <(find . -name Chart.yaml -not -path '*/charts/*' | sort)
