@@ -15,8 +15,11 @@ All `/v1/internal/*` endpoints require `X-Internal-API-Key`.
 - `POST /v1/internal/tokens` issues a token from a trusted, normalized identity.
 - `POST /v1/internal/tokens/verify` verifies a token for a requested audience; this is useful for diagnostics, but services should normally verify locally.
 - `GET /v1/internal/keys` returns the active and retained public keys for offline verification.
+- `GET /v1/internal/organizations/{organization_id}/users/{user_id}/authorization` returns an active membership's effective roles and permissions.
 - `GET /health` is unauthenticated for Kubernetes probes.
-- `POST /oauth/token` accepts `grant_type=urn:ietf:params:oauth:grant-type:token-exchange`, `subject_token_type=urn:ietf:params:oauth:token-type:jwt`, `authenticator=firebase`, `authorizer=membership`, a Firebase `subject_token`, `audience`, and `organization_id`.
+- `POST /oauth/token` accepts JSON matching `ExchangeTokenRequest`: `grantType=urn:ietf:params:oauth:grant-type:token-exchange`, `subjectAssertion.tokenType=urn:ietf:params:oauth:token-type:jwt`, `subjectAssertion.authenticator=firebase`, `authorizer=membership`, a Firebase `subjectAssertion.token`, `audience`, and `organizationId`.
+
+gRPC listens on `ENV_GRPC_ADDR` (default `:9090`) and implements `TokenService` and `MembershipService` from `core-contracts/identity`. `ExchangeToken` is public; every other RPC requires gRPC metadata `x-internal-api-key`.
 
 `Authenticator` and `Authorizer` are independent registries: one validates and normalizes an external identity; the other maps it to local authorization. OIDC, mTLS, partner credentials, and authorization policies can be added without modifying PASETO issuance.
 
@@ -27,10 +30,10 @@ Example issue request:
 ```json
 {
   "subject": "user_123",
-  "identity_type": "human",
+  "identityType": "IDENTITY_TYPE_HUMAN",
   "audience": "appointment",
   "permissions": ["appointments:read"],
-  "auth_method": "provider:xyz"
+  "authMethod": "provider:xyz"
 }
 ```
 
