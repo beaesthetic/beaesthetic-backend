@@ -57,3 +57,11 @@ mage build
 ## Authorization seed
 
 `seeds/roles.yaml` is the global role and permission catalog. Memberships receive roles through `membership_roles`; permissions are derived only through `role_permissions`.
+
+Bootstrap an organization and its owner by email after migrations and role seeding:
+
+```bash
+identity bootstrap seeds/bootstrap.yaml
+```
+
+`seeds/bootstrap.example.yaml` shows the format. Firebase subject is linked automatically on the owner's first authenticated login; no Firebase UUID is required during bootstrap.

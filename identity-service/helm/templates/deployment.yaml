@@ -46,7 +46,24 @@ spec:
               value: {{ .Values.env.ENV_HTTP_ADDR | quote }}
             - name: ENV_GRPC_ADDR
               value: {{ .Values.env.ENV_GRPC_ADDR | quote }}
+        {{- if .Values.initContainers.bootstrap.enabled }}
+        - name: bootstrap
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /app/identity
+            - bootstrap
+            - {{ .Values.initContainers.bootstrap.path | quote }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secretKeyRef.name }}
+          env:
+            - name: ENV_HTTP_ADDR
+              value: {{ .Values.env.ENV_HTTP_ADDR | quote }}
+            - name: ENV_GRPC_ADDR
+              value: {{ .Values.env.ENV_GRPC_ADDR | quote }}
         {{- end }}
+      {{- end }}
       {{- end }}
       containers:
         - name: identity

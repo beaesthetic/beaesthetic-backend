@@ -15,6 +15,9 @@ initContainers:
     enabled: true
   seedRoles:
     enabled: true
+  bootstrap:
+    enabled: true
+    path: /app/seeds/bootstrap.yaml
 secretKeyRef:
   name: identity-secrets
 resources:

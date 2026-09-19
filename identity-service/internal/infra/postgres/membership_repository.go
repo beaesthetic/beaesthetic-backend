@@ -8,6 +8,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/membership"
+	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/infra/postgres/queries"
 )
 
 type MembershipRepository struct{ pool *pgxpool.Pool }
@@ -30,6 +31,22 @@ func (r *MembershipRepository) FindOrCreateUser(ctx context.Context, provider, p
 	}
 	if err != pgx.ErrNoRows {
 		return membership.User{}, err
+	}
+	// Bootstrap users are created by email before their Firebase subject exists.
+	// Link the first authenticated external identity to that pre-provisioned user.
+	if email != "" {
+		q := queries.New(tx)
+		byEmail, emailErr := q.FindUserByEmail(ctx, email)
+		if emailErr == nil {
+			if err := q.CreateExternalIdentity(ctx, queries.CreateExternalIdentityParams{Provider: provider, Subject: providerSubject, UserID: byEmail.ID}); err != nil {
+				return membership.User{}, err
+			}
+			user = membership.User{ID: byEmail.ID, Email: byEmail.Email, Provider: provider, ProviderSubject: providerSubject}
+			return user, tx.Commit(ctx)
+		}
+		if emailErr != pgx.ErrNoRows {
+			return membership.User{}, emailErr
+		}
 	}
 	user.ID, err = newID()
 	if err != nil {

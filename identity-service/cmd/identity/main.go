@@ -32,6 +32,7 @@ func root() *cobra.Command {
 	root := &cobra.Command{Use: "identity", SilenceUsage: true}
 	root.AddCommand(&cobra.Command{Use: "app", Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, _ []string) error { return run(cmd.Context()) }})
 	root.AddCommand(&cobra.Command{Use: "migrate [up|down|version]", Args: cobra.ExactArgs(1), RunE: migrateCommand})
+	root.AddCommand(&cobra.Command{Use: "bootstrap <yaml>", Args: cobra.ExactArgs(1), RunE: bootstrapCommand})
 	root.AddCommand(&cobra.Command{Use: "seed-roles [yaml]", Args: cobra.MaximumNArgs(1), RunE: func(cmd *cobra.Command, args []string) error {
 		path := "seeds/roles.yaml"
 		if len(args) == 1 {
@@ -45,6 +46,16 @@ func root() *cobra.Command {
 		return seed.Apply(cmd.Context(), c.GetPostgres(), path)
 	}})
 	return root
+}
+
+func bootstrapCommand(cmd *cobra.Command, args []string) error {
+	c, err := di.New(cmd.Context())
+	if err != nil {
+		return err
+	}
+	defer c.GetPostgres().Close()
+	defer c.Log.Sync()
+	return seed.ApplyBootstrap(cmd.Context(), c.GetPostgres(), args[0])
 }
 
 func migrateCommand(cmd *cobra.Command, args []string) error {

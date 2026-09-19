@@ -9,6 +9,21 @@ import (
 	"context"
 )
 
+const assignMembershipRole = `-- name: AssignMembershipRole :exec
+INSERT INTO membership_roles (membership_id,role_id) VALUES ($1,$2)
+ON CONFLICT DO NOTHING
+`
+
+type AssignMembershipRoleParams struct {
+	MembershipID string `json:"membership_id"`
+	RoleID       string `json:"role_id"`
+}
+
+func (q *Queries) AssignMembershipRole(ctx context.Context, arg AssignMembershipRoleParams) error {
+	_, err := q.db.Exec(ctx, assignMembershipRole, arg.MembershipID, arg.RoleID)
+	return err
+}
+
 const createExternalIdentity = `-- name: CreateExternalIdentity :exec
 INSERT INTO external_identities (provider,subject,user_id) VALUES ($1,$2,$3)
 `
@@ -63,6 +78,22 @@ func (q *Queries) FindMembership(ctx context.Context, arg FindMembershipParams) 
 		&i.OrganizationID,
 		&i.Active,
 	)
+	return i, err
+}
+
+const findUserByEmail = `-- name: FindUserByEmail :one
+SELECT id::text, coalesce(email,'') AS email FROM users WHERE lower(email)=lower($1) LIMIT 1
+`
+
+type FindUserByEmailRow struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+}
+
+func (q *Queries) FindUserByEmail(ctx context.Context, lower string) (FindUserByEmailRow, error) {
+	row := q.db.QueryRow(ctx, findUserByEmail, lower)
+	var i FindUserByEmailRow
+	err := row.Scan(&i.ID, &i.Email)
 	return i, err
 }
 
@@ -149,6 +180,22 @@ func (q *Queries) ListMembershipRoles(ctx context.Context, membershipID string) 
 	return items, nil
 }
 
+const upsertExternalIdentity = `-- name: UpsertExternalIdentity :exec
+INSERT INTO external_identities (provider,subject,user_id) VALUES ($1,$2,$3)
+ON CONFLICT (provider,subject) DO UPDATE SET user_id = EXCLUDED.user_id
+`
+
+type UpsertExternalIdentityParams struct {
+	Provider string `json:"provider"`
+	Subject  string `json:"subject"`
+	UserID   string `json:"user_id"`
+}
+
+func (q *Queries) UpsertExternalIdentity(ctx context.Context, arg UpsertExternalIdentityParams) error {
+	_, err := q.db.Exec(ctx, upsertExternalIdentity, arg.Provider, arg.Subject, arg.UserID)
+	return err
+}
+
 const upsertGlobalRole = `-- name: UpsertGlobalRole :one
 INSERT INTO roles (id, organization_id, name) VALUES ($1, NULL, $2) ON CONFLICT (organization_id, name) DO UPDATE SET name = EXCLUDED.name RETURNING id::text
 `
@@ -165,6 +212,43 @@ func (q *Queries) UpsertGlobalRole(ctx context.Context, arg UpsertGlobalRolePara
 	return id, err
 }
 
+const upsertMembership = `-- name: UpsertMembership :one
+INSERT INTO memberships (id,user_id,organization_id,active) VALUES ($1,$2,$3,true)
+ON CONFLICT (user_id,organization_id) DO UPDATE SET active = true
+RETURNING id::text
+`
+
+type UpsertMembershipParams struct {
+	ID             string `json:"id"`
+	UserID         string `json:"user_id"`
+	OrganizationID string `json:"organization_id"`
+}
+
+func (q *Queries) UpsertMembership(ctx context.Context, arg UpsertMembershipParams) (string, error) {
+	row := q.db.QueryRow(ctx, upsertMembership, arg.ID, arg.UserID, arg.OrganizationID)
+	var id string
+	err := row.Scan(&id)
+	return id, err
+}
+
+const upsertOrganization = `-- name: UpsertOrganization :one
+INSERT INTO organizations (id, name) VALUES ($1, $2)
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
+RETURNING id::text
+`
+
+type UpsertOrganizationParams struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (q *Queries) UpsertOrganization(ctx context.Context, arg UpsertOrganizationParams) (string, error) {
+	row := q.db.QueryRow(ctx, upsertOrganization, arg.ID, arg.Name)
+	var id string
+	err := row.Scan(&id)
+	return id, err
+}
+
 const upsertPermission = `-- name: UpsertPermission :one
 INSERT INTO permissions (id, code) VALUES ($1, $2) ON CONFLICT (code) DO UPDATE SET code = EXCLUDED.code RETURNING id::text
 `
@@ -176,6 +260,24 @@ type UpsertPermissionParams struct {
 
 func (q *Queries) UpsertPermission(ctx context.Context, arg UpsertPermissionParams) (string, error) {
 	row := q.db.QueryRow(ctx, upsertPermission, arg.ID, arg.Code)
+	var id string
+	err := row.Scan(&id)
+	return id, err
+}
+
+const upsertUser = `-- name: UpsertUser :one
+INSERT INTO users (id,email) VALUES ($1,$2::text)
+ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email
+RETURNING id::text
+`
+
+type UpsertUserParams struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+}
+
+func (q *Queries) UpsertUser(ctx context.Context, arg UpsertUserParams) (string, error) {
+	row := q.db.QueryRow(ctx, upsertUser, arg.ID, arg.Email)
 	var id string
 	err := row.Scan(&id)
 	return id, err

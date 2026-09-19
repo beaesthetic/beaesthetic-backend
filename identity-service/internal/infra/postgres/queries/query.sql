@@ -1,9 +1,29 @@
 -- name: FindUserByExternalIdentity :one
 SELECT u.id::text, coalesce(u.email,'') AS email FROM external_identities e JOIN users u ON u.id=e.user_id WHERE e.provider=$1 AND e.subject=$2;
+-- name: FindUserByEmail :one
+SELECT id::text, coalesce(email,'') AS email FROM users WHERE lower(email)=lower($1) LIMIT 1;
 -- name: CreateUser :exec
 INSERT INTO users (id,email) VALUES ($1,NULLIF($2,''));
 -- name: CreateExternalIdentity :exec
 INSERT INTO external_identities (provider,subject,user_id) VALUES ($1,$2,$3);
+-- name: UpsertOrganization :one
+INSERT INTO organizations (id, name) VALUES ($1, $2)
+ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
+RETURNING id::text;
+-- name: UpsertUser :one
+INSERT INTO users (id,email) VALUES (sqlc.arg(id),sqlc.arg(email)::text)
+ON CONFLICT (id) DO UPDATE SET email = EXCLUDED.email
+RETURNING id::text;
+-- name: UpsertExternalIdentity :exec
+INSERT INTO external_identities (provider,subject,user_id) VALUES ($1,$2,$3)
+ON CONFLICT (provider,subject) DO UPDATE SET user_id = EXCLUDED.user_id;
+-- name: UpsertMembership :one
+INSERT INTO memberships (id,user_id,organization_id,active) VALUES ($1,$2,$3,true)
+ON CONFLICT (user_id,organization_id) DO UPDATE SET active = true
+RETURNING id::text;
+-- name: AssignMembershipRole :exec
+INSERT INTO membership_roles (membership_id,role_id) VALUES ($1,$2)
+ON CONFLICT DO NOTHING;
 -- name: FindMembership :one
 SELECT id::text,user_id::text,organization_id::text,active FROM memberships WHERE user_id=$1 AND organization_id=$2;
 -- name: ListMembershipRoles :many
