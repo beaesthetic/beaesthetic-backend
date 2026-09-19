@@ -54,6 +54,7 @@
     },
     "identity": {
       "release-type": "simple",
+      "path": "identity-service",
       "package-name": "identity-service",
       "include-component-in-tag": true,
       "component": "identity-service",
