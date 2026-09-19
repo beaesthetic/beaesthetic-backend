@@ -10,6 +10,12 @@ service:
 env:
   ENV_HTTP_ADDR: ":8080"
   ENV_GRPC_ADDR: ":9090"
+oidc:
+  providers:
+    - name: firebase
+      issuer: https://securetoken.google.com/sms-gateway-b2986
+      audience: sms-gateway-b2986
+      discovery_url: http://firebase-discovery.beaesthetic.svc.cluster.local/.well-known/openid-configuration
 initContainers:
   migrate:
     enabled: true

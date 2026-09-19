@@ -14,7 +14,7 @@ import (
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/config"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/token"
-	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/infra/firebase"
+	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/infra/oidc"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/infra/postgres"
 	"go.uber.org/zap"
 )
@@ -85,6 +85,14 @@ func (c *Container) GetMemberships() *postgres.MembershipRepository {
 }
 func (c *Container) GetExchange() *application.ExchangeService {
 	return singleton(c, "exchange", func() *application.ExchangeService {
-		return application.NewExchangeService(c.GetIssuer(), []application.Authenticator{firebase.NewFirebaseVerifier(c.Config.FirebaseProjectID, nil)}, []application.Authorizer{application.NewMembershipAuthorizer(c.GetMemberships())})
+		authenticators := make([]application.Authenticator, 0, len(c.Config.OIDC.Providers))
+		for _, provider := range c.Config.OIDC.Providers {
+			verifier, err := oidc.NewVerifier(context.Background(), provider.Name, provider.Issuer, provider.Audience, provider.DiscoveryURL)
+			if err != nil {
+				panic(err)
+			}
+			authenticators = append(authenticators, verifier)
+		}
+		return application.NewExchangeService(c.GetIssuer(), authenticators, []application.Authorizer{application.NewMembershipAuthorizer(c.GetMemberships())})
 	})
 }

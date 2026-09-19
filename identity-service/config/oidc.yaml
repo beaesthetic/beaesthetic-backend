@@ -1,0 +1,5 @@
+providers:
+  - name: firebase
+    issuer: https://securetoken.google.com/sms-gateway-b2986
+    audience: sms-gateway-b2986
+    discovery_url: http://firebase-discovery.beaesthetic.svc.cluster.local/.well-known/openid-configuration

@@ -2,7 +2,7 @@
 
 Issues short-lived internal **PASETO v4.public** access tokens signed with Ed25519. It owns users, organizations, memberships, roles and permissions. APISIX (or another gateway) sends a Firebase ID token to its OAuth token-exchange endpoint; the service verifies it, resolves the local membership and mints a service-audience token.
 
-Firebase verification checks the JWT signature against Firebase's JWKS and validates the expected Firebase project audience and issuer. Only the resulting local membership decides roles and permissions.
+OIDC verification checks discovery metadata, issuer, audience, signature and JWKS. Firebase is configured as one OIDC provider in `config/oidc.yaml`; only the resulting local membership decides roles and permissions.
 
 ## Token claims
 

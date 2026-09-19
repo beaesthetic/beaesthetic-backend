@@ -5,15 +5,17 @@ import (
 	"fmt"
 	"os"
 	"time"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	HTTP              HTTPConfig
-	GRPC              GRPCConfig
-	Token             TokenConfig
-	InternalAPIKey    string
-	PostgresDSN       string
-	FirebaseProjectID string
+	HTTP           HTTPConfig
+	GRPC           GRPCConfig
+	Token          TokenConfig
+	InternalAPIKey string
+	PostgresDSN    string
+	OIDC           OIDCConfig
 }
 
 type HTTPConfig struct {
@@ -22,6 +24,17 @@ type HTTPConfig struct {
 
 type GRPCConfig struct {
 	Addr string
+}
+
+type OIDCConfig struct {
+	Providers []OIDCProvider `yaml:"providers"`
+}
+
+type OIDCProvider struct {
+	Name         string `yaml:"name"`
+	Issuer       string `yaml:"issuer"`
+	Audience     string `yaml:"audience"`
+	DiscoveryURL string `yaml:"discovery_url"`
 }
 
 type TokenConfig struct {
@@ -43,6 +56,15 @@ func Load() (Config, error) {
 			return Config{}, fmt.Errorf("parse ENV_TOKEN_VERIFY_KEYS_JSON: %w", err)
 		}
 	}
+	configPath := envOrDefault("ENV_OIDC_CONFIG_PATH", "config/oidc.yaml")
+	body, err := os.ReadFile(configPath)
+	if err != nil {
+		return Config{}, fmt.Errorf("read OIDC config: %w", err)
+	}
+	var oidcConfig OIDCConfig
+	if err := yaml.Unmarshal(body, &oidcConfig); err != nil {
+		return Config{}, fmt.Errorf("parse OIDC config: %w", err)
+	}
 	cfg := Config{
 		HTTP: HTTPConfig{Addr: envOrDefault("ENV_HTTP_ADDR", ":8080")},
 		GRPC: GRPCConfig{Addr: envOrDefault("ENV_GRPC_ADDR", ":9090")},
@@ -53,9 +75,9 @@ func Load() (Config, error) {
 			VerifyKeys:    verifyKeys,
 			TTL:           ttl,
 		},
-		InternalAPIKey:    os.Getenv("ENV_INTERNAL_API_KEY"),
-		PostgresDSN:       os.Getenv("ENV_POSTGRES_DSN"),
-		FirebaseProjectID: os.Getenv("ENV_FIREBASE_PROJECT_ID"),
+		InternalAPIKey: os.Getenv("ENV_INTERNAL_API_KEY"),
+		PostgresDSN:    os.Getenv("ENV_POSTGRES_DSN"),
+		OIDC:           oidcConfig,
 	}
 	if cfg.Token.ActiveKeyID == "" || cfg.Token.PrivateKeyB64 == "" {
 		return Config{}, fmt.Errorf("ENV_TOKEN_ACTIVE_KEY_ID and ENV_TOKEN_PRIVATE_KEY_B64 are required")
@@ -66,8 +88,8 @@ func Load() (Config, error) {
 	if cfg.PostgresDSN == "" {
 		return Config{}, fmt.Errorf("ENV_POSTGRES_DSN is required")
 	}
-	if cfg.FirebaseProjectID == "" {
-		return Config{}, fmt.Errorf("ENV_FIREBASE_PROJECT_ID is required")
+	if len(cfg.OIDC.Providers) == 0 {
+		return Config{}, fmt.Errorf("at least one OIDC provider is required")
 	}
 	return cfg, nil
 }

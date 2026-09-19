@@ -15,6 +15,7 @@ WORKDIR /app
 COPY --from=build /src/build/identity /app/identity
 COPY --from=build /src/migrations /app/migrations
 COPY --from=build /src/seeds /app/seeds
+COPY --from=build /src/config /app/config
 
 EXPOSE 8080 9090
 ENTRYPOINT ["/app/identity"]

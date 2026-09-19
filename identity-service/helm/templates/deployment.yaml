@@ -30,6 +30,11 @@ spec:
               value: {{ .Values.env.ENV_HTTP_ADDR | quote }}
             - name: ENV_GRPC_ADDR
               value: {{ .Values.env.ENV_GRPC_ADDR | quote }}
+            - name: ENV_OIDC_CONFIG_PATH
+              value: /app/config/oidc.yaml
+          volumeMounts:
+            - name: identity-config
+              mountPath: /app/config
         {{- if .Values.initContainers.seedRoles.enabled }}
         - name: seed-roles
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -46,6 +51,11 @@ spec:
               value: {{ .Values.env.ENV_HTTP_ADDR | quote }}
             - name: ENV_GRPC_ADDR
               value: {{ .Values.env.ENV_GRPC_ADDR | quote }}
+            - name: ENV_OIDC_CONFIG_PATH
+              value: /app/config/oidc.yaml
+          volumeMounts:
+            - name: identity-config
+              mountPath: /app/config
         {{- if .Values.initContainers.bootstrap.enabled }}
         - name: bootstrap
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -62,6 +72,11 @@ spec:
               value: {{ .Values.env.ENV_HTTP_ADDR | quote }}
             - name: ENV_GRPC_ADDR
               value: {{ .Values.env.ENV_GRPC_ADDR | quote }}
+            - name: ENV_OIDC_CONFIG_PATH
+              value: /app/config/oidc.yaml
+          volumeMounts:
+            - name: identity-config
+              mountPath: /app/config
         {{- end }}
       {{- end }}
       {{- end }}
@@ -80,6 +95,11 @@ spec:
               value: {{ .Values.env.ENV_HTTP_ADDR | quote }}
             - name: ENV_GRPC_ADDR
               value: {{ .Values.env.ENV_GRPC_ADDR | quote }}
+            - name: ENV_OIDC_CONFIG_PATH
+              value: /app/config/oidc.yaml
+          volumeMounts:
+            - name: identity-config
+              mountPath: /app/config
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           readinessProbe:
@@ -90,3 +110,7 @@ spec:
             httpGet:
               path: /health
               port: 8080
+      volumes:
+        - name: identity-config
+          configMap:
+            name: {{ .Values.name }}-config
