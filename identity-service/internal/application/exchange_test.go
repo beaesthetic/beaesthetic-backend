@@ -1,4 +1,4 @@
-package oauth
+package application
 
 import (
 	"context"
@@ -8,8 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/membership"
-	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/token"
+	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/membership"
+	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/token"
 )
 
 func TestExchangeResolvesAuthorizationFromMembership(t *testing.T) {

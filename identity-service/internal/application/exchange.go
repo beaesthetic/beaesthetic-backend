@@ -1,10 +1,10 @@
-package oauth
+package application
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/token"
+	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/token"
 )
 
 const TokenExchangeGrant = "urn:ietf:params:oauth:grant-type:token-exchange"

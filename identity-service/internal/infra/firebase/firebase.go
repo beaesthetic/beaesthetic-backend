@@ -1,4 +1,4 @@
-package oauth
+package firebase
 
 import (
 	"context"
@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/application"
 )
 
 const firebaseJWKSURL = "https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com"
@@ -29,7 +30,7 @@ func NewFirebaseVerifier(projectID string, client *http.Client) *FirebaseVerifie
 
 func (v *FirebaseVerifier) Name() string { return "firebase" }
 
-func (v *FirebaseVerifier) Authenticate(ctx context.Context, subjectToken string) (ExternalIdentity, error) {
+func (v *FirebaseVerifier) Authenticate(ctx context.Context, subjectToken string) (application.ExternalIdentity, error) {
 	parser := jwt.NewParser(jwt.WithValidMethods([]string{jwt.SigningMethodRS256.Alg()}), jwt.WithAudience(v.projectID), jwt.WithIssuer("https://securetoken.google.com/"+v.projectID))
 	claims := jwt.MapClaims{}
 	parsed, err := parser.ParseWithClaims(subjectToken, claims, func(token *jwt.Token) (any, error) {
@@ -37,14 +38,14 @@ func (v *FirebaseVerifier) Authenticate(ctx context.Context, subjectToken string
 		return v.publicKey(ctx, keyID)
 	})
 	if err != nil || !parsed.Valid {
-		return ExternalIdentity{}, fmt.Errorf("invalid Firebase ID token")
+		return application.ExternalIdentity{}, fmt.Errorf("invalid Firebase ID token")
 	}
 	subject, _ := claims.GetSubject()
 	if subject == "" {
-		return ExternalIdentity{}, fmt.Errorf("Firebase token has no subject")
+		return application.ExternalIdentity{}, fmt.Errorf("Firebase token has no subject")
 	}
 	email, _ := claims["email"].(string)
-	return ExternalIdentity{Provider: v.Name(), Subject: subject, Email: email}, nil
+	return application.ExternalIdentity{Provider: v.Name(), Subject: subject, Email: email}, nil
 }
 
 func (v *FirebaseVerifier) publicKey(ctx context.Context, keyID string) (*rsa.PublicKey, error) {

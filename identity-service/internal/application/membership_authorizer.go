@@ -1,10 +1,10 @@
-package oauth
+package application
 
 import (
 	"context"
 
-	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/membership"
-	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/token"
+	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/membership"
+	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/token"
 )
 
 type MembershipAuthorizer struct{ repository membership.Repository }
