@@ -13,6 +13,8 @@ env:
 initContainers:
   migrate:
     enabled: true
+  seedRoles:
+    enabled: true
 secretKeyRef:
   name: identity-secrets
 resources:

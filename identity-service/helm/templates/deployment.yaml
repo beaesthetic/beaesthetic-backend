@@ -30,6 +30,23 @@ spec:
               value: {{ .Values.env.ENV_HTTP_ADDR | quote }}
             - name: ENV_GRPC_ADDR
               value: {{ .Values.env.ENV_GRPC_ADDR | quote }}
+        {{- if .Values.initContainers.seedRoles.enabled }}
+        - name: seed-roles
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /app/identity
+            - seed-roles
+            - /app/seeds/roles.yaml
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secretKeyRef.name }}
+          env:
+            - name: ENV_HTTP_ADDR
+              value: {{ .Values.env.ENV_HTTP_ADDR | quote }}
+            - name: ENV_GRPC_ADDR
+              value: {{ .Values.env.ENV_GRPC_ADDR | quote }}
+        {{- end }}
       {{- end }}
       containers:
         - name: identity
