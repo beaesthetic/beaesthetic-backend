@@ -58,10 +58,10 @@
       "include-component-in-tag": true,
       "component": "identity-service",
       "extra-files": [
-        {"type": "yaml", "path": "identity-service/helm/Chart.yaml", "jsonpath": "$.appVersion"},
-        {"type": "yaml", "path": "identity-service/helm/values.yaml", "jsonpath": "$.image.tag"}
+        {"type": "yaml", "path": "helm/Chart.yaml", "jsonpath": "$.appVersion"},
+        {"type": "yaml", "path": "helm/values.yaml", "jsonpath": "$.image.tag"}
       ],
-      "changelog-path": "identity-service/CHANGELOG.md"
+      "changelog-path": "CHANGELOG.md"
     },
     "consent-service": {
       "release-type": "simple",
