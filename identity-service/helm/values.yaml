@@ -10,6 +10,9 @@ service:
 env:
   ENV_HTTP_ADDR: ":8080"
   ENV_GRPC_ADDR: ":9090"
+initContainers:
+  migrate:
+    enabled: true
 secretKeyRef:
   name: identity-secrets
 resources:

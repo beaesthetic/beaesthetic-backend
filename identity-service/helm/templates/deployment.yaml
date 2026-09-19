@@ -13,6 +13,24 @@ spec:
       labels:
         app: {{ .Values.name }}
     spec:
+      {{- if and .Values.initContainers .Values.initContainers.migrate.enabled }}
+      initContainers:
+        - name: migrate
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /app/identity
+            - migrate
+            - up
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secretKeyRef.name }}
+          env:
+            - name: ENV_HTTP_ADDR
+              value: {{ .Values.env.ENV_HTTP_ADDR | quote }}
+            - name: ENV_GRPC_ADDR
+              value: {{ .Values.env.ENV_GRPC_ADDR | quote }}
+      {{- end }}
       containers:
         - name: identity
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"

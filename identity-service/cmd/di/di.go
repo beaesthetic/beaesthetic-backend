@@ -2,19 +2,26 @@ package di
 
 import (
 	"context"
+	"database/sql"
 	"sync"
 	"time"
 
+	"github.com/golang-migrate/migrate/v4"
+	migratepostgres "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/jackc/pgx/v5/stdlib"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/config"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/token"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/infra/firebase"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/infra/postgres"
+	"go.uber.org/zap"
 )
 
 type Container struct {
 	Config config.Config
+	Log    *zap.Logger
 	deps   sync.Map
 }
 
@@ -23,7 +30,11 @@ func New(context.Context) (*Container, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Container{Config: cfg}, nil
+	log, err := zap.NewProduction()
+	if err != nil {
+		return nil, err
+	}
+	return &Container{Config: cfg, Log: log}, nil
 }
 func singleton[T any](c *Container, key string, factory func() T) T {
 	if v, ok := c.deps.Load(key); ok {
@@ -46,6 +57,23 @@ func singletonError[T any](c *Container, key string, factory func() (T, error)) 
 }
 func (c *Container) GetPostgres() *pgxpool.Pool {
 	return singletonError(c, "postgres", func() (*pgxpool.Pool, error) { return pgxpool.New(context.Background(), c.Config.PostgresDSN) })
+}
+
+func (c *Container) GetMigrator() *migrate.Migrate {
+	return singletonError(c, "migrator", func() (*migrate.Migrate, error) {
+		db := c.GetPostgres()
+		sqlDB := stdlib.OpenDB(*db.Config().ConnConfig.Copy())
+		driver, err := migratepostgres.WithInstance(sqlDB, &migratepostgres.Config{})
+		if err != nil {
+			sqlDB.Close()
+			return nil, err
+		}
+		return migrate.NewWithDatabaseInstance("file://migrations", "postgres", driver)
+	})
+}
+
+func stdlibOpenDBFromPool(pool *pgxpool.Pool) *sql.DB {
+	return stdlib.OpenDB(*pool.Config().ConnConfig.Copy())
 }
 func (c *Container) GetIssuer() *token.Issuer {
 	return singletonError(c, "issuer", func() (*token.Issuer, error) {
