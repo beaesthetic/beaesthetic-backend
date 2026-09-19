@@ -16,12 +16,13 @@ type BootstrapCatalog struct {
 }
 
 type BootstrapOrganization struct {
-	Name  string         `yaml:"name"`
-	Owner BootstrapOwner `yaml:"owner"`
+	Name  string          `yaml:"name"`
+	Users []BootstrapUser `yaml:"users"`
 }
 
-type BootstrapOwner struct {
-	Email string `yaml:"email"`
+type BootstrapUser struct {
+	Email string   `yaml:"email"`
+	Roles []string `yaml:"roles"`
 }
 
 func ApplyBootstrap(ctx context.Context, pool *pgxpool.Pool, path string) error {
@@ -49,22 +50,26 @@ func ApplyBootstrap(ctx context.Context, pool *pgxpool.Pool, path string) error 
 		if err != nil {
 			return err
 		}
-		userID := stableID("user:email:" + strings.ToLower(strings.TrimSpace(organization.Owner.Email)))
-		if _, err := q.UpsertUser(ctx, queries.UpsertUserParams{ID: userID, Email: organization.Owner.Email}); err != nil {
-			return err
-		}
-		membershipID, err := q.UpsertMembership(ctx, queries.UpsertMembershipParams{
-			ID: stableID("membership:" + userID + ":" + organizationID), UserID: userID, OrganizationID: organizationID,
-		})
-		if err != nil {
-			return err
-		}
-		roleID, err := q.UpsertGlobalRole(ctx, queries.UpsertGlobalRoleParams{ID: stableID("role:owner"), Name: "owner"})
-		if err != nil {
-			return err
-		}
-		if err := q.AssignMembershipRole(ctx, queries.AssignMembershipRoleParams{MembershipID: membershipID, RoleID: roleID}); err != nil {
-			return err
+		for _, bootstrapUser := range organization.Users {
+			userID := stableID("user:email:" + strings.ToLower(strings.TrimSpace(bootstrapUser.Email)))
+			if _, err := q.UpsertUser(ctx, queries.UpsertUserParams{ID: userID, Email: bootstrapUser.Email}); err != nil {
+				return err
+			}
+			membershipID, err := q.UpsertMembership(ctx, queries.UpsertMembershipParams{
+				ID: stableID("membership:" + userID + ":" + organizationID), UserID: userID, OrganizationID: organizationID,
+			})
+			if err != nil {
+				return err
+			}
+			for _, role := range bootstrapUser.Roles {
+				roleID, err := q.UpsertGlobalRole(ctx, queries.UpsertGlobalRoleParams{ID: stableID("role:" + role), Name: role})
+				if err != nil {
+					return err
+				}
+				if err := q.AssignMembershipRole(ctx, queries.AssignMembershipRoleParams{MembershipID: membershipID, RoleID: roleID}); err != nil {
+					return err
+				}
+			}
 		}
 	}
 	return tx.Commit(ctx)
@@ -74,8 +79,13 @@ func validateBootstrapOrganization(organization BootstrapOrganization) error {
 	if strings.TrimSpace(organization.Name) == "" {
 		return fmt.Errorf("bootstrap organization name is required")
 	}
-	if strings.TrimSpace(organization.Owner.Email) == "" {
-		return fmt.Errorf("bootstrap owner email is required for %q", organization.Name)
+	if len(organization.Users) == 0 {
+		return fmt.Errorf("bootstrap users are required for %q", organization.Name)
+	}
+	for _, user := range organization.Users {
+		if strings.TrimSpace(user.Email) == "" || len(user.Roles) == 0 {
+			return fmt.Errorf("bootstrap user email and roles are required for %q", organization.Name)
+		}
 	}
 	return nil
 }

@@ -1,4 +1,6 @@
 organizations:
   - name: Tizio Caio
-    owner:
-      email: tizio.caio@example.com
+    users:
+      - email: tizio.caio@example.com
+        roles:
+          - owner

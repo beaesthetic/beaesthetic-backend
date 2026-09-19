@@ -1,4 +1,6 @@
 organizations:
   - name: Beaesthetic
-    owner:
-      email: beaesthetic@gmail.com
+    users:
+      - email: beaesthetic@gmail.com
+        roles:
+          - owner
