@@ -1,0 +1,14 @@
+version: "2"
+sql:
+  - engine: postgresql
+    schema: internal/infra/postgres/queries/schema.sql
+    queries: internal/infra/postgres/queries/query.sql
+    gen:
+      go:
+        package: queries
+        out: internal/infra/postgres/queries
+        sql_package: pgx/v5
+        emit_json_tags: true
+        overrides:
+          - db_type: uuid
+            go_type: string

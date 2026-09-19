@@ -13,6 +13,7 @@ import (
 
 	identity "github.com/petretiandrea/beaesthetic-backend/core-contracts/identity"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/cmd/di"
+	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/infra/seed"
 	grpcport "github.com/petretiandrea/beaesthetic-backend/identity-service/internal/port/grpc/server"
 	httpport "github.com/petretiandrea/beaesthetic-backend/identity-service/internal/port/http/server"
 	"github.com/spf13/cobra"
@@ -25,7 +26,12 @@ func main() {
 	}
 }
 func root() *cobra.Command {
-	return &cobra.Command{Use: "identity", SilenceUsage: true, RunE: func(cmd *cobra.Command, _ []string) error { return run(cmd.Context()) }}
+	root := &cobra.Command{Use: "identity", SilenceUsage: true}
+	root.AddCommand(&cobra.Command{Use: "app", Args: cobra.NoArgs, RunE: func(cmd *cobra.Command, _ []string) error { return run(cmd.Context()) }})
+	root.AddCommand(&cobra.Command{Use: "seed-roles [yaml]", Args: cobra.MaximumNArgs(1), RunE: func(cmd *cobra.Command, args []string) error {
+		path := "seeds/roles.yaml"; if len(args) == 1 { path = args[0] }; c, err := di.New(cmd.Context()); if err != nil { return err }; defer c.GetPostgres().Close(); return seed.Apply(cmd.Context(), c.GetPostgres(), path)
+	}})
+	return root
 }
 func run(ctx context.Context) error {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)

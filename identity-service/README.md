@@ -53,3 +53,7 @@ mage test
 mage check
 mage build
 ```
+
+## Authorization seed
+
+`seeds/roles.yaml` is the global role and permission catalog. Memberships receive roles through `membership_roles`; permissions are derived only through `role_permissions`.

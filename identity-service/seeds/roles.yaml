@@ -1,0 +1,31 @@
+roles:
+  - name: owner
+    permissions:
+      - appointments:read
+      - appointments:write
+      - customers:read
+      - customers:write
+      - memberships:read
+      - memberships:write
+      - organizations:read
+      - organizations:write
+  - name: admin
+    permissions:
+      - appointments:read
+      - appointments:write
+      - customers:read
+      - customers:write
+      - memberships:read
+      - memberships:write
+      - organizations:read
+  - name: staff
+    permissions:
+      - appointments:read
+      - appointments:write
+      - customers:read
+      - customers:write
+  - name: viewer
+    permissions:
+      - appointments:read
+      - customers:read
+      - memberships:read
