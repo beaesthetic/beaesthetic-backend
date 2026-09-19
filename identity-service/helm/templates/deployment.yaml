@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      containers:
+        - name: identity
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 8080
+            - containerPort: 9090
+          envFrom:
+            - secretRef:
+                name: {{ .Values.secretKeyRef.name }}
+          env:
+            - name: ENV_HTTP_ADDR
+              value: {{ .Values.env.ENV_HTTP_ADDR | quote }}
+            - name: ENV_GRPC_ADDR
+              value: {{ .Values.env.ENV_GRPC_ADDR | quote }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080

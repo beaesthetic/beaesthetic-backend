@@ -52,6 +52,17 @@
       ],
       "changelog-path": "CHANGELOG.md"
     },
+    "identity": {
+      "release-type": "simple",
+      "package-name": "identity-service",
+      "include-component-in-tag": true,
+      "component": "identity-service",
+      "extra-files": [
+        {"type": "yaml", "path": "identity-service/helm/Chart.yaml", "jsonpath": "$.appVersion"},
+        {"type": "yaml", "path": "identity-service/helm/values.yaml", "jsonpath": "$.image.tag"}
+      ],
+      "changelog-path": "identity-service/CHANGELOG.md"
+    },
     "consent-service": {
       "release-type": "simple",
       "package-name": "consent-service",

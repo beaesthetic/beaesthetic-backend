@@ -1,0 +1,21 @@
+namespace: beaesthetic
+name: identity-service
+replicaCount: 1
+image:
+  repository: petretiandrea/identity-service
+  tag: 0.1.0
+  pullPolicy: IfNotPresent
+service:
+  port: 8080
+env:
+  ENV_HTTP_ADDR: ":8080"
+  ENV_GRPC_ADDR: ":9090"
+secretKeyRef:
+  name: identity-secrets
+resources:
+  requests:
+    cpu: 80m
+    memory: 100Mi
+  limits:
+    cpu: 200m
+    memory: 256Mi

@@ -25,6 +25,8 @@ spec:
                   path: customer/helm
                 - service: notification
                   path: notification/helm
+                - service: identity
+                  path: identity-service/helm
           - list:
               elements:
                 - environment: dev
