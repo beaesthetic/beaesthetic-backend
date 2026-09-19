@@ -93,6 +93,10 @@ jobs:
         if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
         run: |
           cd "${{ matrix.context }}"
+          if [ ! -f go.mod ]; then
+            echo "No Go module in ${{ matrix.context }}; skipping Go tests"
+            exit 0
+          fi
           go test ./...
 
       - name: Extract Docker metadata
