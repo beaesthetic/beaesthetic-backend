@@ -91,7 +91,7 @@ jobs:
 
       - name: Run tests
         if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
-        run: go run github.com/magefile/mage@v1.15.0 -v test
+        run: go test ./...
         working-directory: ${{ matrix.context }}
 
       - name: Extract Docker metadata
