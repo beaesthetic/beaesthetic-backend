@@ -91,8 +91,9 @@ jobs:
 
       - name: Run tests
         if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
-        run: go test ./...
-        working-directory: ${{ matrix.context }}
+        run: |
+          cd "${{ matrix.context }}"
+          go test ./...
 
       - name: Extract Docker metadata
         if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
