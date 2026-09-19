@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+package beaesthetic.identity.v1;
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/petretiandrea/beaesthetic-backend/core-contracts/identity;identity";
+
+service TokenService {
+  // Exchanges a verified external credential for a scoped internal PASETO access token.
+  rpc ExchangeToken(ExchangeTokenRequest) returns (ExchangeTokenResponse) {
+    option (google.api.http) = { post: "/oauth/token" body: "*" };
+  }
+  rpc GetVerificationKeys(GetVerificationKeysRequest) returns (GetVerificationKeysResponse) {
+    option (google.api.http) = { get: "/v1/internal/keys" };
+  }
+  // Restricted to trusted internal callers; permissions must normally be
+  // resolved by an Authorizer through ExchangeToken instead.
+  rpc IssueInternalToken(IssueInternalTokenRequest) returns (IssueInternalTokenResponse) {
+    option (google.api.http) = { post: "/v1/internal/tokens" body: "*" };
+  }
+  rpc VerifyInternalToken(VerifyInternalTokenRequest) returns (VerifyInternalTokenResponse) {
+    option (google.api.http) = { post: "/v1/internal/tokens/verify" body: "*" };
+  }
+}
+
+service MembershipService {
+  rpc GetEffectiveAuthorization(GetEffectiveAuthorizationRequest) returns (GetEffectiveAuthorizationResponse) {
+    option (google.api.http) = { get: "/v1/internal/organizations/{organization_id}/users/{user_id}/authorization" };
+  }
+}
+
+enum IdentityType {
+  IDENTITY_TYPE_UNSPECIFIED = 0;
+  IDENTITY_TYPE_HUMAN = 1;
+  IDENTITY_TYPE_SERVICE = 2;
+  IDENTITY_TYPE_INTEGRATION = 3;
+}
+
+message ExternalAssertion {
+  string authenticator = 1 [json_name = "authenticator"];
+  string token = 2 [json_name = "token"];
+  string token_type = 3 [json_name = "tokenType"];
+}
+
+message ExchangeTokenRequest {
+  string grant_type = 1 [json_name = "grantType"];
+  ExternalAssertion subject_assertion = 2 [json_name = "subjectAssertion"];
+  string authorizer = 3 [json_name = "authorizer"];
+  string audience = 4 [json_name = "audience"];
+  string organization_id = 5 [json_name = "organizationId"];
+}
+
+message AccessToken {
+  string access_token = 1 [json_name = "accessToken"];
+  string token_type = 2 [json_name = "tokenType"];
+  int64 expires_in = 3 [json_name = "expiresIn"];
+  google.protobuf.Timestamp expires_at = 4 [json_name = "expiresAt"];
+}
+
+message ExchangeTokenResponse { AccessToken token = 1; }
+
+message IssueInternalTokenRequest {
+  string subject = 1;
+  IdentityType identity_type = 2 [json_name = "identityType"];
+  string audience = 3;
+  string organization_id = 4 [json_name = "organizationId"];
+  string membership_id = 5 [json_name = "membershipId"];
+  repeated string roles = 6;
+  repeated string permissions = 7;
+  string auth_method = 8 [json_name = "authMethod"];
+}
+message IssueInternalTokenResponse { AccessToken token = 1; }
+message VerifyInternalTokenRequest { string token = 1; string audience = 2; }
+message VerifyInternalTokenResponse { EffectiveAuthorization authorization = 1; }
+
+message GetVerificationKeysRequest {}
+message VerificationKey { string kid = 1; string public_key_b64 = 2 [json_name = "publicKeyB64"]; }
+message GetVerificationKeysResponse { repeated VerificationKey keys = 1; }
+
+message GetEffectiveAuthorizationRequest {
+  string organization_id = 1 [json_name = "organizationId"];
+  string user_id = 2 [json_name = "userId"];
+}
+message EffectiveAuthorization {
+  string user_id = 1 [json_name = "userId"];
+  string membership_id = 2 [json_name = "membershipId"];
+  string organization_id = 3 [json_name = "organizationId"];
+  repeated string roles = 4;
+  repeated string permissions = 5;
+  IdentityType identity_type = 6 [json_name = "identityType"];
+}
+message GetEffectiveAuthorizationResponse { EffectiveAuthorization authorization = 1; }

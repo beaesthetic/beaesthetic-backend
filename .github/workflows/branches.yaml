@@ -8,6 +8,7 @@ on:
       - "appointment/**"
       - "customer/**"
       - "notification/**"
+      - "identity-service/**"
       - "core-contracts/**"
       - ".github/workflows/branches.yaml"
   pull_request:
@@ -15,6 +16,7 @@ on:
       - "appointment/**"
       - "customer/**"
       - "notification/**"
+      - "identity-service/**"
       - "core-contracts/**"
       - ".github/workflows/branches.yaml"
   workflow_dispatch:
@@ -34,6 +36,7 @@ jobs:
       appointment: ${{ steps.filter.outputs.appointment }}
       customer: ${{ steps.filter.outputs.customer }}
       notification: ${{ steps.filter.outputs.notification }}
+      identity: ${{ steps.filter.outputs.identity }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -53,6 +56,10 @@ jobs:
               - '.github/workflows/branches.yaml'
             notification:
               - 'notification/**'
+              - 'core-contracts/**'
+              - '.github/workflows/branches.yaml'
+            identity:
+              - 'identity-service/**'
               - 'core-contracts/**'
               - '.github/workflows/branches.yaml'
 
@@ -80,6 +87,12 @@ jobs:
             image: petretiandrea/notification-service-v2
             context: ./notification
             dockerfile: ./notification/Dockerfile
+            build_contexts: |
+              core-contracts=./core-contracts
+          - key: identity
+            image: petretiandrea/identity-service
+            context: ./identity-service
+            dockerfile: ./identity-service/Dockerfile
             build_contexts: |
               core-contracts=./core-contracts
     steps:
