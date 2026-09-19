@@ -42,3 +42,14 @@ Example issue request:
 Set `ENV_TOKEN_ACTIVE_KEY_ID` and its 64-byte raw Ed25519 private key encoded with base64url (no padding). Keep old public keys in `ENV_TOKEN_VERIFY_KEYS_JSON`, e.g. `{"2026-06":"<base64url-public-key>"}`. Tokens carry the signing `kid`; verifiers can retain all advertised keys until all tokens signed by the old key expire.
 
 The private key is never exposed. Store it in a Kubernetes Secret; do not place it in Helm values or source control.
+
+## Developer commands
+
+Uses Mage, matching `appointment`:
+
+```bash
+mage lint   # go fmt ./... + go vet ./...
+mage test
+mage check
+mage build
+```
