@@ -45,10 +45,10 @@ func NewExchangeService(issuer *token.Issuer, authenticators []Authenticator, au
 	return &ExchangeService{issuer: issuer, authenticators: registeredAuthenticators, authorizers: registeredAuthorizers}
 }
 
-type Request struct{ GrantType, SubjectTokenType, Authenticator, Authorizer, SubjectToken, Audience, OrganizationID string }
+type Request struct{ GrantType, SubjectTokenType, Authenticator, Authorizer, SubjectToken, OrganizationID string }
 
 func (s *ExchangeService) Exchange(ctx context.Context, request Request) (string, token.Claims, error) {
-	if request.GrantType != TokenExchangeGrant || request.SubjectTokenType != JWTSubjectTokenType || request.Authenticator == "" || request.Authorizer == "" || request.SubjectToken == "" || request.Audience == "" || request.OrganizationID == "" {
+	if request.GrantType != TokenExchangeGrant || request.SubjectTokenType != JWTSubjectTokenType || request.Authenticator == "" || request.Authorizer == "" || request.SubjectToken == "" {
 		return "", token.Claims{}, fmt.Errorf("invalid token exchange request")
 	}
 	authenticator, ok := s.authenticators[request.Authenticator]
@@ -67,7 +67,6 @@ func (s *ExchangeService) Exchange(ctx context.Context, request Request) (string
 	if err != nil {
 		return "", token.Claims{}, fmt.Errorf("resolve authorization: %w", err)
 	}
-	issueRequest.Audience = request.Audience
 	issueRequest.AuthMethod = identity.Provider
 	return s.issuer.Issue(issueRequest)
 }

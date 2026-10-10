@@ -10,13 +10,14 @@ import (
 
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/membership"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/token"
+	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/user"
 )
 
 func TestExchangeResolvesAuthorizationFromMembership(t *testing.T) {
 	issuer := testIssuer(t)
-	repository := memoryRepository{user: membership.User{ID: "usr_1"}, record: membership.Membership{ID: "mem_1", UserID: "usr_1", OrganizationID: "org_1", Active: true, Roles: []string{"owner"}, Permissions: []string{"users:read", "users:write"}}}
-	service := NewExchangeService(issuer, []Authenticator{testAuthenticator{}}, []Authorizer{NewMembershipAuthorizer(repository)})
-	_, claims, err := service.Exchange(context.Background(), Request{GrantType: TokenExchangeGrant, SubjectTokenType: JWTSubjectTokenType, Authenticator: "firebase", Authorizer: "membership", SubjectToken: "external-token", Audience: "appointment", OrganizationID: "org_1"})
+	repository := memoryRepository{user: user.User{ID: "usr_1"}, record: membership.Membership{ID: "mem_1", UserID: "usr_1", OrganizationID: "org_1", Active: true, Roles: []string{"owner"}, Permissions: []string{"user.read", "user.write"}}}
+	service := NewExchangeService(issuer, []Authenticator{testAuthenticator{}}, []Authorizer{NewMembershipAuthorizer(repository, repository)})
+	_, claims, err := service.Exchange(context.Background(), Request{GrantType: TokenExchangeGrant, SubjectTokenType: JWTSubjectTokenType, Authenticator: "firebase", Authorizer: "membership", SubjectToken: "external-token", OrganizationID: "org_1"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,11 +37,11 @@ func (testAuthenticator) Authenticate(context.Context, string) (ExternalIdentity
 }
 
 type memoryRepository struct {
-	user   membership.User
+	user   user.User
 	record membership.Membership
 }
 
-func (r memoryRepository) FindOrCreateUser(context.Context, string, string, string) (membership.User, error) {
+func (r memoryRepository) FindOrCreate(context.Context, string, string, string) (user.User, error) {
 	return r.user, nil
 }
 func (r memoryRepository) FindActiveMembership(context.Context, string, string) (membership.Membership, error) {

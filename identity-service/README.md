@@ -32,7 +32,7 @@ Example issue request:
   "subject": "user_123",
   "identityType": "IDENTITY_TYPE_HUMAN",
   "audience": "appointment",
-  "permissions": ["appointments:read"],
+"permissions": ["appointment.read"],
   "authMethod": "provider:xyz"
 }
 ```

@@ -75,6 +75,55 @@ func (IdentityType) EnumDescriptor() ([]byte, []int) {
 	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{0}
 }
 
+type TokenScope int32
+
+const (
+	TokenScope_TOKEN_SCOPE_UNSPECIFIED TokenScope = 0
+	TokenScope_TOKEN_SCOPE_USER        TokenScope = 1
+	TokenScope_TOKEN_SCOPE_MEMBERSHIP  TokenScope = 2
+)
+
+// Enum value maps for TokenScope.
+var (
+	TokenScope_name = map[int32]string{
+		0: "TOKEN_SCOPE_UNSPECIFIED",
+		1: "TOKEN_SCOPE_USER",
+		2: "TOKEN_SCOPE_MEMBERSHIP",
+	}
+	TokenScope_value = map[string]int32{
+		"TOKEN_SCOPE_UNSPECIFIED": 0,
+		"TOKEN_SCOPE_USER":        1,
+		"TOKEN_SCOPE_MEMBERSHIP":  2,
+	}
+)
+
+func (x TokenScope) Enum() *TokenScope {
+	p := new(TokenScope)
+	*p = x
+	return p
+}
+
+func (x TokenScope) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TokenScope) Descriptor() protoreflect.EnumDescriptor {
+	return file_beaesthetic_identity_v1_identity_api_proto_enumTypes[1].Descriptor()
+}
+
+func (TokenScope) Type() protoreflect.EnumType {
+	return &file_beaesthetic_identity_v1_identity_api_proto_enumTypes[1]
+}
+
+func (x TokenScope) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TokenScope.Descriptor instead.
+func (TokenScope) EnumDescriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{1}
+}
+
 type ExternalAssertion struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Authenticator string                 `protobuf:"bytes,1,opt,name=authenticator,proto3" json:"authenticator,omitempty"`
@@ -140,8 +189,7 @@ type ExchangeTokenRequest struct {
 	GrantType        string                 `protobuf:"bytes,1,opt,name=grant_type,json=grantType,proto3" json:"grant_type,omitempty"`
 	SubjectAssertion *ExternalAssertion     `protobuf:"bytes,2,opt,name=subject_assertion,json=subjectAssertion,proto3" json:"subject_assertion,omitempty"`
 	Authorizer       string                 `protobuf:"bytes,3,opt,name=authorizer,proto3" json:"authorizer,omitempty"`
-	Audience         string                 `protobuf:"bytes,4,opt,name=audience,proto3" json:"audience,omitempty"`
-	OrganizationId   string                 `protobuf:"bytes,5,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	OrganizationId   string                 `protobuf:"bytes,4,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -193,13 +241,6 @@ func (x *ExchangeTokenRequest) GetSubjectAssertion() *ExternalAssertion {
 func (x *ExchangeTokenRequest) GetAuthorizer() string {
 	if x != nil {
 		return x.Authorizer
-	}
-	return ""
-}
-
-func (x *ExchangeTokenRequest) GetAudience() string {
-	if x != nil {
-		return x.Audience
 	}
 	return ""
 }
@@ -327,7 +368,7 @@ type IssueInternalTokenRequest struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	Subject        string                 `protobuf:"bytes,1,opt,name=subject,proto3" json:"subject,omitempty"`
 	IdentityType   IdentityType           `protobuf:"varint,2,opt,name=identity_type,json=identityType,proto3,enum=beaesthetic.identity.v1.IdentityType" json:"identity_type,omitempty"`
-	Audience       string                 `protobuf:"bytes,3,opt,name=audience,proto3" json:"audience,omitempty"`
+	TokenScope     TokenScope             `protobuf:"varint,3,opt,name=token_scope,json=tokenScope,proto3,enum=beaesthetic.identity.v1.TokenScope" json:"token_scope,omitempty"`
 	OrganizationId string                 `protobuf:"bytes,4,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
 	MembershipId   string                 `protobuf:"bytes,5,opt,name=membership_id,json=membershipId,proto3" json:"membership_id,omitempty"`
 	Roles          []string               `protobuf:"bytes,6,rep,name=roles,proto3" json:"roles,omitempty"`
@@ -381,11 +422,11 @@ func (x *IssueInternalTokenRequest) GetIdentityType() IdentityType {
 	return IdentityType_IDENTITY_TYPE_UNSPECIFIED
 }
 
-func (x *IssueInternalTokenRequest) GetAudience() string {
+func (x *IssueInternalTokenRequest) GetTokenScope() TokenScope {
 	if x != nil {
-		return x.Audience
+		return x.TokenScope
 	}
-	return ""
+	return TokenScope_TOKEN_SCOPE_UNSPECIFIED
 }
 
 func (x *IssueInternalTokenRequest) GetOrganizationId() string {
@@ -470,7 +511,6 @@ func (x *IssueInternalTokenResponse) GetToken() *AccessToken {
 type VerifyInternalTokenRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Token         string                 `protobuf:"bytes,1,opt,name=token,proto3" json:"token,omitempty"`
-	Audience      string                 `protobuf:"bytes,2,opt,name=audience,proto3" json:"audience,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -508,13 +548,6 @@ func (*VerifyInternalTokenRequest) Descriptor() ([]byte, []int) {
 func (x *VerifyInternalTokenRequest) GetToken() string {
 	if x != nil {
 		return x.Token
-	}
-	return ""
-}
-
-func (x *VerifyInternalTokenRequest) GetAudience() string {
-	if x != nil {
-		return x.Audience
 	}
 	return ""
 }
@@ -875,6 +908,834 @@ func (x *GetEffectiveAuthorizationResponse) GetAuthorization() *EffectiveAuthori
 	return nil
 }
 
+type OrganizationMembership struct {
+	state            protoimpl.MessageState `protogen:"open.v1"`
+	OrganizationId   string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	OrganizationName string                 `protobuf:"bytes,2,opt,name=organization_name,json=organizationName,proto3" json:"organization_name,omitempty"`
+	MembershipId     string                 `protobuf:"bytes,3,opt,name=membership_id,json=membershipId,proto3" json:"membership_id,omitempty"`
+	Roles            []string               `protobuf:"bytes,4,rep,name=roles,proto3" json:"roles,omitempty"`
+	unknownFields    protoimpl.UnknownFields
+	sizeCache        protoimpl.SizeCache
+}
+
+func (x *OrganizationMembership) Reset() {
+	*x = OrganizationMembership{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[14]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrganizationMembership) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrganizationMembership) ProtoMessage() {}
+
+func (x *OrganizationMembership) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[14]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrganizationMembership.ProtoReflect.Descriptor instead.
+func (*OrganizationMembership) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{14}
+}
+
+func (x *OrganizationMembership) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *OrganizationMembership) GetOrganizationName() string {
+	if x != nil {
+		return x.OrganizationName
+	}
+	return ""
+}
+
+func (x *OrganizationMembership) GetMembershipId() string {
+	if x != nil {
+		return x.MembershipId
+	}
+	return ""
+}
+
+func (x *OrganizationMembership) GetRoles() []string {
+	if x != nil {
+		return x.Roles
+	}
+	return nil
+}
+
+type ListMyOrganizationsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMyOrganizationsRequest) Reset() {
+	*x = ListMyOrganizationsRequest{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[15]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMyOrganizationsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMyOrganizationsRequest) ProtoMessage() {}
+
+func (x *ListMyOrganizationsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[15]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMyOrganizationsRequest.ProtoReflect.Descriptor instead.
+func (*ListMyOrganizationsRequest) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{15}
+}
+
+type ListMyOrganizationsResponse struct {
+	state         protoimpl.MessageState    `protogen:"open.v1"`
+	Organizations []*OrganizationMembership `protobuf:"bytes,1,rep,name=organizations,proto3" json:"organizations,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListMyOrganizationsResponse) Reset() {
+	*x = ListMyOrganizationsResponse{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[16]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListMyOrganizationsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListMyOrganizationsResponse) ProtoMessage() {}
+
+func (x *ListMyOrganizationsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[16]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListMyOrganizationsResponse.ProtoReflect.Descriptor instead.
+func (*ListMyOrganizationsResponse) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{16}
+}
+
+func (x *ListMyOrganizationsResponse) GetOrganizations() []*OrganizationMembership {
+	if x != nil {
+		return x.Organizations
+	}
+	return nil
+}
+
+type GetMyAuthorizationRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *GetMyAuthorizationRequest) Reset() {
+	*x = GetMyAuthorizationRequest{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMyAuthorizationRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMyAuthorizationRequest) ProtoMessage() {}
+
+func (x *GetMyAuthorizationRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMyAuthorizationRequest.ProtoReflect.Descriptor instead.
+func (*GetMyAuthorizationRequest) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *GetMyAuthorizationRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+type GetMyAuthorizationResponse struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Authorization *EffectiveAuthorization `protobuf:"bytes,1,opt,name=authorization,proto3" json:"authorization,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetMyAuthorizationResponse) Reset() {
+	*x = GetMyAuthorizationResponse{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetMyAuthorizationResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetMyAuthorizationResponse) ProtoMessage() {}
+
+func (x *GetMyAuthorizationResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetMyAuthorizationResponse.ProtoReflect.Descriptor instead.
+func (*GetMyAuthorizationResponse) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *GetMyAuthorizationResponse) GetAuthorization() *EffectiveAuthorization {
+	if x != nil {
+		return x.Authorization
+	}
+	return nil
+}
+
+type OrganizationMember struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	UserId        string                 `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Email         string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	MembershipId  string                 `protobuf:"bytes,3,opt,name=membership_id,json=membershipId,proto3" json:"membership_id,omitempty"`
+	Active        bool                   `protobuf:"varint,4,opt,name=active,proto3" json:"active,omitempty"`
+	Roles         []string               `protobuf:"bytes,5,rep,name=roles,proto3" json:"roles,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *OrganizationMember) Reset() {
+	*x = OrganizationMember{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *OrganizationMember) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*OrganizationMember) ProtoMessage() {}
+
+func (x *OrganizationMember) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use OrganizationMember.ProtoReflect.Descriptor instead.
+func (*OrganizationMember) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *OrganizationMember) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *OrganizationMember) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *OrganizationMember) GetMembershipId() string {
+	if x != nil {
+		return x.MembershipId
+	}
+	return ""
+}
+
+func (x *OrganizationMember) GetActive() bool {
+	if x != nil {
+		return x.Active
+	}
+	return false
+}
+
+func (x *OrganizationMember) GetRoles() []string {
+	if x != nil {
+		return x.Roles
+	}
+	return nil
+}
+
+type ListOrganizationMembersRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ListOrganizationMembersRequest) Reset() {
+	*x = ListOrganizationMembersRequest{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListOrganizationMembersRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListOrganizationMembersRequest) ProtoMessage() {}
+
+func (x *ListOrganizationMembersRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListOrganizationMembersRequest.ProtoReflect.Descriptor instead.
+func (*ListOrganizationMembersRequest) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *ListOrganizationMembersRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+type ListOrganizationMembersResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Members       []*OrganizationMember  `protobuf:"bytes,1,rep,name=members,proto3" json:"members,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListOrganizationMembersResponse) Reset() {
+	*x = ListOrganizationMembersResponse{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListOrganizationMembersResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListOrganizationMembersResponse) ProtoMessage() {}
+
+func (x *ListOrganizationMembersResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListOrganizationMembersResponse.ProtoReflect.Descriptor instead.
+func (*ListOrganizationMembersResponse) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *ListOrganizationMembersResponse) GetMembers() []*OrganizationMember {
+	if x != nil {
+		return x.Members
+	}
+	return nil
+}
+
+type AddOrganizationMemberRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	Email          string                 `protobuf:"bytes,2,opt,name=email,proto3" json:"email,omitempty"`
+	Roles          []string               `protobuf:"bytes,3,rep,name=roles,proto3" json:"roles,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *AddOrganizationMemberRequest) Reset() {
+	*x = AddOrganizationMemberRequest{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddOrganizationMemberRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddOrganizationMemberRequest) ProtoMessage() {}
+
+func (x *AddOrganizationMemberRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddOrganizationMemberRequest.ProtoReflect.Descriptor instead.
+func (*AddOrganizationMemberRequest) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *AddOrganizationMemberRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *AddOrganizationMemberRequest) GetEmail() string {
+	if x != nil {
+		return x.Email
+	}
+	return ""
+}
+
+func (x *AddOrganizationMemberRequest) GetRoles() []string {
+	if x != nil {
+		return x.Roles
+	}
+	return nil
+}
+
+type AddOrganizationMemberResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Member        *OrganizationMember    `protobuf:"bytes,1,opt,name=member,proto3" json:"member,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *AddOrganizationMemberResponse) Reset() {
+	*x = AddOrganizationMemberResponse{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[23]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *AddOrganizationMemberResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*AddOrganizationMemberResponse) ProtoMessage() {}
+
+func (x *AddOrganizationMemberResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[23]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use AddOrganizationMemberResponse.ProtoReflect.Descriptor instead.
+func (*AddOrganizationMemberResponse) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{23}
+}
+
+func (x *AddOrganizationMemberResponse) GetMember() *OrganizationMember {
+	if x != nil {
+		return x.Member
+	}
+	return nil
+}
+
+type ReplaceMemberRolesRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	UserId         string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Roles          []string               `protobuf:"bytes,3,rep,name=roles,proto3" json:"roles,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *ReplaceMemberRolesRequest) Reset() {
+	*x = ReplaceMemberRolesRequest{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[24]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReplaceMemberRolesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReplaceMemberRolesRequest) ProtoMessage() {}
+
+func (x *ReplaceMemberRolesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[24]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReplaceMemberRolesRequest.ProtoReflect.Descriptor instead.
+func (*ReplaceMemberRolesRequest) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{24}
+}
+
+func (x *ReplaceMemberRolesRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *ReplaceMemberRolesRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+func (x *ReplaceMemberRolesRequest) GetRoles() []string {
+	if x != nil {
+		return x.Roles
+	}
+	return nil
+}
+
+type ReplaceMemberRolesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Member        *OrganizationMember    `protobuf:"bytes,1,opt,name=member,proto3" json:"member,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReplaceMemberRolesResponse) Reset() {
+	*x = ReplaceMemberRolesResponse{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[25]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReplaceMemberRolesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReplaceMemberRolesResponse) ProtoMessage() {}
+
+func (x *ReplaceMemberRolesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[25]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReplaceMemberRolesResponse.ProtoReflect.Descriptor instead.
+func (*ReplaceMemberRolesResponse) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{25}
+}
+
+func (x *ReplaceMemberRolesResponse) GetMember() *OrganizationMember {
+	if x != nil {
+		return x.Member
+	}
+	return nil
+}
+
+type RemoveOrganizationMemberRequest struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	UserId         string                 `protobuf:"bytes,2,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *RemoveOrganizationMemberRequest) Reset() {
+	*x = RemoveOrganizationMemberRequest{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[26]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveOrganizationMemberRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveOrganizationMemberRequest) ProtoMessage() {}
+
+func (x *RemoveOrganizationMemberRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[26]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveOrganizationMemberRequest.ProtoReflect.Descriptor instead.
+func (*RemoveOrganizationMemberRequest) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{26}
+}
+
+func (x *RemoveOrganizationMemberRequest) GetOrganizationId() string {
+	if x != nil {
+		return x.OrganizationId
+	}
+	return ""
+}
+
+func (x *RemoveOrganizationMemberRequest) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
+}
+
+type RemoveOrganizationMemberResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RemoveOrganizationMemberResponse) Reset() {
+	*x = RemoveOrganizationMemberResponse{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[27]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RemoveOrganizationMemberResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RemoveOrganizationMemberResponse) ProtoMessage() {}
+
+func (x *RemoveOrganizationMemberResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[27]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RemoveOrganizationMemberResponse.ProtoReflect.Descriptor instead.
+func (*RemoveOrganizationMemberResponse) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{27}
+}
+
+type ListRolesRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRolesRequest) Reset() {
+	*x = ListRolesRequest{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[28]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRolesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRolesRequest) ProtoMessage() {}
+
+func (x *ListRolesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[28]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRolesRequest.ProtoReflect.Descriptor instead.
+func (*ListRolesRequest) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{28}
+}
+
+type Role struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	Permissions   []string               `protobuf:"bytes,2,rep,name=permissions,proto3" json:"permissions,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *Role) Reset() {
+	*x = Role{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[29]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *Role) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Role) ProtoMessage() {}
+
+func (x *Role) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[29]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Role.ProtoReflect.Descriptor instead.
+func (*Role) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{29}
+}
+
+func (x *Role) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *Role) GetPermissions() []string {
+	if x != nil {
+		return x.Permissions
+	}
+	return nil
+}
+
+type ListRolesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Roles         []*Role                `protobuf:"bytes,1,rep,name=roles,proto3" json:"roles,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListRolesResponse) Reset() {
+	*x = ListRolesResponse{}
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[30]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListRolesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListRolesResponse) ProtoMessage() {}
+
+func (x *ListRolesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_beaesthetic_identity_v1_identity_api_proto_msgTypes[30]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListRolesResponse.ProtoReflect.Descriptor instead.
+func (*ListRolesResponse) Descriptor() ([]byte, []int) {
+	return file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP(), []int{30}
+}
+
+func (x *ListRolesResponse) GetRoles() []*Role {
+	if x != nil {
+		return x.Roles
+	}
+	return nil
+}
+
 var File_beaesthetic_identity_v1_identity_api_proto protoreflect.FileDescriptor
 
 const file_beaesthetic_identity_v1_identity_api_proto_rawDesc = "" +
@@ -884,16 +1745,15 @@ const file_beaesthetic_identity_v1_identity_api_proto_rawDesc = "" +
 	"\rauthenticator\x18\x01 \x01(\tR\rauthenticator\x12\x14\n" +
 	"\x05token\x18\x02 \x01(\tR\x05token\x12\x1d\n" +
 	"\n" +
-	"token_type\x18\x03 \x01(\tR\ttokenType\"\xf3\x01\n" +
+	"token_type\x18\x03 \x01(\tR\ttokenType\"\xd7\x01\n" +
 	"\x14ExchangeTokenRequest\x12\x1d\n" +
 	"\n" +
 	"grant_type\x18\x01 \x01(\tR\tgrantType\x12W\n" +
 	"\x11subject_assertion\x18\x02 \x01(\v2*.beaesthetic.identity.v1.ExternalAssertionR\x10subjectAssertion\x12\x1e\n" +
 	"\n" +
 	"authorizer\x18\x03 \x01(\tR\n" +
-	"authorizer\x12\x1a\n" +
-	"\baudience\x18\x04 \x01(\tR\baudience\x12'\n" +
-	"\x0forganization_id\x18\x05 \x01(\tR\x0eorganizationId\"\xa9\x01\n" +
+	"authorizer\x12'\n" +
+	"\x0forganization_id\x18\x04 \x01(\tR\x0eorganizationId\"\xa9\x01\n" +
 	"\vAccessToken\x12!\n" +
 	"\faccess_token\x18\x01 \x01(\tR\vaccessToken\x12\x1d\n" +
 	"\n" +
@@ -903,11 +1763,12 @@ const file_beaesthetic_identity_v1_identity_api_proto_rawDesc = "" +
 	"\n" +
 	"expires_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\texpiresAt\"S\n" +
 	"\x15ExchangeTokenResponse\x12:\n" +
-	"\x05token\x18\x01 \x01(\v2$.beaesthetic.identity.v1.AccessTokenR\x05token\"\xc4\x02\n" +
+	"\x05token\x18\x01 \x01(\v2$.beaesthetic.identity.v1.AccessTokenR\x05token\"\xee\x02\n" +
 	"\x19IssueInternalTokenRequest\x12\x18\n" +
 	"\asubject\x18\x01 \x01(\tR\asubject\x12J\n" +
-	"\ridentity_type\x18\x02 \x01(\x0e2%.beaesthetic.identity.v1.IdentityTypeR\fidentityType\x12\x1a\n" +
-	"\baudience\x18\x03 \x01(\tR\baudience\x12'\n" +
+	"\ridentity_type\x18\x02 \x01(\x0e2%.beaesthetic.identity.v1.IdentityTypeR\fidentityType\x12D\n" +
+	"\vtoken_scope\x18\x03 \x01(\x0e2#.beaesthetic.identity.v1.TokenScopeR\n" +
+	"tokenScope\x12'\n" +
 	"\x0forganization_id\x18\x04 \x01(\tR\x0eorganizationId\x12#\n" +
 	"\rmembership_id\x18\x05 \x01(\tR\fmembershipId\x12\x14\n" +
 	"\x05roles\x18\x06 \x03(\tR\x05roles\x12 \n" +
@@ -915,10 +1776,9 @@ const file_beaesthetic_identity_v1_identity_api_proto_rawDesc = "" +
 	"\vauth_method\x18\b \x01(\tR\n" +
 	"authMethod\"X\n" +
 	"\x1aIssueInternalTokenResponse\x12:\n" +
-	"\x05token\x18\x01 \x01(\v2$.beaesthetic.identity.v1.AccessTokenR\x05token\"N\n" +
+	"\x05token\x18\x01 \x01(\v2$.beaesthetic.identity.v1.AccessTokenR\x05token\"2\n" +
 	"\x1aVerifyInternalTokenRequest\x12\x14\n" +
-	"\x05token\x18\x01 \x01(\tR\x05token\x12\x1a\n" +
-	"\baudience\x18\x02 \x01(\tR\baudience\"t\n" +
+	"\x05token\x18\x01 \x01(\tR\x05token\"t\n" +
 	"\x1bVerifyInternalTokenResponse\x12U\n" +
 	"\rauthorization\x18\x01 \x01(\v2/.beaesthetic.identity.v1.EffectiveAuthorizationR\rauthorization\"\x1c\n" +
 	"\x1aGetVerificationKeysRequest\"I\n" +
@@ -938,19 +1798,77 @@ const file_beaesthetic_identity_v1_identity_api_proto_rawDesc = "" +
 	"\vpermissions\x18\x05 \x03(\tR\vpermissions\x12J\n" +
 	"\ridentity_type\x18\x06 \x01(\x0e2%.beaesthetic.identity.v1.IdentityTypeR\fidentityType\"z\n" +
 	"!GetEffectiveAuthorizationResponse\x12U\n" +
-	"\rauthorization\x18\x01 \x01(\v2/.beaesthetic.identity.v1.EffectiveAuthorizationR\rauthorization*\x80\x01\n" +
+	"\rauthorization\x18\x01 \x01(\v2/.beaesthetic.identity.v1.EffectiveAuthorizationR\rauthorization\"\xa9\x01\n" +
+	"\x16OrganizationMembership\x12'\n" +
+	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12+\n" +
+	"\x11organization_name\x18\x02 \x01(\tR\x10organizationName\x12#\n" +
+	"\rmembership_id\x18\x03 \x01(\tR\fmembershipId\x12\x14\n" +
+	"\x05roles\x18\x04 \x03(\tR\x05roles\"\x1c\n" +
+	"\x1aListMyOrganizationsRequest\"t\n" +
+	"\x1bListMyOrganizationsResponse\x12U\n" +
+	"\rorganizations\x18\x01 \x03(\v2/.beaesthetic.identity.v1.OrganizationMembershipR\rorganizations\"D\n" +
+	"\x19GetMyAuthorizationRequest\x12'\n" +
+	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\"s\n" +
+	"\x1aGetMyAuthorizationResponse\x12U\n" +
+	"\rauthorization\x18\x01 \x01(\v2/.beaesthetic.identity.v1.EffectiveAuthorizationR\rauthorization\"\x96\x01\n" +
+	"\x12OrganizationMember\x12\x17\n" +
+	"\auser_id\x18\x01 \x01(\tR\x06userId\x12\x14\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\x12#\n" +
+	"\rmembership_id\x18\x03 \x01(\tR\fmembershipId\x12\x16\n" +
+	"\x06active\x18\x04 \x01(\bR\x06active\x12\x14\n" +
+	"\x05roles\x18\x05 \x03(\tR\x05roles\"I\n" +
+	"\x1eListOrganizationMembersRequest\x12'\n" +
+	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\"h\n" +
+	"\x1fListOrganizationMembersResponse\x12E\n" +
+	"\amembers\x18\x01 \x03(\v2+.beaesthetic.identity.v1.OrganizationMemberR\amembers\"s\n" +
+	"\x1cAddOrganizationMemberRequest\x12'\n" +
+	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x14\n" +
+	"\x05email\x18\x02 \x01(\tR\x05email\x12\x14\n" +
+	"\x05roles\x18\x03 \x03(\tR\x05roles\"d\n" +
+	"\x1dAddOrganizationMemberResponse\x12C\n" +
+	"\x06member\x18\x01 \x01(\v2+.beaesthetic.identity.v1.OrganizationMemberR\x06member\"s\n" +
+	"\x19ReplaceMemberRolesRequest\x12'\n" +
+	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\x12\x14\n" +
+	"\x05roles\x18\x03 \x03(\tR\x05roles\"a\n" +
+	"\x1aReplaceMemberRolesResponse\x12C\n" +
+	"\x06member\x18\x01 \x01(\v2+.beaesthetic.identity.v1.OrganizationMemberR\x06member\"c\n" +
+	"\x1fRemoveOrganizationMemberRequest\x12'\n" +
+	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x17\n" +
+	"\auser_id\x18\x02 \x01(\tR\x06userId\"\"\n" +
+	" RemoveOrganizationMemberResponse\"\x12\n" +
+	"\x10ListRolesRequest\"<\n" +
+	"\x04Role\x12\x12\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12 \n" +
+	"\vpermissions\x18\x02 \x03(\tR\vpermissions\"H\n" +
+	"\x11ListRolesResponse\x123\n" +
+	"\x05roles\x18\x01 \x03(\v2\x1d.beaesthetic.identity.v1.RoleR\x05roles*\x80\x01\n" +
 	"\fIdentityType\x12\x1d\n" +
 	"\x19IDENTITY_TYPE_UNSPECIFIED\x10\x00\x12\x17\n" +
 	"\x13IDENTITY_TYPE_HUMAN\x10\x01\x12\x19\n" +
 	"\x15IDENTITY_TYPE_SERVICE\x10\x02\x12\x1d\n" +
-	"\x19IDENTITY_TYPE_INTEGRATION\x10\x032\x80\x05\n" +
+	"\x19IDENTITY_TYPE_INTEGRATION\x10\x03*[\n" +
+	"\n" +
+	"TokenScope\x12\x1b\n" +
+	"\x17TOKEN_SCOPE_UNSPECIFIED\x10\x00\x12\x14\n" +
+	"\x10TOKEN_SCOPE_USER\x10\x01\x12\x1a\n" +
+	"\x16TOKEN_SCOPE_MEMBERSHIP\x10\x022\x80\x05\n" +
 	"\fTokenService\x12\x87\x01\n" +
 	"\rExchangeToken\x12-.beaesthetic.identity.v1.ExchangeTokenRequest\x1a..beaesthetic.identity.v1.ExchangeTokenResponse\"\x17\x82\xd3\xe4\x93\x02\x11:\x01*\"\f/oauth/token\x12\x9b\x01\n" +
 	"\x13GetVerificationKeys\x123.beaesthetic.identity.v1.GetVerificationKeysRequest\x1a4.beaesthetic.identity.v1.GetVerificationKeysResponse\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/v1/internal/keys\x12\x9d\x01\n" +
 	"\x12IssueInternalToken\x122.beaesthetic.identity.v1.IssueInternalTokenRequest\x1a3.beaesthetic.identity.v1.IssueInternalTokenResponse\"\x1e\x82\xd3\xe4\x93\x02\x18:\x01*\"\x13/v1/internal/tokens\x12\xa7\x01\n" +
 	"\x13VerifyInternalToken\x123.beaesthetic.identity.v1.VerifyInternalTokenRequest\x1a4.beaesthetic.identity.v1.VerifyInternalTokenResponse\"%\x82\xd3\xe4\x93\x02\x1f:\x01*\"\x1a/v1/internal/tokens/verify2\xfc\x01\n" +
 	"\x11MembershipService\x12\xe6\x01\n" +
-	"\x19GetEffectiveAuthorization\x129.beaesthetic.identity.v1.GetEffectiveAuthorizationRequest\x1a:.beaesthetic.identity.v1.GetEffectiveAuthorizationResponse\"R\x82\xd3\xe4\x93\x02L\x12J/v1/internal/organizations/{organization_id}/users/{user_id}/authorizationBOZMgithub.com/petretiandrea/beaesthetic-backend/core-contracts/identity;identityb\x06proto3"
+	"\x19GetEffectiveAuthorization\x129.beaesthetic.identity.v1.GetEffectiveAuthorizationRequest\x1a:.beaesthetic.identity.v1.GetEffectiveAuthorizationResponse\"R\x82\xd3\xe4\x93\x02L\x12J/v1/internal/organizations/{organization_id}/users/{user_id}/authorization2\x8c\n" +
+	"\n" +
+	"\x19IdentityManagementService\x12\x9e\x01\n" +
+	"\x13ListMyOrganizations\x123.beaesthetic.identity.v1.ListMyOrganizationsRequest\x1a4.beaesthetic.identity.v1.ListMyOrganizationsResponse\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/me/organizations\x12\xb8\x01\n" +
+	"\x12GetMyAuthorization\x122.beaesthetic.identity.v1.GetMyAuthorizationRequest\x1a3.beaesthetic.identity.v1.GetMyAuthorizationResponse\"9\x82\xd3\xe4\x93\x023\x121/v1/organizations/{organization_id}/authorization\x12\xc1\x01\n" +
+	"\x17ListOrganizationMembers\x127.beaesthetic.identity.v1.ListOrganizationMembersRequest\x1a8.beaesthetic.identity.v1.ListOrganizationMembersResponse\"3\x82\xd3\xe4\x93\x02-\x12+/v1/organizations/{organization_id}/members\x12\xbe\x01\n" +
+	"\x15AddOrganizationMember\x125.beaesthetic.identity.v1.AddOrganizationMemberRequest\x1a6.beaesthetic.identity.v1.AddOrganizationMemberResponse\"6\x82\xd3\xe4\x93\x020:\x01*\"+/v1/organizations/{organization_id}/members\x12\xc5\x01\n" +
+	"\x12ReplaceMemberRoles\x122.beaesthetic.identity.v1.ReplaceMemberRolesRequest\x1a3.beaesthetic.identity.v1.ReplaceMemberRolesResponse\"F\x82\xd3\xe4\x93\x02@:\x01*\x1a;/v1/organizations/{organization_id}/members/{user_id}/roles\x12\xce\x01\n" +
+	"\x18RemoveOrganizationMember\x128.beaesthetic.identity.v1.RemoveOrganizationMemberRequest\x1a9.beaesthetic.identity.v1.RemoveOrganizationMemberResponse\"=\x82\xd3\xe4\x93\x027*5/v1/organizations/{organization_id}/members/{user_id}\x12u\n" +
+	"\tListRoles\x12).beaesthetic.identity.v1.ListRolesRequest\x1a*.beaesthetic.identity.v1.ListRolesResponse\"\x11\x82\xd3\xe4\x93\x02\v\x12\t/v1/rolesBOZMgithub.com/petretiandrea/beaesthetic-backend/core-contracts/identity;identityb\x06proto3"
 
 var (
 	file_beaesthetic_identity_v1_identity_api_proto_rawDescOnce sync.Once
@@ -964,51 +1882,90 @@ func file_beaesthetic_identity_v1_identity_api_proto_rawDescGZIP() []byte {
 	return file_beaesthetic_identity_v1_identity_api_proto_rawDescData
 }
 
-var file_beaesthetic_identity_v1_identity_api_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
-var file_beaesthetic_identity_v1_identity_api_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
+var file_beaesthetic_identity_v1_identity_api_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
+var file_beaesthetic_identity_v1_identity_api_proto_msgTypes = make([]protoimpl.MessageInfo, 31)
 var file_beaesthetic_identity_v1_identity_api_proto_goTypes = []any{
 	(IdentityType)(0),                         // 0: beaesthetic.identity.v1.IdentityType
-	(*ExternalAssertion)(nil),                 // 1: beaesthetic.identity.v1.ExternalAssertion
-	(*ExchangeTokenRequest)(nil),              // 2: beaesthetic.identity.v1.ExchangeTokenRequest
-	(*AccessToken)(nil),                       // 3: beaesthetic.identity.v1.AccessToken
-	(*ExchangeTokenResponse)(nil),             // 4: beaesthetic.identity.v1.ExchangeTokenResponse
-	(*IssueInternalTokenRequest)(nil),         // 5: beaesthetic.identity.v1.IssueInternalTokenRequest
-	(*IssueInternalTokenResponse)(nil),        // 6: beaesthetic.identity.v1.IssueInternalTokenResponse
-	(*VerifyInternalTokenRequest)(nil),        // 7: beaesthetic.identity.v1.VerifyInternalTokenRequest
-	(*VerifyInternalTokenResponse)(nil),       // 8: beaesthetic.identity.v1.VerifyInternalTokenResponse
-	(*GetVerificationKeysRequest)(nil),        // 9: beaesthetic.identity.v1.GetVerificationKeysRequest
-	(*VerificationKey)(nil),                   // 10: beaesthetic.identity.v1.VerificationKey
-	(*GetVerificationKeysResponse)(nil),       // 11: beaesthetic.identity.v1.GetVerificationKeysResponse
-	(*GetEffectiveAuthorizationRequest)(nil),  // 12: beaesthetic.identity.v1.GetEffectiveAuthorizationRequest
-	(*EffectiveAuthorization)(nil),            // 13: beaesthetic.identity.v1.EffectiveAuthorization
-	(*GetEffectiveAuthorizationResponse)(nil), // 14: beaesthetic.identity.v1.GetEffectiveAuthorizationResponse
-	(*timestamppb.Timestamp)(nil),             // 15: google.protobuf.Timestamp
+	(TokenScope)(0),                           // 1: beaesthetic.identity.v1.TokenScope
+	(*ExternalAssertion)(nil),                 // 2: beaesthetic.identity.v1.ExternalAssertion
+	(*ExchangeTokenRequest)(nil),              // 3: beaesthetic.identity.v1.ExchangeTokenRequest
+	(*AccessToken)(nil),                       // 4: beaesthetic.identity.v1.AccessToken
+	(*ExchangeTokenResponse)(nil),             // 5: beaesthetic.identity.v1.ExchangeTokenResponse
+	(*IssueInternalTokenRequest)(nil),         // 6: beaesthetic.identity.v1.IssueInternalTokenRequest
+	(*IssueInternalTokenResponse)(nil),        // 7: beaesthetic.identity.v1.IssueInternalTokenResponse
+	(*VerifyInternalTokenRequest)(nil),        // 8: beaesthetic.identity.v1.VerifyInternalTokenRequest
+	(*VerifyInternalTokenResponse)(nil),       // 9: beaesthetic.identity.v1.VerifyInternalTokenResponse
+	(*GetVerificationKeysRequest)(nil),        // 10: beaesthetic.identity.v1.GetVerificationKeysRequest
+	(*VerificationKey)(nil),                   // 11: beaesthetic.identity.v1.VerificationKey
+	(*GetVerificationKeysResponse)(nil),       // 12: beaesthetic.identity.v1.GetVerificationKeysResponse
+	(*GetEffectiveAuthorizationRequest)(nil),  // 13: beaesthetic.identity.v1.GetEffectiveAuthorizationRequest
+	(*EffectiveAuthorization)(nil),            // 14: beaesthetic.identity.v1.EffectiveAuthorization
+	(*GetEffectiveAuthorizationResponse)(nil), // 15: beaesthetic.identity.v1.GetEffectiveAuthorizationResponse
+	(*OrganizationMembership)(nil),            // 16: beaesthetic.identity.v1.OrganizationMembership
+	(*ListMyOrganizationsRequest)(nil),        // 17: beaesthetic.identity.v1.ListMyOrganizationsRequest
+	(*ListMyOrganizationsResponse)(nil),       // 18: beaesthetic.identity.v1.ListMyOrganizationsResponse
+	(*GetMyAuthorizationRequest)(nil),         // 19: beaesthetic.identity.v1.GetMyAuthorizationRequest
+	(*GetMyAuthorizationResponse)(nil),        // 20: beaesthetic.identity.v1.GetMyAuthorizationResponse
+	(*OrganizationMember)(nil),                // 21: beaesthetic.identity.v1.OrganizationMember
+	(*ListOrganizationMembersRequest)(nil),    // 22: beaesthetic.identity.v1.ListOrganizationMembersRequest
+	(*ListOrganizationMembersResponse)(nil),   // 23: beaesthetic.identity.v1.ListOrganizationMembersResponse
+	(*AddOrganizationMemberRequest)(nil),      // 24: beaesthetic.identity.v1.AddOrganizationMemberRequest
+	(*AddOrganizationMemberResponse)(nil),     // 25: beaesthetic.identity.v1.AddOrganizationMemberResponse
+	(*ReplaceMemberRolesRequest)(nil),         // 26: beaesthetic.identity.v1.ReplaceMemberRolesRequest
+	(*ReplaceMemberRolesResponse)(nil),        // 27: beaesthetic.identity.v1.ReplaceMemberRolesResponse
+	(*RemoveOrganizationMemberRequest)(nil),   // 28: beaesthetic.identity.v1.RemoveOrganizationMemberRequest
+	(*RemoveOrganizationMemberResponse)(nil),  // 29: beaesthetic.identity.v1.RemoveOrganizationMemberResponse
+	(*ListRolesRequest)(nil),                  // 30: beaesthetic.identity.v1.ListRolesRequest
+	(*Role)(nil),                              // 31: beaesthetic.identity.v1.Role
+	(*ListRolesResponse)(nil),                 // 32: beaesthetic.identity.v1.ListRolesResponse
+	(*timestamppb.Timestamp)(nil),             // 33: google.protobuf.Timestamp
 }
 var file_beaesthetic_identity_v1_identity_api_proto_depIdxs = []int32{
-	1,  // 0: beaesthetic.identity.v1.ExchangeTokenRequest.subject_assertion:type_name -> beaesthetic.identity.v1.ExternalAssertion
-	15, // 1: beaesthetic.identity.v1.AccessToken.expires_at:type_name -> google.protobuf.Timestamp
-	3,  // 2: beaesthetic.identity.v1.ExchangeTokenResponse.token:type_name -> beaesthetic.identity.v1.AccessToken
+	2,  // 0: beaesthetic.identity.v1.ExchangeTokenRequest.subject_assertion:type_name -> beaesthetic.identity.v1.ExternalAssertion
+	33, // 1: beaesthetic.identity.v1.AccessToken.expires_at:type_name -> google.protobuf.Timestamp
+	4,  // 2: beaesthetic.identity.v1.ExchangeTokenResponse.token:type_name -> beaesthetic.identity.v1.AccessToken
 	0,  // 3: beaesthetic.identity.v1.IssueInternalTokenRequest.identity_type:type_name -> beaesthetic.identity.v1.IdentityType
-	3,  // 4: beaesthetic.identity.v1.IssueInternalTokenResponse.token:type_name -> beaesthetic.identity.v1.AccessToken
-	13, // 5: beaesthetic.identity.v1.VerifyInternalTokenResponse.authorization:type_name -> beaesthetic.identity.v1.EffectiveAuthorization
-	10, // 6: beaesthetic.identity.v1.GetVerificationKeysResponse.keys:type_name -> beaesthetic.identity.v1.VerificationKey
-	0,  // 7: beaesthetic.identity.v1.EffectiveAuthorization.identity_type:type_name -> beaesthetic.identity.v1.IdentityType
-	13, // 8: beaesthetic.identity.v1.GetEffectiveAuthorizationResponse.authorization:type_name -> beaesthetic.identity.v1.EffectiveAuthorization
-	2,  // 9: beaesthetic.identity.v1.TokenService.ExchangeToken:input_type -> beaesthetic.identity.v1.ExchangeTokenRequest
-	9,  // 10: beaesthetic.identity.v1.TokenService.GetVerificationKeys:input_type -> beaesthetic.identity.v1.GetVerificationKeysRequest
-	5,  // 11: beaesthetic.identity.v1.TokenService.IssueInternalToken:input_type -> beaesthetic.identity.v1.IssueInternalTokenRequest
-	7,  // 12: beaesthetic.identity.v1.TokenService.VerifyInternalToken:input_type -> beaesthetic.identity.v1.VerifyInternalTokenRequest
-	12, // 13: beaesthetic.identity.v1.MembershipService.GetEffectiveAuthorization:input_type -> beaesthetic.identity.v1.GetEffectiveAuthorizationRequest
-	4,  // 14: beaesthetic.identity.v1.TokenService.ExchangeToken:output_type -> beaesthetic.identity.v1.ExchangeTokenResponse
-	11, // 15: beaesthetic.identity.v1.TokenService.GetVerificationKeys:output_type -> beaesthetic.identity.v1.GetVerificationKeysResponse
-	6,  // 16: beaesthetic.identity.v1.TokenService.IssueInternalToken:output_type -> beaesthetic.identity.v1.IssueInternalTokenResponse
-	8,  // 17: beaesthetic.identity.v1.TokenService.VerifyInternalToken:output_type -> beaesthetic.identity.v1.VerifyInternalTokenResponse
-	14, // 18: beaesthetic.identity.v1.MembershipService.GetEffectiveAuthorization:output_type -> beaesthetic.identity.v1.GetEffectiveAuthorizationResponse
-	14, // [14:19] is the sub-list for method output_type
-	9,  // [9:14] is the sub-list for method input_type
-	9,  // [9:9] is the sub-list for extension type_name
-	9,  // [9:9] is the sub-list for extension extendee
-	0,  // [0:9] is the sub-list for field type_name
+	1,  // 4: beaesthetic.identity.v1.IssueInternalTokenRequest.token_scope:type_name -> beaesthetic.identity.v1.TokenScope
+	4,  // 5: beaesthetic.identity.v1.IssueInternalTokenResponse.token:type_name -> beaesthetic.identity.v1.AccessToken
+	14, // 6: beaesthetic.identity.v1.VerifyInternalTokenResponse.authorization:type_name -> beaesthetic.identity.v1.EffectiveAuthorization
+	11, // 7: beaesthetic.identity.v1.GetVerificationKeysResponse.keys:type_name -> beaesthetic.identity.v1.VerificationKey
+	0,  // 8: beaesthetic.identity.v1.EffectiveAuthorization.identity_type:type_name -> beaesthetic.identity.v1.IdentityType
+	14, // 9: beaesthetic.identity.v1.GetEffectiveAuthorizationResponse.authorization:type_name -> beaesthetic.identity.v1.EffectiveAuthorization
+	16, // 10: beaesthetic.identity.v1.ListMyOrganizationsResponse.organizations:type_name -> beaesthetic.identity.v1.OrganizationMembership
+	14, // 11: beaesthetic.identity.v1.GetMyAuthorizationResponse.authorization:type_name -> beaesthetic.identity.v1.EffectiveAuthorization
+	21, // 12: beaesthetic.identity.v1.ListOrganizationMembersResponse.members:type_name -> beaesthetic.identity.v1.OrganizationMember
+	21, // 13: beaesthetic.identity.v1.AddOrganizationMemberResponse.member:type_name -> beaesthetic.identity.v1.OrganizationMember
+	21, // 14: beaesthetic.identity.v1.ReplaceMemberRolesResponse.member:type_name -> beaesthetic.identity.v1.OrganizationMember
+	31, // 15: beaesthetic.identity.v1.ListRolesResponse.roles:type_name -> beaesthetic.identity.v1.Role
+	3,  // 16: beaesthetic.identity.v1.TokenService.ExchangeToken:input_type -> beaesthetic.identity.v1.ExchangeTokenRequest
+	10, // 17: beaesthetic.identity.v1.TokenService.GetVerificationKeys:input_type -> beaesthetic.identity.v1.GetVerificationKeysRequest
+	6,  // 18: beaesthetic.identity.v1.TokenService.IssueInternalToken:input_type -> beaesthetic.identity.v1.IssueInternalTokenRequest
+	8,  // 19: beaesthetic.identity.v1.TokenService.VerifyInternalToken:input_type -> beaesthetic.identity.v1.VerifyInternalTokenRequest
+	13, // 20: beaesthetic.identity.v1.MembershipService.GetEffectiveAuthorization:input_type -> beaesthetic.identity.v1.GetEffectiveAuthorizationRequest
+	17, // 21: beaesthetic.identity.v1.IdentityManagementService.ListMyOrganizations:input_type -> beaesthetic.identity.v1.ListMyOrganizationsRequest
+	19, // 22: beaesthetic.identity.v1.IdentityManagementService.GetMyAuthorization:input_type -> beaesthetic.identity.v1.GetMyAuthorizationRequest
+	22, // 23: beaesthetic.identity.v1.IdentityManagementService.ListOrganizationMembers:input_type -> beaesthetic.identity.v1.ListOrganizationMembersRequest
+	24, // 24: beaesthetic.identity.v1.IdentityManagementService.AddOrganizationMember:input_type -> beaesthetic.identity.v1.AddOrganizationMemberRequest
+	26, // 25: beaesthetic.identity.v1.IdentityManagementService.ReplaceMemberRoles:input_type -> beaesthetic.identity.v1.ReplaceMemberRolesRequest
+	28, // 26: beaesthetic.identity.v1.IdentityManagementService.RemoveOrganizationMember:input_type -> beaesthetic.identity.v1.RemoveOrganizationMemberRequest
+	30, // 27: beaesthetic.identity.v1.IdentityManagementService.ListRoles:input_type -> beaesthetic.identity.v1.ListRolesRequest
+	5,  // 28: beaesthetic.identity.v1.TokenService.ExchangeToken:output_type -> beaesthetic.identity.v1.ExchangeTokenResponse
+	12, // 29: beaesthetic.identity.v1.TokenService.GetVerificationKeys:output_type -> beaesthetic.identity.v1.GetVerificationKeysResponse
+	7,  // 30: beaesthetic.identity.v1.TokenService.IssueInternalToken:output_type -> beaesthetic.identity.v1.IssueInternalTokenResponse
+	9,  // 31: beaesthetic.identity.v1.TokenService.VerifyInternalToken:output_type -> beaesthetic.identity.v1.VerifyInternalTokenResponse
+	15, // 32: beaesthetic.identity.v1.MembershipService.GetEffectiveAuthorization:output_type -> beaesthetic.identity.v1.GetEffectiveAuthorizationResponse
+	18, // 33: beaesthetic.identity.v1.IdentityManagementService.ListMyOrganizations:output_type -> beaesthetic.identity.v1.ListMyOrganizationsResponse
+	20, // 34: beaesthetic.identity.v1.IdentityManagementService.GetMyAuthorization:output_type -> beaesthetic.identity.v1.GetMyAuthorizationResponse
+	23, // 35: beaesthetic.identity.v1.IdentityManagementService.ListOrganizationMembers:output_type -> beaesthetic.identity.v1.ListOrganizationMembersResponse
+	25, // 36: beaesthetic.identity.v1.IdentityManagementService.AddOrganizationMember:output_type -> beaesthetic.identity.v1.AddOrganizationMemberResponse
+	27, // 37: beaesthetic.identity.v1.IdentityManagementService.ReplaceMemberRoles:output_type -> beaesthetic.identity.v1.ReplaceMemberRolesResponse
+	29, // 38: beaesthetic.identity.v1.IdentityManagementService.RemoveOrganizationMember:output_type -> beaesthetic.identity.v1.RemoveOrganizationMemberResponse
+	32, // 39: beaesthetic.identity.v1.IdentityManagementService.ListRoles:output_type -> beaesthetic.identity.v1.ListRolesResponse
+	28, // [28:40] is the sub-list for method output_type
+	16, // [16:28] is the sub-list for method input_type
+	16, // [16:16] is the sub-list for extension type_name
+	16, // [16:16] is the sub-list for extension extendee
+	0,  // [0:16] is the sub-list for field type_name
 }
 
 func init() { file_beaesthetic_identity_v1_identity_api_proto_init() }
@@ -1021,10 +1978,10 @@ func file_beaesthetic_identity_v1_identity_api_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_beaesthetic_identity_v1_identity_api_proto_rawDesc), len(file_beaesthetic_identity_v1_identity_api_proto_rawDesc)),
-			NumEnums:      1,
-			NumMessages:   14,
+			NumEnums:      2,
+			NumMessages:   31,
 			NumExtensions: 0,
-			NumServices:   2,
+			NumServices:   3,
 		},
 		GoTypes:           file_beaesthetic_identity_v1_identity_api_proto_goTypes,
 		DependencyIndexes: file_beaesthetic_identity_v1_identity_api_proto_depIdxs,

@@ -1,31 +1,28 @@
 roles:
   - name: owner
     permissions:
-      - appointments:read
-      - appointments:write
-      - customers:read
-      - customers:write
-      - memberships:read
-      - memberships:write
-      - organizations:read
-      - organizations:write
+      - appointment.read
+      - appointment.write
+      - customer.read
+      - customer.write
+      - identity.memberships.read
+      - identity.memberships.write
   - name: admin
     permissions:
-      - appointments:read
-      - appointments:write
-      - customers:read
-      - customers:write
-      - memberships:read
-      - memberships:write
-      - organizations:read
+      - appointment.read
+      - appointment.write
+      - customer.read
+      - customer.write
+      - identity.memberships.read
+      - identity.memberships.write
   - name: staff
     permissions:
-      - appointments:read
-      - appointments:write
-      - customers:read
-      - customers:write
+      - appointment.read
+      - appointment.write
+      - customer.read
+      - customer.write
   - name: viewer
     permissions:
-      - appointments:read
-      - customers:read
-      - memberships:read
+      - appointment.read
+      - customer.read
+      - identity.memberships.read

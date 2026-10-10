@@ -36,7 +36,7 @@ func (s *TokenServer) ExchangeToken(ctx context.Context, request *identity.Excha
 	}
 	accessToken, claims, err := s.exchange.Exchange(ctx, application.Request{
 		GrantType: request.GetGrantType(), SubjectTokenType: assertion.GetTokenType(), Authenticator: assertion.GetAuthenticator(), Authorizer: request.GetAuthorizer(), SubjectToken: assertion.GetToken(),
-		Audience: request.GetAudience(), OrganizationID: request.GetOrganizationId(),
+		OrganizationID: request.GetOrganizationId(),
 	})
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "invalid token exchange request")
@@ -64,7 +64,11 @@ func (s *TokenServer) IssueInternalToken(ctx context.Context, request *identity.
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	accessToken, claims, err := s.issuer.Issue(token.IssueRequest{Subject: request.GetSubject(), IdentityType: identityType, Audience: request.GetAudience(), OrganizationID: request.GetOrganizationId(), MembershipID: request.GetMembershipId(), Roles: request.GetRoles(), Permissions: request.GetPermissions(), AuthMethod: request.GetAuthMethod()})
+	scope := token.ScopeUser
+	if request.GetOrganizationId() != "" || request.GetMembershipId() != "" {
+		scope = token.ScopeMembership
+	}
+	accessToken, claims, err := s.issuer.Issue(token.IssueRequest{Subject: request.GetSubject(), IdentityType: identityType, Scope: scope, OrganizationID: request.GetOrganizationId(), MembershipID: request.GetMembershipId(), Roles: request.GetRoles(), Permissions: request.GetPermissions(), AuthMethod: request.GetAuthMethod()})
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, "invalid token request")
 	}
@@ -75,7 +79,7 @@ func (s *TokenServer) VerifyInternalToken(ctx context.Context, request *identity
 	if err := s.authorize(ctx); err != nil {
 		return nil, err
 	}
-	claims, err := s.issuer.Verify(request.GetToken(), request.GetAudience())
+	claims, err := s.issuer.Verify(request.GetToken())
 	if err != nil {
 		return nil, status.Error(codes.Unauthenticated, "invalid token")
 	}
