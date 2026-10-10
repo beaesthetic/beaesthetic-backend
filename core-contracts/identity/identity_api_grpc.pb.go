@@ -341,3 +341,334 @@ var MembershipService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "beaesthetic/identity/v1/identity_api.proto",
 }
+
+const (
+	IdentityManagementService_ListMyOrganizations_FullMethodName      = "/beaesthetic.identity.v1.IdentityManagementService/ListMyOrganizations"
+	IdentityManagementService_GetMyAuthorization_FullMethodName       = "/beaesthetic.identity.v1.IdentityManagementService/GetMyAuthorization"
+	IdentityManagementService_ListOrganizationMembers_FullMethodName  = "/beaesthetic.identity.v1.IdentityManagementService/ListOrganizationMembers"
+	IdentityManagementService_AddOrganizationMember_FullMethodName    = "/beaesthetic.identity.v1.IdentityManagementService/AddOrganizationMember"
+	IdentityManagementService_ReplaceMemberRoles_FullMethodName       = "/beaesthetic.identity.v1.IdentityManagementService/ReplaceMemberRoles"
+	IdentityManagementService_RemoveOrganizationMember_FullMethodName = "/beaesthetic.identity.v1.IdentityManagementService/RemoveOrganizationMember"
+	IdentityManagementService_ListRoles_FullMethodName                = "/beaesthetic.identity.v1.IdentityManagementService/ListRoles"
+)
+
+// IdentityManagementServiceClient is the client API for IdentityManagementService service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type IdentityManagementServiceClient interface {
+	ListMyOrganizations(ctx context.Context, in *ListMyOrganizationsRequest, opts ...grpc.CallOption) (*ListMyOrganizationsResponse, error)
+	GetMyAuthorization(ctx context.Context, in *GetMyAuthorizationRequest, opts ...grpc.CallOption) (*GetMyAuthorizationResponse, error)
+	ListOrganizationMembers(ctx context.Context, in *ListOrganizationMembersRequest, opts ...grpc.CallOption) (*ListOrganizationMembersResponse, error)
+	AddOrganizationMember(ctx context.Context, in *AddOrganizationMemberRequest, opts ...grpc.CallOption) (*AddOrganizationMemberResponse, error)
+	ReplaceMemberRoles(ctx context.Context, in *ReplaceMemberRolesRequest, opts ...grpc.CallOption) (*ReplaceMemberRolesResponse, error)
+	RemoveOrganizationMember(ctx context.Context, in *RemoveOrganizationMemberRequest, opts ...grpc.CallOption) (*RemoveOrganizationMemberResponse, error)
+	ListRoles(ctx context.Context, in *ListRolesRequest, opts ...grpc.CallOption) (*ListRolesResponse, error)
+}
+
+type identityManagementServiceClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewIdentityManagementServiceClient(cc grpc.ClientConnInterface) IdentityManagementServiceClient {
+	return &identityManagementServiceClient{cc}
+}
+
+func (c *identityManagementServiceClient) ListMyOrganizations(ctx context.Context, in *ListMyOrganizationsRequest, opts ...grpc.CallOption) (*ListMyOrganizationsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListMyOrganizationsResponse)
+	err := c.cc.Invoke(ctx, IdentityManagementService_ListMyOrganizations_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *identityManagementServiceClient) GetMyAuthorization(ctx context.Context, in *GetMyAuthorizationRequest, opts ...grpc.CallOption) (*GetMyAuthorizationResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetMyAuthorizationResponse)
+	err := c.cc.Invoke(ctx, IdentityManagementService_GetMyAuthorization_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *identityManagementServiceClient) ListOrganizationMembers(ctx context.Context, in *ListOrganizationMembersRequest, opts ...grpc.CallOption) (*ListOrganizationMembersResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListOrganizationMembersResponse)
+	err := c.cc.Invoke(ctx, IdentityManagementService_ListOrganizationMembers_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *identityManagementServiceClient) AddOrganizationMember(ctx context.Context, in *AddOrganizationMemberRequest, opts ...grpc.CallOption) (*AddOrganizationMemberResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AddOrganizationMemberResponse)
+	err := c.cc.Invoke(ctx, IdentityManagementService_AddOrganizationMember_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *identityManagementServiceClient) ReplaceMemberRoles(ctx context.Context, in *ReplaceMemberRolesRequest, opts ...grpc.CallOption) (*ReplaceMemberRolesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReplaceMemberRolesResponse)
+	err := c.cc.Invoke(ctx, IdentityManagementService_ReplaceMemberRoles_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *identityManagementServiceClient) RemoveOrganizationMember(ctx context.Context, in *RemoveOrganizationMemberRequest, opts ...grpc.CallOption) (*RemoveOrganizationMemberResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RemoveOrganizationMemberResponse)
+	err := c.cc.Invoke(ctx, IdentityManagementService_RemoveOrganizationMember_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *identityManagementServiceClient) ListRoles(ctx context.Context, in *ListRolesRequest, opts ...grpc.CallOption) (*ListRolesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListRolesResponse)
+	err := c.cc.Invoke(ctx, IdentityManagementService_ListRoles_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// IdentityManagementServiceServer is the server API for IdentityManagementService service.
+// All implementations must embed UnimplementedIdentityManagementServiceServer
+// for forward compatibility.
+type IdentityManagementServiceServer interface {
+	ListMyOrganizations(context.Context, *ListMyOrganizationsRequest) (*ListMyOrganizationsResponse, error)
+	GetMyAuthorization(context.Context, *GetMyAuthorizationRequest) (*GetMyAuthorizationResponse, error)
+	ListOrganizationMembers(context.Context, *ListOrganizationMembersRequest) (*ListOrganizationMembersResponse, error)
+	AddOrganizationMember(context.Context, *AddOrganizationMemberRequest) (*AddOrganizationMemberResponse, error)
+	ReplaceMemberRoles(context.Context, *ReplaceMemberRolesRequest) (*ReplaceMemberRolesResponse, error)
+	RemoveOrganizationMember(context.Context, *RemoveOrganizationMemberRequest) (*RemoveOrganizationMemberResponse, error)
+	ListRoles(context.Context, *ListRolesRequest) (*ListRolesResponse, error)
+	mustEmbedUnimplementedIdentityManagementServiceServer()
+}
+
+// UnimplementedIdentityManagementServiceServer must be embedded to have
+// forward compatible implementations.
+//
+// NOTE: this should be embedded by value instead of pointer to avoid a nil
+// pointer dereference when methods are called.
+type UnimplementedIdentityManagementServiceServer struct{}
+
+func (UnimplementedIdentityManagementServiceServer) ListMyOrganizations(context.Context, *ListMyOrganizationsRequest) (*ListMyOrganizationsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListMyOrganizations not implemented")
+}
+func (UnimplementedIdentityManagementServiceServer) GetMyAuthorization(context.Context, *GetMyAuthorizationRequest) (*GetMyAuthorizationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMyAuthorization not implemented")
+}
+func (UnimplementedIdentityManagementServiceServer) ListOrganizationMembers(context.Context, *ListOrganizationMembersRequest) (*ListOrganizationMembersResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListOrganizationMembers not implemented")
+}
+func (UnimplementedIdentityManagementServiceServer) AddOrganizationMember(context.Context, *AddOrganizationMemberRequest) (*AddOrganizationMemberResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddOrganizationMember not implemented")
+}
+func (UnimplementedIdentityManagementServiceServer) ReplaceMemberRoles(context.Context, *ReplaceMemberRolesRequest) (*ReplaceMemberRolesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReplaceMemberRoles not implemented")
+}
+func (UnimplementedIdentityManagementServiceServer) RemoveOrganizationMember(context.Context, *RemoveOrganizationMemberRequest) (*RemoveOrganizationMemberResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RemoveOrganizationMember not implemented")
+}
+func (UnimplementedIdentityManagementServiceServer) ListRoles(context.Context, *ListRolesRequest) (*ListRolesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListRoles not implemented")
+}
+func (UnimplementedIdentityManagementServiceServer) mustEmbedUnimplementedIdentityManagementServiceServer() {
+}
+func (UnimplementedIdentityManagementServiceServer) testEmbeddedByValue() {}
+
+// UnsafeIdentityManagementServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to IdentityManagementServiceServer will
+// result in compilation errors.
+type UnsafeIdentityManagementServiceServer interface {
+	mustEmbedUnimplementedIdentityManagementServiceServer()
+}
+
+func RegisterIdentityManagementServiceServer(s grpc.ServiceRegistrar, srv IdentityManagementServiceServer) {
+	// If the following call pancis, it indicates UnimplementedIdentityManagementServiceServer was
+	// embedded by pointer and is nil.  This will cause panics if an
+	// unimplemented method is ever invoked, so we test this at initialization
+	// time to prevent it from happening at runtime later due to I/O.
+	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
+		t.testEmbeddedByValue()
+	}
+	s.RegisterService(&IdentityManagementService_ServiceDesc, srv)
+}
+
+func _IdentityManagementService_ListMyOrganizations_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListMyOrganizationsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityManagementServiceServer).ListMyOrganizations(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityManagementService_ListMyOrganizations_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityManagementServiceServer).ListMyOrganizations(ctx, req.(*ListMyOrganizationsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IdentityManagementService_GetMyAuthorization_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetMyAuthorizationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityManagementServiceServer).GetMyAuthorization(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityManagementService_GetMyAuthorization_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityManagementServiceServer).GetMyAuthorization(ctx, req.(*GetMyAuthorizationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IdentityManagementService_ListOrganizationMembers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListOrganizationMembersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityManagementServiceServer).ListOrganizationMembers(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityManagementService_ListOrganizationMembers_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityManagementServiceServer).ListOrganizationMembers(ctx, req.(*ListOrganizationMembersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IdentityManagementService_AddOrganizationMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddOrganizationMemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityManagementServiceServer).AddOrganizationMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityManagementService_AddOrganizationMember_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityManagementServiceServer).AddOrganizationMember(ctx, req.(*AddOrganizationMemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IdentityManagementService_ReplaceMemberRoles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReplaceMemberRolesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityManagementServiceServer).ReplaceMemberRoles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityManagementService_ReplaceMemberRoles_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityManagementServiceServer).ReplaceMemberRoles(ctx, req.(*ReplaceMemberRolesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IdentityManagementService_RemoveOrganizationMember_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RemoveOrganizationMemberRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityManagementServiceServer).RemoveOrganizationMember(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityManagementService_RemoveOrganizationMember_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityManagementServiceServer).RemoveOrganizationMember(ctx, req.(*RemoveOrganizationMemberRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _IdentityManagementService_ListRoles_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListRolesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(IdentityManagementServiceServer).ListRoles(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: IdentityManagementService_ListRoles_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(IdentityManagementServiceServer).ListRoles(ctx, req.(*ListRolesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// IdentityManagementService_ServiceDesc is the grpc.ServiceDesc for IdentityManagementService service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var IdentityManagementService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "beaesthetic.identity.v1.IdentityManagementService",
+	HandlerType: (*IdentityManagementServiceServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "ListMyOrganizations",
+			Handler:    _IdentityManagementService_ListMyOrganizations_Handler,
+		},
+		{
+			MethodName: "GetMyAuthorization",
+			Handler:    _IdentityManagementService_GetMyAuthorization_Handler,
+		},
+		{
+			MethodName: "ListOrganizationMembers",
+			Handler:    _IdentityManagementService_ListOrganizationMembers_Handler,
+		},
+		{
+			MethodName: "AddOrganizationMember",
+			Handler:    _IdentityManagementService_AddOrganizationMember_Handler,
+		},
+		{
+			MethodName: "ReplaceMemberRoles",
+			Handler:    _IdentityManagementService_ReplaceMemberRoles_Handler,
+		},
+		{
+			MethodName: "RemoveOrganizationMember",
+			Handler:    _IdentityManagementService_RemoveOrganizationMember_Handler,
+		},
+		{
+			MethodName: "ListRoles",
+			Handler:    _IdentityManagementService_ListRoles_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "beaesthetic/identity/v1/identity_api.proto",
+}

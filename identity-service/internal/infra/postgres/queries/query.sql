@@ -1,9 +1,9 @@
 -- name: FindUserByExternalIdentity :one
-SELECT u.id::text, coalesce(u.email,'') AS email FROM external_identities e JOIN users u ON u.id=e.user_id WHERE e.provider=$1 AND e.subject=$2;
+SELECT u.id::text AS id, coalesce(u.email,'') AS email FROM external_identities e JOIN users u ON u.id=e.user_id WHERE e.provider=$1 AND e.subject=$2;
 -- name: FindUserByEmail :one
 SELECT id::text, coalesce(email,'') AS email FROM users WHERE lower(email)=lower($1) LIMIT 1;
 -- name: CreateUser :exec
-INSERT INTO users (id,email) VALUES ($1,NULLIF($2,''));
+INSERT INTO users (id,email) VALUES (sqlc.arg(id),NULLIF(sqlc.arg(email)::text,''));
 -- name: CreateExternalIdentity :exec
 INSERT INTO external_identities (provider,subject,user_id) VALUES ($1,$2,$3);
 -- name: UpsertOrganization :one
@@ -36,3 +36,19 @@ INSERT INTO roles (id, organization_id, name) VALUES ($1, NULL, $2) ON CONFLICT 
 INSERT INTO permissions (id, code) VALUES ($1, $2) ON CONFLICT (code) DO UPDATE SET code = EXCLUDED.code RETURNING id::text;
 -- name: GrantRolePermission :exec
 INSERT INTO role_permissions (role_id, permission_id) VALUES ($1, $2) ON CONFLICT DO NOTHING;
+-- name: ListOrganizationsForUser :many
+SELECT o.id::text AS organization_id, o.name AS organization_name, m.id::text AS membership_id
+FROM memberships m JOIN organizations o ON o.id = m.organization_id
+WHERE m.user_id = $1 AND m.active = true ORDER BY o.name;
+-- name: ListOrganizationMembers :many
+SELECT u.id::text AS user_id, coalesce(u.email, '') AS email, m.id::text AS membership_id, m.active
+FROM memberships m JOIN users u ON u.id = m.user_id
+WHERE m.organization_id = $1 ORDER BY lower(coalesce(u.email, ''));
+-- name: FindGlobalRole :one
+SELECT id::text, name FROM roles WHERE organization_id IS NULL AND name = $1;
+-- name: DeleteMembershipRoles :exec
+DELETE FROM membership_roles WHERE membership_id = $1;
+-- name: DeactivateMembership :execrows
+UPDATE memberships SET active = false WHERE user_id = $1 AND organization_id = $2;
+-- name: ListGlobalRoles :many
+SELECT name FROM roles WHERE organization_id IS NULL ORDER BY name;

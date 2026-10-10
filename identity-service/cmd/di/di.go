@@ -77,7 +77,14 @@ func stdlibOpenDBFromPool(pool *pgxpool.Pool) *sql.DB {
 }
 func (c *Container) GetIssuer() *token.Issuer {
 	return singletonError(c, "issuer", func() (*token.Issuer, error) {
-		return token.NewIssuer(token.Config{Issuer: c.Config.Token.Issuer, ActiveKeyID: c.Config.Token.ActiveKeyID, PrivateKeyB64: c.Config.Token.PrivateKeyB64, VerifyKeys: c.Config.Token.VerifyKeys, TTL: c.Config.Token.TTL, Clock: time.Now})
+		return token.NewIssuer(token.Config{
+			Issuer:        c.Config.Token.Issuer,
+			ActiveKeyID:   c.Config.Token.ActiveKeyID,
+			PrivateKeyB64: c.Config.Token.PrivateKeyB64,
+			VerifyKeys:    c.Config.Token.VerifyKeys,
+			TTL:           c.Config.Token.TTL,
+			Clock:         time.Now,
+		})
 	})
 }
 func (c *Container) GetMemberships() *postgres.MembershipRepository {
@@ -93,6 +100,14 @@ func (c *Container) GetExchange() *application.ExchangeService {
 			}
 			authenticators = append(authenticators, verifier)
 		}
-		return application.NewExchangeService(c.GetIssuer(), authenticators, []application.Authorizer{application.NewMembershipAuthorizer(c.GetMemberships())})
+		repository := c.GetMemberships()
+		return application.NewExchangeService(
+			c.GetIssuer(),
+			authenticators,
+			[]application.Authorizer{
+				application.NewMembershipAuthorizer(repository, repository),
+				application.NewUserAuthorizer(repository),
+			},
+		)
 	})
 }

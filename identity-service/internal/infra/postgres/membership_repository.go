@@ -4,10 +4,12 @@ import (
 	"context"
 	"crypto/rand"
 	"fmt"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/membership"
+	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/user"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/infra/postgres/queries"
 )
 
@@ -17,85 +19,248 @@ func NewMembershipRepository(pool *pgxpool.Pool) *MembershipRepository {
 	return &MembershipRepository{pool: pool}
 }
 
-func (r *MembershipRepository) FindOrCreateUser(ctx context.Context, provider, providerSubject, email string) (membership.User, error) {
+func (r *MembershipRepository) FindOrCreate(ctx context.Context, provider, providerSubject, email string) (user.User, error) {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
-		return membership.User{}, err
+		return user.User{}, err
 	}
 	defer tx.Rollback(ctx)
-	var user membership.User
-	err = tx.QueryRow(ctx, `SELECT u.id::text, coalesce(u.email, '') FROM external_identities e JOIN users u ON u.id = e.user_id WHERE e.provider = $1 AND e.subject = $2`, provider, providerSubject).Scan(&user.ID, &user.Email)
+	q := queries.New(tx)
+	resolvedUserRow, err := q.FindUserByExternalIdentity(ctx, queries.FindUserByExternalIdentityParams{
+		Provider: provider,
+		Subject:  providerSubject,
+	})
 	if err == nil {
-		user.Provider, user.ProviderSubject = provider, providerSubject
-		return user, tx.Commit(ctx)
+		resolvedUser := user.User{
+			ID:              resolvedUserRow.ID,
+			Email:           resolvedUserRow.Email,
+			Provider:        provider,
+			ProviderSubject: providerSubject,
+		}
+		return resolvedUser, tx.Commit(ctx)
 	}
 	if err != pgx.ErrNoRows {
-		return membership.User{}, err
+		return user.User{}, err
 	}
 	// Bootstrap users are created by email before their Firebase subject exists.
 	// Link the first authenticated external identity to that pre-provisioned user.
 	if email != "" {
-		q := queries.New(tx)
 		byEmail, emailErr := q.FindUserByEmail(ctx, email)
 		if emailErr == nil {
 			if err := q.CreateExternalIdentity(ctx, queries.CreateExternalIdentityParams{Provider: provider, Subject: providerSubject, UserID: byEmail.ID}); err != nil {
-				return membership.User{}, err
+				return user.User{}, err
 			}
-			user = membership.User{ID: byEmail.ID, Email: byEmail.Email, Provider: provider, ProviderSubject: providerSubject}
-			return user, tx.Commit(ctx)
+			resolvedUser := user.User{
+				ID:              byEmail.ID,
+				Email:           byEmail.Email,
+				Provider:        provider,
+				ProviderSubject: providerSubject,
+			}
+			return resolvedUser, tx.Commit(ctx)
 		}
 		if emailErr != pgx.ErrNoRows {
-			return membership.User{}, emailErr
+			return user.User{}, emailErr
 		}
 	}
-	user.ID, err = newID()
+	userID, err := newID()
 	if err != nil {
-		return membership.User{}, err
+		return user.User{}, err
 	}
-	if _, err := tx.Exec(ctx, `INSERT INTO users (id, email) VALUES ($1, NULLIF($2, ''))`, user.ID, email); err != nil {
-		return membership.User{}, err
+	if err := q.CreateUser(ctx, queries.CreateUserParams{
+		ID:    userID,
+		Email: email,
+	}); err != nil {
+		return user.User{}, err
 	}
-	if _, err := tx.Exec(ctx, `INSERT INTO external_identities (provider, subject, user_id) VALUES ($1, $2, $3)`, provider, providerSubject, user.ID); err != nil {
-		return membership.User{}, err
+	if err := q.CreateExternalIdentity(ctx, queries.CreateExternalIdentityParams{
+		Provider: provider,
+		Subject:  providerSubject,
+		UserID:   userID,
+	}); err != nil {
+		return user.User{}, err
 	}
-	user.Provider, user.ProviderSubject, user.Email = provider, providerSubject, email
-	return user, tx.Commit(ctx)
+	resolvedUser := user.User{
+		ID:              userID,
+		Provider:        provider,
+		ProviderSubject: providerSubject,
+		Email:           email,
+	}
+	return resolvedUser, tx.Commit(ctx)
 }
 
 func (r *MembershipRepository) FindActiveMembership(ctx context.Context, userID, organizationID string) (membership.Membership, error) {
-	var membershipRecord membership.Membership
-	err := r.pool.QueryRow(ctx, `SELECT id::text, user_id::text, organization_id::text, active FROM memberships WHERE user_id = $1 AND organization_id = $2`, userID, organizationID).Scan(&membershipRecord.ID, &membershipRecord.UserID, &membershipRecord.OrganizationID, &membershipRecord.Active)
+	q := queries.New(r.pool)
+	record, err := q.FindMembership(ctx, queries.FindMembershipParams{
+		UserID:         userID,
+		OrganizationID: organizationID,
+	})
 	if err != nil {
 		return membership.Membership{}, err
 	}
-	roles, err := r.pool.Query(ctx, `SELECT r.name FROM membership_roles mr JOIN roles r ON r.id = mr.role_id WHERE mr.membership_id = $1 ORDER BY r.name`, membershipRecord.ID)
+	membershipRecord := membership.Membership{
+		ID:             record.ID,
+		UserID:         record.UserID,
+		OrganizationID: record.OrganizationID,
+		Active:         record.Active,
+	}
+	roles, err := q.ListMembershipRoles(ctx, membershipRecord.ID)
 	if err != nil {
 		return membership.Membership{}, err
 	}
-	defer roles.Close()
-	for roles.Next() {
-		var role string
-		if err := roles.Scan(&role); err != nil {
-			return membership.Membership{}, err
+	membershipRecord.Roles = roles
+	permissions, err := q.ListMembershipPermissions(ctx, membershipRecord.ID)
+	if err != nil {
+		return membership.Membership{}, err
+	}
+	membershipRecord.Permissions = permissions
+	return membershipRecord, nil
+}
+
+func (r *MembershipRepository) ListOrganizations(ctx context.Context, userID string) ([]membership.Organization, error) {
+	q := queries.New(r.pool)
+	rows, err := q.ListOrganizationsForUser(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	organizations := make([]membership.Organization, 0, len(rows))
+	for _, row := range rows {
+		roles, err := q.ListMembershipRoles(ctx, row.MembershipID)
+		if err != nil {
+			return nil, err
 		}
-		membershipRecord.Roles = append(membershipRecord.Roles, role)
+		organizations = append(organizations, membership.Organization{
+			ID:           row.OrganizationID,
+			Name:         row.OrganizationName,
+			MembershipID: row.MembershipID,
+			Roles:        roles,
+		})
 	}
-	if err := roles.Err(); err != nil {
-		return membership.Membership{}, err
-	}
-	permissions, err := r.pool.Query(ctx, `SELECT DISTINCT p.code FROM membership_roles mr JOIN role_permissions rp ON rp.role_id = mr.role_id JOIN permissions p ON p.id = rp.permission_id WHERE mr.membership_id = $1 ORDER BY p.code`, membershipRecord.ID)
+	return organizations, nil
+}
+
+func (r *MembershipRepository) ListMembers(ctx context.Context, organizationID string) ([]membership.Member, error) {
+	q := queries.New(r.pool)
+	rows, err := q.ListOrganizationMembers(ctx, organizationID)
 	if err != nil {
-		return membership.Membership{}, err
+		return nil, err
 	}
-	defer permissions.Close()
-	for permissions.Next() {
-		var permission string
-		if err := permissions.Scan(&permission); err != nil {
-			return membership.Membership{}, err
+	result := make([]membership.Member, 0, len(rows))
+	for _, row := range rows {
+		roles, err := q.ListMembershipRoles(ctx, row.MembershipID)
+		if err != nil {
+			return nil, err
 		}
-		membershipRecord.Permissions = append(membershipRecord.Permissions, permission)
+		result = append(result, membership.Member{
+			UserID:       row.UserID,
+			Email:        row.Email,
+			MembershipID: row.MembershipID,
+			Active:       row.Active,
+			Roles:        roles,
+		})
 	}
-	return membershipRecord, permissions.Err()
+	return result, nil
+}
+
+func (r *MembershipRepository) AddMember(ctx context.Context, organizationID, email string, roles []string) (membership.Member, error) {
+	if email = strings.TrimSpace(email); email == "" {
+		return membership.Member{}, fmt.Errorf("email is required")
+	}
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return membership.Member{}, err
+	}
+	defer tx.Rollback(ctx)
+	q := queries.New(tx)
+	user, err := q.FindUserByEmail(ctx, email)
+	if err == pgx.ErrNoRows {
+		id, idErr := newID()
+		if idErr != nil {
+			return membership.Member{}, idErr
+		}
+		if err = q.CreateUser(ctx, queries.CreateUserParams{
+			ID:    id,
+			Email: email,
+		}); err != nil {
+			return membership.Member{}, err
+		}
+		user.ID, user.Email = id, email
+	} else if err != nil {
+		return membership.Member{}, err
+	}
+	membershipIDValue, err := newID()
+	if err != nil {
+		return membership.Member{}, err
+	}
+	membershipID, err := q.UpsertMembership(ctx, queries.UpsertMembershipParams{
+		ID:             membershipIDValue,
+		UserID:         user.ID,
+		OrganizationID: organizationID,
+	})
+	if err != nil {
+		return membership.Member{}, err
+	}
+	if err = replaceRoles(ctx, q, membershipID, roles); err != nil {
+		return membership.Member{}, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return membership.Member{}, err
+	}
+	return membership.Member{UserID: user.ID, Email: user.Email, MembershipID: membershipID, Active: true, Roles: roles}, nil
+}
+
+func (r *MembershipRepository) ReplaceMemberRoles(ctx context.Context, organizationID, userID string, roles []string) (membership.Member, error) {
+	tx, err := r.pool.Begin(ctx)
+	if err != nil {
+		return membership.Member{}, err
+	}
+	defer tx.Rollback(ctx)
+	q := queries.New(tx)
+	record, err := q.FindMembership(ctx, queries.FindMembershipParams{UserID: userID, OrganizationID: organizationID})
+	if err != nil {
+		return membership.Member{}, err
+	}
+	if err = replaceRoles(ctx, q, record.ID, roles); err != nil {
+		return membership.Member{}, err
+	}
+	if err = tx.Commit(ctx); err != nil {
+		return membership.Member{}, err
+	}
+	return membership.Member{UserID: userID, MembershipID: record.ID, Active: record.Active, Roles: roles}, nil
+}
+
+func (r *MembershipRepository) DeactivateMember(ctx context.Context, organizationID, userID string) error {
+	q := queries.New(r.pool)
+	count, err := q.DeactivateMembership(ctx, queries.DeactivateMembershipParams{UserID: userID, OrganizationID: organizationID})
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return pgx.ErrNoRows
+	}
+	return nil
+}
+
+func (r *MembershipRepository) ListGlobalRoles(ctx context.Context) ([]string, error) {
+	return queries.New(r.pool).ListGlobalRoles(ctx)
+}
+
+func replaceRoles(ctx context.Context, q *queries.Queries, membershipID string, roles []string) error {
+	if len(roles) == 0 {
+		return fmt.Errorf("at least one role is required")
+	}
+	if err := q.DeleteMembershipRoles(ctx, membershipID); err != nil {
+		return err
+	}
+	for _, name := range roles {
+		role, err := q.FindGlobalRole(ctx, name)
+		if err != nil {
+			return err
+		}
+		if err := q.AssignMembershipRole(ctx, queries.AssignMembershipRoleParams{MembershipID: membershipID, RoleID: role.ID}); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func newID() (string, error) {

@@ -40,17 +40,59 @@ func (q *Queries) CreateExternalIdentity(ctx context.Context, arg CreateExternal
 }
 
 const createUser = `-- name: CreateUser :exec
-INSERT INTO users (id,email) VALUES ($1,NULLIF($2,''))
+INSERT INTO users (id,email) VALUES ($1,NULLIF($2::text,''))
 `
 
 type CreateUserParams struct {
-	ID      string      `json:"id"`
-	Column2 interface{} `json:"column_2"`
+	ID    string `json:"id"`
+	Email string `json:"email"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.Exec(ctx, createUser, arg.ID, arg.Column2)
+	_, err := q.db.Exec(ctx, createUser, arg.ID, arg.Email)
 	return err
+}
+
+const deactivateMembership = `-- name: DeactivateMembership :execrows
+UPDATE memberships SET active = false WHERE user_id = $1 AND organization_id = $2
+`
+
+type DeactivateMembershipParams struct {
+	UserID         string `json:"user_id"`
+	OrganizationID string `json:"organization_id"`
+}
+
+func (q *Queries) DeactivateMembership(ctx context.Context, arg DeactivateMembershipParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deactivateMembership, arg.UserID, arg.OrganizationID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
+const deleteMembershipRoles = `-- name: DeleteMembershipRoles :exec
+DELETE FROM membership_roles WHERE membership_id = $1
+`
+
+func (q *Queries) DeleteMembershipRoles(ctx context.Context, membershipID string) error {
+	_, err := q.db.Exec(ctx, deleteMembershipRoles, membershipID)
+	return err
+}
+
+const findGlobalRole = `-- name: FindGlobalRole :one
+SELECT id::text, name FROM roles WHERE organization_id IS NULL AND name = $1
+`
+
+type FindGlobalRoleRow struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+func (q *Queries) FindGlobalRole(ctx context.Context, name string) (FindGlobalRoleRow, error) {
+	row := q.db.QueryRow(ctx, findGlobalRole, name)
+	var i FindGlobalRoleRow
+	err := row.Scan(&i.ID, &i.Name)
+	return i, err
 }
 
 const findMembership = `-- name: FindMembership :one
@@ -98,7 +140,7 @@ func (q *Queries) FindUserByEmail(ctx context.Context, lower string) (FindUserBy
 }
 
 const findUserByExternalIdentity = `-- name: FindUserByExternalIdentity :one
-SELECT u.id::text, coalesce(u.email,'') AS email FROM external_identities e JOIN users u ON u.id=e.user_id WHERE e.provider=$1 AND e.subject=$2
+SELECT u.id::text AS id, coalesce(u.email,'') AS email FROM external_identities e JOIN users u ON u.id=e.user_id WHERE e.provider=$1 AND e.subject=$2
 `
 
 type FindUserByExternalIdentityParams struct {
@@ -107,14 +149,14 @@ type FindUserByExternalIdentityParams struct {
 }
 
 type FindUserByExternalIdentityRow struct {
-	UID   string `json:"u_id"`
+	ID    string `json:"id"`
 	Email string `json:"email"`
 }
 
 func (q *Queries) FindUserByExternalIdentity(ctx context.Context, arg FindUserByExternalIdentityParams) (FindUserByExternalIdentityRow, error) {
 	row := q.db.QueryRow(ctx, findUserByExternalIdentity, arg.Provider, arg.Subject)
 	var i FindUserByExternalIdentityRow
-	err := row.Scan(&i.UID, &i.Email)
+	err := row.Scan(&i.ID, &i.Email)
 	return i, err
 }
 
@@ -130,6 +172,30 @@ type GrantRolePermissionParams struct {
 func (q *Queries) GrantRolePermission(ctx context.Context, arg GrantRolePermissionParams) error {
 	_, err := q.db.Exec(ctx, grantRolePermission, arg.RoleID, arg.PermissionID)
 	return err
+}
+
+const listGlobalRoles = `-- name: ListGlobalRoles :many
+SELECT name FROM roles WHERE organization_id IS NULL ORDER BY name
+`
+
+func (q *Queries) ListGlobalRoles(ctx context.Context) ([]string, error) {
+	rows, err := q.db.Query(ctx, listGlobalRoles)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []string
+	for rows.Next() {
+		var name string
+		if err := rows.Scan(&name); err != nil {
+			return nil, err
+		}
+		items = append(items, name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
 
 const listMembershipPermissions = `-- name: ListMembershipPermissions :many
@@ -173,6 +239,76 @@ func (q *Queries) ListMembershipRoles(ctx context.Context, membershipID string) 
 			return nil, err
 		}
 		items = append(items, name)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listOrganizationMembers = `-- name: ListOrganizationMembers :many
+SELECT u.id::text AS user_id, coalesce(u.email, '') AS email, m.id::text AS membership_id, m.active
+FROM memberships m JOIN users u ON u.id = m.user_id
+WHERE m.organization_id = $1 ORDER BY lower(coalesce(u.email, ''))
+`
+
+type ListOrganizationMembersRow struct {
+	UserID       string `json:"user_id"`
+	Email        string `json:"email"`
+	MembershipID string `json:"membership_id"`
+	Active       bool   `json:"active"`
+}
+
+func (q *Queries) ListOrganizationMembers(ctx context.Context, organizationID string) ([]ListOrganizationMembersRow, error) {
+	rows, err := q.db.Query(ctx, listOrganizationMembers, organizationID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListOrganizationMembersRow
+	for rows.Next() {
+		var i ListOrganizationMembersRow
+		if err := rows.Scan(
+			&i.UserID,
+			&i.Email,
+			&i.MembershipID,
+			&i.Active,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listOrganizationsForUser = `-- name: ListOrganizationsForUser :many
+SELECT o.id::text AS organization_id, o.name AS organization_name, m.id::text AS membership_id
+FROM memberships m JOIN organizations o ON o.id = m.organization_id
+WHERE m.user_id = $1 AND m.active = true ORDER BY o.name
+`
+
+type ListOrganizationsForUserRow struct {
+	OrganizationID   string `json:"organization_id"`
+	OrganizationName string `json:"organization_name"`
+	MembershipID     string `json:"membership_id"`
+}
+
+func (q *Queries) ListOrganizationsForUser(ctx context.Context, userID string) ([]ListOrganizationsForUserRow, error) {
+	rows, err := q.db.Query(ctx, listOrganizationsForUser, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListOrganizationsForUserRow
+	for rows.Next() {
+		var i ListOrganizationsForUserRow
+		if err := rows.Scan(&i.OrganizationID, &i.OrganizationName, &i.MembershipID); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, err

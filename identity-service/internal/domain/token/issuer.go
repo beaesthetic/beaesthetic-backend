@@ -77,8 +77,14 @@ func NewIssuer(cfg Config) (*Issuer, error) {
 }
 
 func (i *Issuer) Issue(request IssueRequest) (string, Claims, error) {
-	if request.Subject == "" || request.Audience == "" || request.AuthMethod == "" || !request.IdentityType.Valid() {
-		return "", Claims{}, fmt.Errorf("subject, audience, auth method, and a valid identity type are required")
+	if request.Subject == "" || request.AuthMethod == "" || !request.IdentityType.Valid() || !request.Scope.Valid() {
+		return "", Claims{}, fmt.Errorf("subject, auth method, valid identity type, and valid scope are required")
+	}
+	if request.Scope == ScopeUser && (request.OrganizationID != "" || request.MembershipID != "" || len(request.Roles) != 0) {
+		return "", Claims{}, fmt.Errorf("user-scoped token cannot contain membership claims")
+	}
+	if request.Scope == ScopeMembership && (request.OrganizationID == "" || request.MembershipID == "") {
+		return "", Claims{}, fmt.Errorf("membership-scoped token requires organization and membership IDs")
 	}
 	now := i.clock().UTC()
 	tokenID, err := randomID()
@@ -86,20 +92,20 @@ func (i *Issuer) Issue(request IssueRequest) (string, Claims, error) {
 		return "", Claims{}, err
 	}
 	claims := Claims{
-		Issuer: i.issuer, Subject: request.Subject, Audience: request.Audience,
+		Issuer: i.issuer, Subject: request.Subject,
 		IssuedAt: now, ExpiresAt: now.Add(i.ttl), TokenID: tokenID, KeyID: i.activeKeyID,
-		IdentityType: request.IdentityType, Permissions: normalizedPermissions(request.Permissions), AuthMethod: request.AuthMethod,
+		IdentityType: request.IdentityType, Scope: request.Scope, Permissions: normalizedPermissions(request.Permissions), AuthMethod: request.AuthMethod,
 		OrganizationID: request.OrganizationID, MembershipID: request.MembershipID, Roles: normalizedPermissions(request.Roles),
 	}
 	t := paseto.NewToken()
 	t.SetIssuer(claims.Issuer)
 	t.SetSubject(claims.Subject)
-	t.SetAudience(claims.Audience)
 	t.SetIssuedAt(claims.IssuedAt)
 	t.SetExpiration(claims.ExpiresAt)
 	t.SetJti(claims.TokenID)
 	t.Set("kid", claims.KeyID)
 	t.Set("identity_type", string(claims.IdentityType))
+	t.Set("token_scope", string(claims.Scope))
 	t.Set("organization_id", claims.OrganizationID)
 	t.Set("membership_id", claims.MembershipID)
 	t.Set("roles", claims.Roles)
@@ -108,9 +114,9 @@ func (i *Issuer) Issue(request IssueRequest) (string, Claims, error) {
 	return t.V4Sign(i.privateKey, nil), claims, nil
 }
 
-func (i *Issuer) Verify(signed, audience string) (Claims, error) {
-	if signed == "" || audience == "" {
-		return Claims{}, fmt.Errorf("token and expected audience are required")
+func (i *Issuer) Verify(signed string) (Claims, error) {
+	if signed == "" {
+		return Claims{}, fmt.Errorf("token is required")
 	}
 	var lastErr error
 	for keyID, publicKey := range i.publicKeys {
@@ -123,7 +129,7 @@ func (i *Issuer) Verify(signed, audience string) (Claims, error) {
 		if err != nil {
 			return Claims{}, err
 		}
-		if claims.KeyID != keyID || claims.Issuer != i.issuer || claims.Audience != audience || claims.ExpiresAt.Before(i.clock().UTC()) || !claims.IdentityType.Valid() {
+		if claims.KeyID != keyID || claims.Issuer != i.issuer || claims.ExpiresAt.Before(i.clock().UTC()) || !claims.IdentityType.Valid() || !claims.Scope.Valid() {
 			return Claims{}, fmt.Errorf("token claims are invalid")
 		}
 		return claims, nil
@@ -153,6 +159,9 @@ func claimsFromToken(token *paseto.Token) (Claims, error) {
 	if err := token.Get("identity_type", &claims.IdentityType); err != nil {
 		return Claims{}, err
 	}
+	if err := token.Get("token_scope", &claims.Scope); err != nil {
+		return Claims{}, err
+	}
 	if err := token.Get("organization_id", &claims.OrganizationID); err != nil {
 		return Claims{}, err
 	}
@@ -173,9 +182,6 @@ func claimsFromToken(token *paseto.Token) (Claims, error) {
 		return Claims{}, err
 	}
 	if claims.Subject, err = token.GetSubject(); err != nil {
-		return Claims{}, err
-	}
-	if claims.Audience, err = token.GetAudience(); err != nil {
 		return Claims{}, err
 	}
 	if claims.IssuedAt, err = token.GetIssuedAt(); err != nil {

@@ -31,11 +31,41 @@ service MembershipService {
   }
 }
 
+service IdentityManagementService {
+  rpc ListMyOrganizations(ListMyOrganizationsRequest) returns (ListMyOrganizationsResponse) {
+    option (google.api.http) = { get: "/v1/me/organizations" };
+  }
+  rpc GetMyAuthorization(GetMyAuthorizationRequest) returns (GetMyAuthorizationResponse) {
+    option (google.api.http) = { get: "/v1/organizations/{organization_id}/authorization" };
+  }
+  rpc ListOrganizationMembers(ListOrganizationMembersRequest) returns (ListOrganizationMembersResponse) {
+    option (google.api.http) = { get: "/v1/organizations/{organization_id}/members" };
+  }
+  rpc AddOrganizationMember(AddOrganizationMemberRequest) returns (AddOrganizationMemberResponse) {
+    option (google.api.http) = { post: "/v1/organizations/{organization_id}/members" body: "*" };
+  }
+  rpc ReplaceMemberRoles(ReplaceMemberRolesRequest) returns (ReplaceMemberRolesResponse) {
+    option (google.api.http) = { put: "/v1/organizations/{organization_id}/members/{user_id}/roles" body: "*" };
+  }
+  rpc RemoveOrganizationMember(RemoveOrganizationMemberRequest) returns (RemoveOrganizationMemberResponse) {
+    option (google.api.http) = { delete: "/v1/organizations/{organization_id}/members/{user_id}" };
+  }
+  rpc ListRoles(ListRolesRequest) returns (ListRolesResponse) {
+    option (google.api.http) = { get: "/v1/roles" };
+  }
+}
+
 enum IdentityType {
   IDENTITY_TYPE_UNSPECIFIED = 0;
   IDENTITY_TYPE_HUMAN = 1;
   IDENTITY_TYPE_SERVICE = 2;
   IDENTITY_TYPE_INTEGRATION = 3;
+}
+
+enum TokenScope {
+  TOKEN_SCOPE_UNSPECIFIED = 0;
+  TOKEN_SCOPE_USER = 1;
+  TOKEN_SCOPE_MEMBERSHIP = 2;
 }
 
 message ExternalAssertion {
@@ -48,8 +78,7 @@ message ExchangeTokenRequest {
   string grant_type = 1 [json_name = "grantType"];
   ExternalAssertion subject_assertion = 2 [json_name = "subjectAssertion"];
   string authorizer = 3 [json_name = "authorizer"];
-  string audience = 4 [json_name = "audience"];
-  string organization_id = 5 [json_name = "organizationId"];
+  string organization_id = 4 [json_name = "organizationId"];
 }
 
 message AccessToken {
@@ -64,7 +93,7 @@ message ExchangeTokenResponse { AccessToken token = 1; }
 message IssueInternalTokenRequest {
   string subject = 1;
   IdentityType identity_type = 2 [json_name = "identityType"];
-  string audience = 3;
+  TokenScope token_scope = 3 [json_name = "tokenScope"];
   string organization_id = 4 [json_name = "organizationId"];
   string membership_id = 5 [json_name = "membershipId"];
   repeated string roles = 6;
@@ -72,7 +101,7 @@ message IssueInternalTokenRequest {
   string auth_method = 8 [json_name = "authMethod"];
 }
 message IssueInternalTokenResponse { AccessToken token = 1; }
-message VerifyInternalTokenRequest { string token = 1; string audience = 2; }
+message VerifyInternalTokenRequest { string token = 1; }
 message VerifyInternalTokenResponse { EffectiveAuthorization authorization = 1; }
 
 message GetVerificationKeysRequest {}
@@ -92,3 +121,40 @@ message EffectiveAuthorization {
   IdentityType identity_type = 6 [json_name = "identityType"];
 }
 message GetEffectiveAuthorizationResponse { EffectiveAuthorization authorization = 1; }
+
+message OrganizationMembership {
+  string organization_id = 1 [json_name = "organizationId"];
+  string organization_name = 2 [json_name = "organizationName"];
+  string membership_id = 3 [json_name = "membershipId"];
+  repeated string roles = 4;
+}
+message ListMyOrganizationsRequest {}
+message ListMyOrganizationsResponse { repeated OrganizationMembership organizations = 1; }
+message GetMyAuthorizationRequest { string organization_id = 1 [json_name = "organizationId"]; }
+message GetMyAuthorizationResponse { EffectiveAuthorization authorization = 1; }
+message OrganizationMember {
+  string user_id = 1 [json_name = "userId"];
+  string email = 2;
+  string membership_id = 3 [json_name = "membershipId"];
+  bool active = 4;
+  repeated string roles = 5;
+}
+message ListOrganizationMembersRequest { string organization_id = 1 [json_name = "organizationId"]; }
+message ListOrganizationMembersResponse { repeated OrganizationMember members = 1; }
+message AddOrganizationMemberRequest {
+  string organization_id = 1 [json_name = "organizationId"];
+  string email = 2;
+  repeated string roles = 3;
+}
+message AddOrganizationMemberResponse { OrganizationMember member = 1; }
+message ReplaceMemberRolesRequest {
+  string organization_id = 1 [json_name = "organizationId"];
+  string user_id = 2 [json_name = "userId"];
+  repeated string roles = 3;
+}
+message ReplaceMemberRolesResponse { OrganizationMember member = 1; }
+message RemoveOrganizationMemberRequest { string organization_id = 1 [json_name = "organizationId"]; string user_id = 2 [json_name = "userId"]; }
+message RemoveOrganizationMemberResponse {}
+message ListRolesRequest {}
+message Role { string name = 1; repeated string permissions = 2; }
+message ListRolesResponse { repeated Role roles = 1; }

@@ -18,23 +18,23 @@ func TestIssueAndVerify(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	signed, claims, err := issuer.Issue(IssueRequest{Subject: "person-1", IdentityType: IdentityHuman, Audience: "appointment", Permissions: []string{"appointments:read", " appointments:read ", "appointments:write"}, AuthMethod: "provider:xyz"})
+	signed, claims, err := issuer.Issue(IssueRequest{Subject: "person-1", IdentityType: IdentityHuman, Scope: ScopeUser, Permissions: []string{"identity.memberships.read", " identity.memberships.read "}, AuthMethod: "provider:xyz"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if claims.KeyID != "key-1" || len(claims.Permissions) != 2 {
+	if claims.KeyID != "key-1" || len(claims.Permissions) != 1 {
 		t.Fatalf("unexpected claims: %+v", claims)
 	}
-	verified, err := issuer.Verify(signed, "appointment")
+	verified, err := issuer.Verify(signed)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if verified.Subject != "person-1" || verified.Audience != "appointment" {
+	if verified.Subject != "person-1" || verified.Scope != ScopeUser {
 		t.Fatalf("unexpected verified claims: %+v", verified)
 	}
 }
 
-func TestVerifyRejectsWrongAudienceAndTampering(t *testing.T) {
+func TestVerifyRejectsTampering(t *testing.T) {
 	_, privateKey, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		t.Fatal(err)
@@ -43,14 +43,11 @@ func TestVerifyRejectsWrongAudienceAndTampering(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	signed, _, err := issuer.Issue(IssueRequest{Subject: "service-1", IdentityType: IdentityService, Audience: "notification", AuthMethod: "client_credentials"})
+	signed, _, err := issuer.Issue(IssueRequest{Subject: "service-1", IdentityType: IdentityService, Scope: ScopeUser, AuthMethod: "client_credentials"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := issuer.Verify(signed, "appointment"); err == nil {
-		t.Fatal("wrong audience verified")
-	}
-	if _, err := issuer.Verify(signed+"x", "notification"); err == nil {
+	if _, err := issuer.Verify(signed + "x"); err == nil {
 		t.Fatal("tampered token verified")
 	}
 }

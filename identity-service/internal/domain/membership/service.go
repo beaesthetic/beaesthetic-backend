@@ -4,16 +4,11 @@ import (
 	"context"
 	"errors"
 	"sort"
+
+	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/user"
 )
 
 var ErrNotMember = errors.New("identity is not an active organization member")
-
-type User struct {
-	ID              string
-	Provider        string
-	ProviderSubject string
-	Email           string
-}
 
 type Membership struct {
 	ID             string
@@ -24,28 +19,52 @@ type Membership struct {
 	Active         bool
 }
 
-// Repository intentionally exposes only authorization reads to the exchange flow.
-// Administration of users, organizations, roles and grants belongs behind a separate API.
+type Organization struct {
+	ID           string
+	Name         string
+	MembershipID string
+	Roles        []string
+}
+
+type Member struct {
+	UserID       string
+	Email        string
+	MembershipID string
+	Active       bool
+	Roles        []string
+}
+
 type Repository interface {
-	FindOrCreateUser(ctx context.Context, provider, providerSubject, email string) (User, error)
 	FindActiveMembership(ctx context.Context, userID, organizationID string) (Membership, error)
 }
 
-func Resolve(ctx context.Context, repository Repository, provider, providerSubject, email, organizationID string) (User, Membership, error) {
-	user, err := repository.FindOrCreateUser(ctx, provider, providerSubject, email)
+type OrganizationRepository interface {
+	ListOrganizations(ctx context.Context, userID string) ([]Organization, error)
+}
+
+type ManagementRepository interface {
+	ListMembers(ctx context.Context, organizationID string) ([]Member, error)
+	AddMember(ctx context.Context, organizationID, email string, roles []string) (Member, error)
+	ReplaceMemberRoles(ctx context.Context, organizationID, userID string, roles []string) (Member, error)
+	DeactivateMember(ctx context.Context, organizationID, userID string) error
+	ListGlobalRoles(ctx context.Context) ([]string, error)
+}
+
+func Resolve(ctx context.Context, users user.Repository, memberships Repository, provider, providerSubject, email, organizationID string) (user.User, Membership, error) {
+	resolvedUser, err := users.FindOrCreate(ctx, provider, providerSubject, email)
 	if err != nil {
-		return User{}, Membership{}, err
+		return user.User{}, Membership{}, err
 	}
-	membership, err := repository.FindActiveMembership(ctx, user.ID, organizationID)
+	membership, err := memberships.FindActiveMembership(ctx, resolvedUser.ID, organizationID)
 	if err != nil {
-		return User{}, Membership{}, err
+		return user.User{}, Membership{}, err
 	}
 	if !membership.Active {
-		return User{}, Membership{}, ErrNotMember
+		return user.User{}, Membership{}, ErrNotMember
 	}
 	membership.Roles = unique(membership.Roles)
 	membership.Permissions = unique(membership.Permissions)
-	return user, membership, nil
+	return resolvedUser, membership, nil
 }
 
 func unique(values []string) []string {
