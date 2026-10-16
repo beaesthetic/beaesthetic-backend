@@ -53,23 +53,6 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
 	return err
 }
 
-const deactivateMembership = `-- name: DeactivateMembership :execrows
-UPDATE memberships SET active = false WHERE user_id = $1 AND organization_id = $2
-`
-
-type DeactivateMembershipParams struct {
-	UserID         string `json:"user_id"`
-	OrganizationID string `json:"organization_id"`
-}
-
-func (q *Queries) DeactivateMembership(ctx context.Context, arg DeactivateMembershipParams) (int64, error) {
-	result, err := q.db.Exec(ctx, deactivateMembership, arg.UserID, arg.OrganizationID)
-	if err != nil {
-		return 0, err
-	}
-	return result.RowsAffected(), nil
-}
-
 const deleteMembershipRoles = `-- name: DeleteMembershipRoles :exec
 DELETE FROM membership_roles WHERE membership_id = $1
 `
@@ -314,6 +297,23 @@ func (q *Queries) ListOrganizationsForUser(ctx context.Context, userID string) (
 		return nil, err
 	}
 	return items, nil
+}
+
+const removeMembership = `-- name: RemoveMembership :execrows
+DELETE FROM memberships WHERE user_id = $1 AND organization_id = $2
+`
+
+type RemoveMembershipParams struct {
+	UserID         string `json:"user_id"`
+	OrganizationID string `json:"organization_id"`
+}
+
+func (q *Queries) RemoveMembership(ctx context.Context, arg RemoveMembershipParams) (int64, error) {
+	result, err := q.db.Exec(ctx, removeMembership, arg.UserID, arg.OrganizationID)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
 }
 
 const upsertExternalIdentity = `-- name: UpsertExternalIdentity :exec

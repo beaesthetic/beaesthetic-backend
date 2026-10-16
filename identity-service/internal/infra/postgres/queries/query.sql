@@ -48,7 +48,7 @@ WHERE m.organization_id = $1 ORDER BY lower(coalesce(u.email, ''));
 SELECT id::text, name FROM roles WHERE organization_id IS NULL AND name = $1;
 -- name: DeleteMembershipRoles :exec
 DELETE FROM membership_roles WHERE membership_id = $1;
--- name: DeactivateMembership :execrows
-UPDATE memberships SET active = false WHERE user_id = $1 AND organization_id = $2;
+-- name: RemoveMembership :execrows
+DELETE FROM memberships WHERE user_id = $1 AND organization_id = $2;
 -- name: ListGlobalRoles :many
 SELECT name FROM roles WHERE organization_id IS NULL ORDER BY name;

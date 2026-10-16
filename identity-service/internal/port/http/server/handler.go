@@ -218,7 +218,7 @@ func New(cfg Config, issuer *token.Issuer, exchange *application.ExchangeService
 			forbidden(ctx)
 			return
 		}
-		if err := management.DeactivateMember(ctx.Request.Context(), ctx.Param("organization_id"), ctx.Param("user_id")); err != nil {
+		if err := management.RemoveMember(ctx.Request.Context(), ctx.Param("organization_id"), ctx.Param("user_id")); err != nil {
 			writeJSON(ctx, http.StatusNotFound, map[string]string{"error": "membership_not_found"})
 			return
 		}
@@ -387,4 +387,3 @@ func badRequest(ctx *gin.Context, err error) {
 func writeJSON(ctx *gin.Context, status int, value any) {
 	ctx.JSON(status, value)
 }
-

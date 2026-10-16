@@ -46,7 +46,7 @@ type ManagementRepository interface {
 	ListMembers(ctx context.Context, organizationID string) ([]Member, error)
 	AddMember(ctx context.Context, organizationID, email string, roles []string) (Member, error)
 	ReplaceMemberRoles(ctx context.Context, organizationID, userID string, roles []string) (Member, error)
-	DeactivateMember(ctx context.Context, organizationID, userID string) error
+	RemoveMember(ctx context.Context, organizationID, userID string) error
 	ListGlobalRoles(ctx context.Context) ([]string, error)
 }
 

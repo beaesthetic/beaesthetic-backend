@@ -140,6 +140,31 @@ func TestNonOwnerCannotAssignOrRemoveOwner(t *testing.T) {
 	}
 }
 
+func TestRemoveMember(t *testing.T) {
+	issuer := testIssuer(t)
+	repository := &removingMembershipRepository{}
+	handler := New(Config{}, issuer, nil, repository)
+	accessToken := signedToken(t, issuer, token.IssueRequest{
+		Subject:        "owner_1",
+		IdentityType:   token.IdentityHuman,
+		Scope:          token.ScopeMembership,
+		OrganizationID: "org_1",
+		MembershipID:   "membership_owner",
+		Roles:          []string{"owner"},
+		Permissions:    []string{"identity.memberships.write"},
+	})
+	request := httptest.NewRequest(http.MethodDelete, "/v1/organizations/org_1/members/user_1", nil)
+	request.Header.Set("Authorization", "Bearer "+accessToken)
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+	if response.Code != http.StatusNoContent {
+		t.Fatalf("status = %d: %s", response.Code, response.Body.String())
+	}
+	if !repository.removed {
+		t.Fatal("expected membership removal")
+	}
+}
+
 type httpAuthenticator struct{}
 
 func (httpAuthenticator) Name() string { return "test" }
@@ -155,6 +180,16 @@ func (httpAuthorizer) Authorize(context.Context, application.ExternalIdentity, s
 }
 
 type httpMembershipRepository struct{}
+
+type removingMembershipRepository struct {
+	httpMembershipRepository
+	removed bool
+}
+
+func (r *removingMembershipRepository) RemoveMember(context.Context, string, string) error {
+	r.removed = true
+	return nil
+}
 
 func (httpMembershipRepository) FindOrCreate(context.Context, string, string, string) (user.User, error) {
 	return user.User{}, nil
@@ -174,7 +209,7 @@ func (httpMembershipRepository) AddMember(_ context.Context, _ string, email str
 func (httpMembershipRepository) ReplaceMemberRoles(_ context.Context, _ string, userID string, roles []string) (membership.Member, error) {
 	return membership.Member{UserID: userID, MembershipID: "member_1", Active: true, Roles: roles}, nil
 }
-func (httpMembershipRepository) DeactivateMember(context.Context, string, string) error { return nil }
+func (httpMembershipRepository) RemoveMember(context.Context, string, string) error { return nil }
 func (httpMembershipRepository) ListGlobalRoles(context.Context) ([]string, error) {
 	return []string{"owner"}, nil
 }
