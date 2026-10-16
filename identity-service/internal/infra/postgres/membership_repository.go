@@ -228,9 +228,9 @@ func (r *MembershipRepository) ReplaceMemberRoles(ctx context.Context, organizat
 	return membership.Member{UserID: userID, MembershipID: record.ID, Active: record.Active, Roles: roles}, nil
 }
 
-func (r *MembershipRepository) DeactivateMember(ctx context.Context, organizationID, userID string) error {
+func (r *MembershipRepository) RemoveMember(ctx context.Context, organizationID, userID string) error {
 	q := queries.New(r.pool)
-	count, err := q.DeactivateMembership(ctx, queries.DeactivateMembershipParams{UserID: userID, OrganizationID: organizationID})
+	count, err := q.RemoveMembership(ctx, queries.RemoveMembershipParams{UserID: userID, OrganizationID: organizationID})
 	if err != nil {
 		return err
 	}
