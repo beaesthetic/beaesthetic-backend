@@ -1,0 +1,29 @@
+name: Shared core tests
+
+on:
+  pull_request:
+    paths:
+      - 'core/**'
+      - '.github/workflows/core-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'core/**'
+      - '.github/workflows/core-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: core/go.mod
+          cache-dependency-path: core/go.sum
+      - run: go test ./...
+        working-directory: core
+      - run: go vet ./...
+        working-directory: core
