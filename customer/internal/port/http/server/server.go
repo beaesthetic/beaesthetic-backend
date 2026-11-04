@@ -29,10 +29,12 @@ func New(handlers *HttpHandlers, log *zap.Logger, verifier *auth.Verifier, organ
 	if verifier == nil || strings.TrimSpace(organizationID) == "" {
 		return nil, fmt.Errorf("customer authentication requires a verifier and organization ID")
 	}
-	return newRouter(handlers, log, authorize(verifier, organizationID)), nil
+	return newRouter(handlers, log, func(permissions ...string) gin.HandlerFunc {
+		return authorize(verifier, organizationID, permissions...)
+	}), nil
 }
 
-func newRouter(handlers *HttpHandlers, log *zap.Logger, security ...gin.HandlerFunc) *gin.Engine {
+func newRouter(handlers *HttpHandlers, log *zap.Logger, security func(...string) gin.HandlerFunc) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	if log == nil {
 		log = zap.NewNop()
@@ -58,25 +60,46 @@ func newRouter(handlers *HttpHandlers, log *zap.Logger, security ...gin.HandlerF
 		ResponseErrorHandlerFunc: responseErrorHandler(log),
 	})
 
-	var routes gin.IRouter = r
-	if len(security) > 0 {
-		routes = r.Group("", security...)
+	// Permissions are declared alongside each route, including read-only POSTs.
+	if security == nil {
+		security = func(...string) gin.HandlerFunc { return func(*gin.Context) {} }
 	}
-	customerapi.RegisterHandlers(routes, customerHandler)
-	fidelityapi.RegisterHandlers(routes, fidelityHandler)
-	walletapi.RegisterHandlers(routes, walletHandler)
-	registerTrailingSlashAliases(routes, fidelityHandler, walletHandler)
-	r.GET("/health", healthCheck(handlers.DB))
-	return r
-}
+	bindingError := func(ctx *gin.Context, err error, status int) {
+		ctx.JSON(status, gin.H{"msg": err.Error()})
+	}
+	customers := customerapi.ServerInterfaceWrapper{Handler: customerHandler, ErrorHandler: bindingError}
+	fidelity := fidelityapi.ServerInterfaceWrapper{Handler: fidelityHandler, ErrorHandler: bindingError}
+	wallets := walletapi.ServerInterfaceWrapper{Handler: walletHandler, ErrorHandler: bindingError}
 
-func registerTrailingSlashAliases(r gin.IRouter, fidelityHandler fidelityapi.ServerInterface, walletHandler walletapi.ServerInterface) {
-	r.GET("/admin/fidelity-cards/", fidelityHandler.GetFidelityCards)
-	r.POST("/admin/fidelity-cards/", fidelityHandler.CreateFidelityCard)
-	r.GET("/admin/wallets/", func(ctx *gin.Context) {
+	r.GET("/admin/customers", security("customer.read"), customers.GetAllCustomers)
+	r.POST("/admin/customers", security("customer.write"), customers.CreateCustomer)
+	r.GET("/admin/customers/page/:direction", security("customer.read"), customers.GetCustomerByPage)
+	r.DELETE("/admin/customers/:customerId", security("customer.write"), customers.DeleteCustomer)
+	r.GET("/admin/customers/:customerId", security("customer.read"), customers.GetCustomerById)
+	r.PUT("/admin/customers/:customerId", security("customer.write"), customers.UpdateCustomerById)
+	r.GET("/customers/search", security("customer.read"), customers.SearchCustomer)
+	r.POST("/customers/search:byPhone", security("customer.read"), customers.SearchCustomerByPhone)
+
+	r.GET("/admin/fidelity-cards", security("customer.read"), fidelity.GetFidelityCards)
+	r.POST("/admin/fidelity-cards", security("customer.write"), fidelity.CreateFidelityCard)
+	r.GET("/admin/fidelity-cards/customers/:customerId", security("customer.read"), fidelity.GetFidelityCardsByCustomerId)
+	r.DELETE("/admin/fidelity-cards/vouchers/:voucherId", security("customer.write"), fidelity.UseVoucher)
+	r.GET("/admin/fidelity-cards/:cardId", security("customer.read"), fidelity.GetFidelityCardById)
+	r.PUT("/admin/fidelity-cards/:cardId/purchase", security("customer.write"), fidelity.NotifyPurchase)
+
+	r.GET("/admin/wallets", security("customer.read"), wallets.GetWallets)
+	r.POST("/admin/wallets/giftCard", security("customer.write"), wallets.AddGiftCard)
+	r.GET("/admin/wallets/:walletId", security("customer.read"), wallets.GetWalletById)
+	r.PUT("/admin/wallets/:walletId/charge", security("customer.write"), wallets.ChargeWallet)
+
+	r.GET("/admin/fidelity-cards/", security("customer.read"), fidelity.GetFidelityCards)
+	r.POST("/admin/fidelity-cards/", security("customer.write"), fidelity.CreateFidelityCard)
+	r.GET("/admin/wallets/", security("customer.read"), func(ctx *gin.Context) {
 		walletHandler.GetWallets(ctx, walletapi.GetWalletsParams{Filter: stringPtrIfNotEmpty(ctx.Query("filter"))})
 	})
-	r.POST("/admin/wallets/giftCard/", walletHandler.AddGiftCard)
+	r.POST("/admin/wallets/giftCard/", security("customer.write"), wallets.AddGiftCard)
+	r.GET("/health", healthCheck(handlers.DB))
+	return r
 }
 
 func healthCheck(db *sql.DB) gin.HandlerFunc {

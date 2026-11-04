@@ -9,13 +9,9 @@ import (
 
 // All customer, fidelity and wallet routes share the customer permissions.
 // The database belongs to the configured organization; claims never select it.
-func authorize(verifier *auth.Verifier, organizationID string) gin.HandlerFunc {
+func authorize(verifier *auth.Verifier, organizationID string, permissions ...string) gin.HandlerFunc {
+	policy := auth.Policy{Permissions: permissions, Scope: auth.ScopeMembership, OrganizationID: organizationID}
 	return func(ctx *gin.Context) {
-		permission := "customer.write"
-		if ctx.Request.Method == http.MethodGet || (ctx.Request.Method == http.MethodPost && ctx.FullPath() == "/customers/search:byPhone") {
-			permission = "customer.read"
-		}
-		policy := auth.Policy{Permissions: []string{permission}, Scope: auth.ScopeMembership, OrganizationID: organizationID}
 		accepted := false
 		handler := verifier.Authenticate(auth.Require(policy)(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx.Request = r
@@ -26,6 +22,5 @@ func authorize(verifier *auth.Verifier, organizationID string) gin.HandlerFunc {
 			ctx.Abort()
 			return
 		}
-		ctx.Next()
 	}
 }

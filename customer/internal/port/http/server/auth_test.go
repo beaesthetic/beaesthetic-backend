@@ -61,7 +61,15 @@ func TestRoutePermissions(t *testing.T) {
 		c.Status(204)
 		c.Abort()
 	}
-	secured := newRouter(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, authorize(verifier, "org-1"), terminal)
+	secured := newRouter(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, func(permissions ...string) gin.HandlerFunc {
+		middleware := authorize(verifier, "org-1", permissions...)
+		return func(c *gin.Context) {
+			middleware(c)
+			if !c.IsAborted() {
+				terminal(c)
+			}
+		}
+	})
 	for _, route := range secured.Routes() {
 		if route.Path == "/health" {
 			continue
