@@ -129,6 +129,7 @@ jobs:
           file: ${{ matrix.dockerfile }}
           build-contexts: |
             core-contracts=./core-contracts
+            core=./core
           push: true
           platforms: ${{ env.TARGET_PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}

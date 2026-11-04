@@ -108,7 +108,7 @@ func TestMembershipManagementPermissions(t *testing.T) {
 	denied.Header.Set("Authorization", "Bearer "+readToken)
 	deniedResponse := httptest.NewRecorder()
 	handler.ServeHTTP(deniedResponse, denied)
-	if deniedResponse.Code != http.StatusUnauthorized {
+	if deniedResponse.Code != http.StatusForbidden {
 		t.Fatalf("read token post status = %d: %s", deniedResponse.Code, deniedResponse.Body.String())
 	}
 
@@ -237,4 +237,60 @@ func testIssuer(t *testing.T) *token.Issuer {
 		t.Fatal(err)
 	}
 	return issuer
+}
+
+func TestSharedAuthenticationAndManagementPolicies(t *testing.T) {
+	issuer := testIssuer(t)
+	handler := New(Config{}, issuer, nil, httpMembershipRepository{})
+	user := signedToken(t, issuer, token.IssueRequest{Subject: "user_1", IdentityType: token.IdentityHuman, Scope: token.ScopeUser})
+	wrongOrg := signedToken(t, issuer, token.IssueRequest{Subject: "user_1", IdentityType: token.IdentityHuman, Scope: token.ScopeMembership, OrganizationID: "org_other", MembershipID: "member", Permissions: []string{"identity.memberships.read", "identity.memberships.write"}})
+	noPermission := signedToken(t, issuer, token.IssueRequest{Subject: "user_1", IdentityType: token.IdentityHuman, Scope: token.ScopeMembership, OrganizationID: "org_1", MembershipID: "member", Roles: []string{"owner"}, Permissions: []string{"*"}})
+	for _, route := range []struct{ method, path string }{
+		{http.MethodGet, "/v1/organizations/org_1/members"},
+		{http.MethodPost, "/v1/organizations/org_1/members"},
+		{http.MethodPut, "/v1/organizations/org_1/members/user_1/roles"},
+		{http.MethodDelete, "/v1/organizations/org_1/members/user_1"},
+	} {
+		for _, tc := range []struct {
+			name    string
+			headers []string
+			status  int
+		}{
+			{"missing", nil, http.StatusUnauthorized},
+			{"invalid", []string{"Bearer invalid"}, http.StatusUnauthorized},
+			{"duplicate", []string{"Bearer " + user, "Bearer " + user}, http.StatusUnauthorized},
+			{"user scope", []string{"Bearer " + user}, http.StatusForbidden},
+			{"wrong organization", []string{"Bearer " + wrongOrg}, http.StatusForbidden},
+			{"no exact permission", []string{"Bearer " + noPermission}, http.StatusForbidden},
+		} {
+			t.Run(route.method+"/"+tc.name, func(t *testing.T) {
+				request := httptest.NewRequest(route.method, route.path, nil)
+				for _, header := range tc.headers {
+					request.Header.Add("Authorization", header)
+				}
+				response := httptest.NewRecorder()
+				handler.ServeHTTP(response, request)
+				if response.Code != tc.status {
+					t.Fatalf("status = %d, want %d: %s", response.Code, tc.status, response.Body.String())
+				}
+				if tc.status == http.StatusUnauthorized && response.Header().Get("WWW-Authenticate") != "Bearer" {
+					t.Fatal("missing Bearer challenge")
+				}
+			})
+		}
+	}
+	for _, path := range []string{"/v1/me/organizations", "/v1/organizations/org_1/authorization", "/v1/roles"} {
+		request := httptest.NewRequest(http.MethodGet, path, nil)
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		if response.Code != http.StatusUnauthorized {
+			t.Fatalf("unprotected %s: %d", path, response.Code)
+		}
+		request.Header.Set("Authorization", "bearer "+user)
+		response = httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		if response.Code != http.StatusOK {
+			t.Fatalf("%s rejected valid token: %d", path, response.Code)
+		}
+	}
 }

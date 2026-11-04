@@ -65,3 +65,36 @@ identity bootstrap seeds/bootstrap.yaml
 ```
 
 `seeds/bootstrap.example.yaml` shows the format. Firebase subject is linked automatically on each user's first authenticated login; no Firebase UUID is required during bootstrap.
+
+## Shared access-token contract
+
+Identity imports `../core/auth` through a local Go module replacement. Keep `core`,
+`core-contracts`, and `identity-service` as sibling directories when building locally.
+Claims, identity types, and scopes use the shared definitions. Identity retains
+issuance, signing, private-key storage, TTL, permission normalization, and business rules.
+Tokens remain PASETO v4.public with the existing fields, including empty roles and
+permissions arrays and empty organization/membership strings for user tokens.
+Verification, including the internal HTTP/gRPC verification APIs, uses the shared
+verifier and the issuer's active/rotation public keys. External OIDC assertions in
+the token exchange continue to use the OIDC verifier.
+
+Bearer endpoints use `core/auth` authentication. `/v1/me/organizations`,
+`/v1/organizations/:organization_id/authorization`, and `/v1/roles` require a valid
+token of either scope; their existing repository lookups remain authoritative.
+Membership management additionally requires membership scope, the organization
+from the route, and `identity.memberships.read` or `identity.memberships.write`.
+Missing/invalid credentials return 401; valid tokens failing policy return 403.
+Owner assignment/removal restrictions remain in Identity. Internal API-key endpoints
+and the OAuth token exchange retain their existing authentication flows.
+
+From the repository root, build with both named Docker contexts:
+
+```bash
+docker buildx build --build-context core=./core \
+  --build-context core-contracts=./core-contracts -f identity-service/Dockerfile identity-service
+(cd core && go test ./...)
+(cd identity-service && go test ./...)
+```
+
+Identity integration tests issue real tokens for both scopes, verify them with an
+independently configured `core/auth` verifier, and cover HTTP policy failures.

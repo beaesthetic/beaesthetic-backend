@@ -5,6 +5,7 @@ FROM golang:1.25-bookworm AS build
 WORKDIR /src
 COPY go.mod go.sum* ./
 COPY --from=core-contracts / /core-contracts
+COPY --from=core / /core
 RUN go mod download
 COPY . .
 RUN go run github.com/magefile/mage@v1.15.0 -v build

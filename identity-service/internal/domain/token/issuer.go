@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"aidanwoods.dev/go-paseto"
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 )
 
 type Config struct {
@@ -25,7 +26,7 @@ type Issuer struct {
 	issuer      string
 	activeKeyID string
 	privateKey  paseto.V4AsymmetricSecretKey
-	publicKeys  map[string]paseto.V4AsymmetricPublicKey
+	verifier    *auth.Verifier
 	publicB64   map[string]string
 	ttl         time.Duration
 	clock       func() time.Time
@@ -46,34 +47,24 @@ func NewIssuer(cfg Config) (*Issuer, error) {
 	if err != nil {
 		return nil, fmt.Errorf("create active private key: %w", err)
 	}
-	publicKeys := make(map[string]paseto.V4AsymmetricPublicKey, len(cfg.VerifyKeys)+1)
 	publicB64 := make(map[string]string, len(cfg.VerifyKeys)+1)
 	activePublic := privateKey.Public()
-	publicKeys[cfg.ActiveKeyID] = activePublic
 	publicB64[cfg.ActiveKeyID] = base64.RawURLEncoding.EncodeToString(activePublic.ExportBytes())
 	for keyID, encoded := range cfg.VerifyKeys {
 		if keyID == "" || keyID == cfg.ActiveKeyID {
 			continue
 		}
-		publicBytes, err := base64.RawURLEncoding.DecodeString(encoded)
-		if err != nil {
-			return nil, fmt.Errorf("decode public key %q: %w", keyID, err)
-		}
-		if len(publicBytes) != ed25519.PublicKeySize {
-			return nil, fmt.Errorf("public key %q must be %d bytes", keyID, ed25519.PublicKeySize)
-		}
-		publicKey, err := paseto.NewV4AsymmetricPublicKeyFromBytes(publicBytes)
-		if err != nil {
-			return nil, fmt.Errorf("create public key %q: %w", keyID, err)
-		}
-		publicKeys[keyID] = publicKey
 		publicB64[keyID] = encoded
 	}
 	clock := cfg.Clock
 	if clock == nil {
 		clock = time.Now
 	}
-	return &Issuer{cfg.Issuer, cfg.ActiveKeyID, privateKey, publicKeys, publicB64, cfg.TTL, clock}, nil
+	verifier, err := auth.NewVerifier(auth.Config{Issuer: cfg.Issuer, PublicKeys: publicB64, Clock: clock})
+	if err != nil {
+		return nil, err
+	}
+	return &Issuer{cfg.Issuer, cfg.ActiveKeyID, privateKey, verifier, publicB64, cfg.TTL, clock}, nil
 }
 
 func (i *Issuer) Issue(request IssueRequest) (string, Claims, error) {
@@ -114,27 +105,11 @@ func (i *Issuer) Issue(request IssueRequest) (string, Claims, error) {
 	return t.V4Sign(i.privateKey, nil), claims, nil
 }
 
+// Verifier exposes only public-key verification for access-token middleware.
+func (i *Issuer) Verifier() *auth.Verifier { return i.verifier }
+
 func (i *Issuer) Verify(signed string) (Claims, error) {
-	if signed == "" {
-		return Claims{}, fmt.Errorf("token is required")
-	}
-	var lastErr error
-	for keyID, publicKey := range i.publicKeys {
-		token, err := paseto.NewParser().ParseV4Public(publicKey, signed, nil)
-		if err != nil {
-			lastErr = err
-			continue
-		}
-		claims, err := claimsFromToken(token)
-		if err != nil {
-			return Claims{}, err
-		}
-		if claims.KeyID != keyID || claims.Issuer != i.issuer || claims.ExpiresAt.Before(i.clock().UTC()) || !claims.IdentityType.Valid() || !claims.Scope.Valid() {
-			return Claims{}, fmt.Errorf("token claims are invalid")
-		}
-		return claims, nil
-	}
-	return Claims{}, fmt.Errorf("verify PASETO: %w", lastErr)
+	return i.verifier.Verify(signed)
 }
 
 func (i *Issuer) PublicKeys() []PublicKey {
@@ -149,51 +124,6 @@ func (i *Issuer) PublicKeys() []PublicKey {
 type PublicKey struct {
 	KeyID        string `json:"kid"`
 	PublicKeyB64 string `json:"public_key_b64"`
-}
-
-func claimsFromToken(token *paseto.Token) (Claims, error) {
-	var claims Claims
-	if err := token.Get("kid", &claims.KeyID); err != nil {
-		return Claims{}, err
-	}
-	if err := token.Get("identity_type", &claims.IdentityType); err != nil {
-		return Claims{}, err
-	}
-	if err := token.Get("token_scope", &claims.Scope); err != nil {
-		return Claims{}, err
-	}
-	if err := token.Get("organization_id", &claims.OrganizationID); err != nil {
-		return Claims{}, err
-	}
-	if err := token.Get("membership_id", &claims.MembershipID); err != nil {
-		return Claims{}, err
-	}
-	if err := token.Get("roles", &claims.Roles); err != nil {
-		return Claims{}, err
-	}
-	if err := token.Get("permissions", &claims.Permissions); err != nil {
-		return Claims{}, err
-	}
-	if err := token.Get("auth_method", &claims.AuthMethod); err != nil {
-		return Claims{}, err
-	}
-	var err error
-	if claims.Issuer, err = token.GetIssuer(); err != nil {
-		return Claims{}, err
-	}
-	if claims.Subject, err = token.GetSubject(); err != nil {
-		return Claims{}, err
-	}
-	if claims.IssuedAt, err = token.GetIssuedAt(); err != nil {
-		return Claims{}, err
-	}
-	if claims.ExpiresAt, err = token.GetExpiration(); err != nil {
-		return Claims{}, err
-	}
-	if claims.TokenID, err = token.GetJti(); err != nil {
-		return Claims{}, err
-	}
-	return claims, nil
 }
 
 func normalizedPermissions(values []string) []string {

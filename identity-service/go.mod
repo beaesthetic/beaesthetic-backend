@@ -6,9 +6,9 @@ require (
 	aidanwoods.dev/go-paseto v1.6.0
 	github.com/coreos/go-oidc/v3 v3.15.0
 	github.com/gin-gonic/gin v1.10.1
-	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/jackc/pgx/v5 v5.10.0
+	github.com/petretiandrea/beaesthetic-backend/core v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/identity v0.0.0
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/zap v1.27.0
@@ -61,3 +61,5 @@ require (
 )
 
 replace github.com/petretiandrea/beaesthetic-backend/core-contracts/identity => ../core-contracts/identity
+
+replace github.com/petretiandrea/beaesthetic-backend/core => ../core
