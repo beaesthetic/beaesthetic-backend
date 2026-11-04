@@ -1,6 +1,9 @@
 package config
 
 import (
+	"encoding/json"
+	"fmt"
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 	"strings"
 	"time"
 
@@ -11,6 +14,7 @@ import (
 )
 
 type Config struct {
+	Auth     AuthConfig     `koanf:"auth"`
 	App      AppConfig      `koanf:"app"`
 	HTTP     HTTPConfig     `koanf:"http"`
 	Postgres PostgresConfig `koanf:"postgres"`
@@ -73,4 +77,22 @@ func stripUnderscore(value, newDelimiter string) string {
 	value = strings.ReplaceAll(value, "__", "@")
 	value = strings.ReplaceAll(value, "_", newDelimiter)
 	return strings.ReplaceAll(value, "@", "_")
+}
+
+// PublicKeysJSON preserves key IDs exactly, including dots and underscores.
+type AuthConfig struct {
+	Issuer         string `koanf:"issuer"`
+	OrganizationID string `koanf:"organization_id"`
+	PublicKeysJSON string `koanf:"public_keys"`
+}
+
+func (c AuthConfig) NewVerifier() (*auth.Verifier, error) {
+	if strings.TrimSpace(c.OrganizationID) == "" {
+		return nil, fmt.Errorf("auth organization ID is required")
+	}
+	var keys map[string]string
+	if err := json.Unmarshal([]byte(c.PublicKeysJSON), &keys); err != nil {
+		return nil, fmt.Errorf("invalid auth public keys: %w", err)
+	}
+	return auth.NewVerifier(auth.Config{Issuer: c.Issuer, PublicKeys: keys})
 }

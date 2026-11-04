@@ -3,11 +3,13 @@ package server
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 	"github.com/petretiandrea/beaesthetic-backend/customer/internal/application"
 	cacheinfra "github.com/petretiandrea/beaesthetic-backend/customer/internal/infra/cache"
 	customerapi "github.com/petretiandrea/beaesthetic-backend/customer/internal/port/http/server/customer"
@@ -23,7 +25,14 @@ type HttpHandlers struct {
 	DB       *sql.DB
 }
 
-func New(handlers *HttpHandlers, log *zap.Logger) *gin.Engine {
+func New(handlers *HttpHandlers, log *zap.Logger, verifier *auth.Verifier, organizationID string) (*gin.Engine, error) {
+	if verifier == nil || strings.TrimSpace(organizationID) == "" {
+		return nil, fmt.Errorf("customer authentication requires a verifier and organization ID")
+	}
+	return newRouter(handlers, log, authorize(verifier, organizationID)), nil
+}
+
+func newRouter(handlers *HttpHandlers, log *zap.Logger, security ...gin.HandlerFunc) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	if log == nil {
 		log = zap.NewNop()
@@ -49,10 +58,14 @@ func New(handlers *HttpHandlers, log *zap.Logger) *gin.Engine {
 		ResponseErrorHandlerFunc: responseErrorHandler(log),
 	})
 
-	customerapi.RegisterHandlers(r, customerHandler)
-	fidelityapi.RegisterHandlers(r, fidelityHandler)
-	walletapi.RegisterHandlers(r, walletHandler)
-	registerTrailingSlashAliases(r, fidelityHandler, walletHandler)
+	var routes gin.IRouter = r
+	if len(security) > 0 {
+		routes = r.Group("", security...)
+	}
+	customerapi.RegisterHandlers(routes, customerHandler)
+	fidelityapi.RegisterHandlers(routes, fidelityHandler)
+	walletapi.RegisterHandlers(routes, walletHandler)
+	registerTrailingSlashAliases(routes, fidelityHandler, walletHandler)
 	r.GET("/health", healthCheck(handlers.DB))
 	return r
 }

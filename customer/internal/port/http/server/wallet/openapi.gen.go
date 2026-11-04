@@ -17,6 +17,10 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+const (
+	PasetoBearerScopes pasetoBearerContextKey = "pasetoBearer.Scopes"
+)
+
 // Customer defines model for Customer.
 type Customer struct {
 	Email   *openapi_types.Email `json:"email,omitempty"`
@@ -81,6 +85,9 @@ type WalletId = openapi_types.UUID
 type WalletOperation struct {
 	union json.RawMessage
 }
+
+// pasetoBearerContextKey is the context key for pasetoBearer security scheme
+type pasetoBearerContextKey string
 
 // GetWalletsParams defines parameters for GetWallets.
 type GetWalletsParams struct {
@@ -284,6 +291,8 @@ func (siw *ServerInterfaceWrapper) GetWallets(c *gin.Context) {
 	var err error
 	_ = err
 
+	c.Set(string(PasetoBearerScopes), []string{})
+
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetWalletsParams
 
@@ -307,6 +316,8 @@ func (siw *ServerInterfaceWrapper) GetWallets(c *gin.Context) {
 
 // AddGiftCard operation middleware
 func (siw *ServerInterfaceWrapper) AddGiftCard(c *gin.Context) {
+
+	c.Set(string(PasetoBearerScopes), []string{})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -333,6 +344,8 @@ func (siw *ServerInterfaceWrapper) GetWalletById(c *gin.Context) {
 		return
 	}
 
+	c.Set(string(PasetoBearerScopes), []string{})
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -357,6 +370,8 @@ func (siw *ServerInterfaceWrapper) ChargeWallet(c *gin.Context) {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter walletId: %w", err), http.StatusBadRequest)
 		return
 	}
+
+	c.Set(string(PasetoBearerScopes), []string{})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
