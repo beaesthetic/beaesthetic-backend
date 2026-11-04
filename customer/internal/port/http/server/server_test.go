@@ -6,7 +6,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"github.com/gin-gonic/gin"
 	customerapi "github.com/petretiandrea/beaesthetic-backend/customer/internal/port/http/server/customer"
+	fidelityapi "github.com/petretiandrea/beaesthetic-backend/customer/internal/port/http/server/fidelity"
+	walletapi "github.com/petretiandrea/beaesthetic-backend/customer/internal/port/http/server/wallet"
 )
 
 func TestNewRegistersCompatibleRoutes(t *testing.T) {
@@ -18,13 +21,13 @@ func TestNewRegistersCompatibleRoutes(t *testing.T) {
 		}
 	}()
 
-	_ = New(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil)
+	_ = newRouter(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, nil)
 }
 
 func TestNewNormalizesTrailingSlashWithoutRedirect(t *testing.T) {
 	t.Parallel()
 
-	router := New(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil)
+	router := newRouter(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, nil)
 	request := httptest.NewRequest(http.MethodPost, "/admin/wallets/giftCard/", nil)
 	response := httptest.NewRecorder()
 
@@ -44,5 +47,34 @@ func TestCustomerCreateAcceptsEmptyEmail(t *testing.T) {
 	}
 	if request.Email == nil || *request.Email != "" {
 		t.Fatalf("Email = %#v, want empty string pointer", request.Email)
+	}
+}
+
+// Manual registration must stay in sync with the generated contracts.
+func TestRegisteredRoutesMatchContracts(t *testing.T) {
+	actual := newRouter(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, nil)
+	expected := gin.New()
+	customerapi.RegisterHandlers(expected, nil)
+	fidelityapi.RegisterHandlers(expected, nil)
+	walletapi.RegisterHandlers(expected, nil)
+	noop := func(*gin.Context) {}
+	expected.GET("/admin/fidelity-cards/", noop)
+	expected.POST("/admin/fidelity-cards/", noop)
+	expected.GET("/admin/wallets/", noop)
+	expected.POST("/admin/wallets/giftCard/", noop)
+	expected.GET("/health", noop)
+	routes := map[string]bool{}
+	for _, route := range expected.Routes() {
+		routes[route.Method+" "+route.Path] = true
+	}
+	for _, route := range actual.Routes() {
+		key := route.Method + " " + route.Path
+		if !routes[key] {
+			t.Errorf("unexpected route %s", key)
+		}
+		delete(routes, key)
+	}
+	for key := range routes {
+		t.Errorf("missing route %s", key)
 	}
 }

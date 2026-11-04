@@ -1,8 +1,9 @@
 module github.com/petretiandrea/beaesthetic-backend/customer
 
-go 1.24.0
+go 1.25.0
 
 require (
+	aidanwoods.dev/go-paseto v1.6.0
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-migrate/migrate/v4 v4.18.3
 	github.com/google/uuid v1.6.0
@@ -12,12 +13,14 @@ require (
 	github.com/knadh/koanf/v2 v2.2.2
 	github.com/lib/pq v1.10.9
 	github.com/oapi-codegen/runtime v1.4.2
+	github.com/petretiandrea/beaesthetic-backend/core v0.0.0
 	github.com/redis/go-redis/v9 v9.7.0
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/zap v1.27.0
 )
 
 require (
+	aidanwoods.dev/go-result v0.3.1 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
@@ -61,3 +64,5 @@ require (
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/petretiandrea/beaesthetic-backend/core => ../core

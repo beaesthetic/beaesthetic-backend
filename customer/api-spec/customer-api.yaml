@@ -27,6 +27,8 @@ info:
   version: 1.0.0
 servers:
   - url: https://agenda.beaesthetic.it/customer-service/
+security:
+  - pasetoBearer: []
 paths:
   /admin/customers/page/{direction}:
     get:
@@ -228,6 +230,12 @@ paths:
                 $ref: '#/components/schemas/CustomerResponse'
 
 components:
+  securitySchemes:
+    pasetoBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: PASETO v4.public
+      description: Membership token required. Organization is carried in the verified PASETO claims; no organization header or tenant constraint is applied by this single-organization service. Read operations (including phone search POST) require customer.read; mutations require customer.write.
   schemas:
     CustomerResponse:
       type: object
