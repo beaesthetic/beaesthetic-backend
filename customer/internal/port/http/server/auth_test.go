@@ -20,7 +20,7 @@ func TestRoutePermissions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	router, err := New(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, verifier, "org-1")
+	router, err := New(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, verifier)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +54,7 @@ func TestRoutePermissions(t *testing.T) {
 	// and aborts before each generated endpoint is invoked.
 	terminal := func(c *gin.Context) {
 		claims, ok := auth.FromContext(c.Request.Context())
-		if !ok || claims.OrganizationID != "org-1" {
+		if !ok || claims.OrganizationID != c.GetHeader(organizationHeader) {
 			t.Error("missing verified claims")
 		}
 		reached = true
@@ -62,7 +62,7 @@ func TestRoutePermissions(t *testing.T) {
 		c.Abort()
 	}
 	secured := newRouter(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, func(permissions ...string) gin.HandlerFunc {
-		middleware := authorize(verifier, "org-1", permissions...)
+		middleware := authorize(verifier, permissions...)
 		return func(c *gin.Context) {
 			middleware(c)
 			if !c.IsAborted() {
@@ -86,11 +86,18 @@ func TestRoutePermissions(t *testing.T) {
 		cases := []struct {
 			name, bearer string
 			status       int
+			headers      []string
 		}{
-			{"missing", "", 401}, {"invalid", "bad", 401}, {"expired", token(wantPermission, "org-1", "membership", true), 401},
-			{"other permission", token(other, "org-1", "membership", false), 403}, {"wildcard", token("*", "org-1", "membership", false), 403},
-			{"tenant", token(wantPermission, "org-2", "membership", false), 403}, {"user scope", token(wantPermission, "", "user", false), 403},
-			{"allowed", token(wantPermission, "org-1", "membership", false), 204},
+			{"missing", "", 401, []string{"org-1"}}, {"invalid", "bad", 401, []string{"org-1"}}, {"expired", token(wantPermission, "org-1", "membership", true), 401, []string{"org-1"}},
+			{"other permission", token(other, "org-1", "membership", false), 403, []string{"org-1"}}, {"wildcard", token("*", "org-1", "membership", false), 403, []string{"org-1"}},
+			{"tenant", token(wantPermission, "org-2", "membership", false), 403, []string{"org-1"}}, {"user scope", token(wantPermission, "", "user", false), 403, []string{"org-1"}},
+			{"allowed", token(wantPermission, "org-1", "membership", false), 204, []string{"org-1"}},
+			{"missing organization", token(wantPermission, "org-1", "membership", false), 400, nil},
+			{"empty organization", token(wantPermission, "org-1", "membership", false), 400, []string{""}},
+			{"whitespace organization", token(wantPermission, "org-1", "membership", false), 400, []string{" "}},
+			{"duplicate organization", token(wantPermission, "org-1", "membership", false), 400, []string{"org-1", "org-1"}},
+			{"ambiguous organization", token(wantPermission, "org-1", "membership", false), 400, []string{"org-1,org-2"}},
+			{"another matching organization", token(wantPermission, "org-2", "membership", false), 204, []string{"org-2"}},
 		}
 		for _, tc := range cases {
 			t.Run(route.Method+" "+route.Path+"/"+tc.name, func(t *testing.T) {
@@ -98,6 +105,9 @@ func TestRoutePermissions(t *testing.T) {
 				r := httptest.NewRequest(route.Method, path, nil)
 				if tc.bearer != "" {
 					r.Header.Set("Authorization", "Bearer "+tc.bearer)
+				}
+				for _, value := range tc.headers {
+					r.Header.Add(organizationHeader, value)
 				}
 				w := httptest.NewRecorder()
 				secured.ServeHTTP(w, r)
@@ -122,10 +132,7 @@ func TestRoutePermissions(t *testing.T) {
 	if w.Code != 503 {
 		t.Fatalf("health status=%d", w.Code)
 	}
-	if _, err := New(&HttpHandlers{}, nil, nil, "org-1"); err == nil {
+	if _, err := New(&HttpHandlers{}, nil, nil); err == nil {
 		t.Error("nil verifier accepted")
-	}
-	if _, err := New(&HttpHandlers{}, nil, verifier, ""); err == nil {
-		t.Error("empty organization accepted")
 	}
 }

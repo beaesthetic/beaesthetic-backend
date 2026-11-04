@@ -25,12 +25,12 @@ type HttpHandlers struct {
 	DB       *sql.DB
 }
 
-func New(handlers *HttpHandlers, log *zap.Logger, verifier *auth.Verifier, organizationID string) (*gin.Engine, error) {
-	if verifier == nil || strings.TrimSpace(organizationID) == "" {
-		return nil, fmt.Errorf("customer authentication requires a verifier and organization ID")
+func New(handlers *HttpHandlers, log *zap.Logger, verifier *auth.Verifier) (*gin.Engine, error) {
+	if verifier == nil {
+		return nil, fmt.Errorf("customer authentication requires a verifier")
 	}
 	return newRouter(handlers, log, func(permissions ...string) gin.HandlerFunc {
-		return authorize(verifier, organizationID, permissions...)
+		return authorize(verifier, permissions...)
 	}), nil
 }
 
@@ -95,7 +95,7 @@ func newRouter(handlers *HttpHandlers, log *zap.Logger, security func(...string)
 	r.GET("/admin/fidelity-cards/", security("customer.read"), fidelity.GetFidelityCards)
 	r.POST("/admin/fidelity-cards/", security("customer.write"), fidelity.CreateFidelityCard)
 	r.GET("/admin/wallets/", security("customer.read"), func(ctx *gin.Context) {
-		walletHandler.GetWallets(ctx, walletapi.GetWalletsParams{Filter: stringPtrIfNotEmpty(ctx.Query("filter"))})
+		walletHandler.GetWallets(ctx, walletapi.GetWalletsParams{Filter: stringPtrIfNotEmpty(ctx.Query("filter")), XOrganizationID: ctx.GetHeader(organizationHeader)})
 	})
 	r.POST("/admin/wallets/giftCard/", security("customer.write"), wallets.AddGiftCard)
 	r.GET("/health", healthCheck(handlers.DB))

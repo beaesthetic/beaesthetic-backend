@@ -37,6 +37,7 @@ paths:
       tags:
         - customers-admin
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - name: direction
           required: true
           in: path
@@ -71,6 +72,8 @@ paths:
 
   /customers/search:byPhone:
     post:
+      parameters:
+        - $ref: '#/components/parameters/OrganizationID'
       summary: Search by phone number
       operationId: searchCustomerByPhone
       tags:
@@ -102,6 +105,7 @@ paths:
       tags:
         - customers-admin
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - name: limit
           in: query
           description: Maximum number of results (optional)
@@ -128,6 +132,7 @@ paths:
       tags:
         - customers-admin
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - name: limit
           in: query
           description: Maximum number of results (optional)
@@ -148,6 +153,8 @@ paths:
                 items:
                   $ref: '#/components/schemas/CustomerResponse'
     post:
+      parameters:
+        - $ref: '#/components/parameters/OrganizationID'
       summary: Create a new customer
       operationId: createCustomer
       tags:
@@ -175,6 +182,7 @@ paths:
       tags:
         - customers-admin
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - name: customerId
           in: path
           required: true
@@ -194,6 +202,7 @@ paths:
       tags:
         - customers-admin
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - name: customerId
           in: path
           required: true
@@ -209,6 +218,7 @@ paths:
       tags:
         - customers-admin
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - name: customerId
           in: path
           required: true
@@ -230,12 +240,21 @@ paths:
                 $ref: '#/components/schemas/CustomerResponse'
 
 components:
+  parameters:
+    OrganizationID:
+      name: X-Organization-ID
+      in: header
+      required: true
+      description: Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+      schema:
+        type: string
+        minLength: 1
   securitySchemes:
     pasetoBearer:
       type: http
       scheme: bearer
       bearerFormat: PASETO v4.public
-      description: Membership token for the configured organization. Read operations (including phone search POST) require customer.read; mutations require customer.write.
+      description: Membership token matching the X-Organization-ID request header. Read operations (including phone search POST) require customer.read; mutations require customer.write.
   schemas:
     CustomerResponse:
       type: object

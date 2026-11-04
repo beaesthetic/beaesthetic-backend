@@ -11,7 +11,7 @@ func (d *DiContainer) GetHttpServer() (*nethttp.Server, error) {
 	if err != nil {
 		return nil, err
 	}
-	router, err := server.New(d.GetHttpHandlers(), d.Log, verifier, d.Config.Auth.OrganizationID)
+	router, err := server.New(d.GetHttpHandlers(), d.Log, verifier)
 	if err != nil {
 		return nil, err
 	}
