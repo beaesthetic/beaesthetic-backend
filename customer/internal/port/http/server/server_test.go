@@ -18,13 +18,13 @@ func TestNewRegistersCompatibleRoutes(t *testing.T) {
 		}
 	}()
 
-	_ = New(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil)
+	_ = newRouter(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil)
 }
 
 func TestNewNormalizesTrailingSlashWithoutRedirect(t *testing.T) {
 	t.Parallel()
 
-	router := New(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil)
+	router := newRouter(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil)
 	request := httptest.NewRequest(http.MethodPost, "/admin/wallets/giftCard/", nil)
 	response := httptest.NewRecorder()
 

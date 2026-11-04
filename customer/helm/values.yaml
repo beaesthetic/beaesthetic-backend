@@ -16,6 +16,8 @@ service:
   ports:
     - 8080
 
+# Required before deployment: ENV_AUTH_ISSUER, ENV_AUTH_ORGANIZATION__ID,
+# ENV_AUTH_PUBLIC__KEYS (JSON kid -> public key map); see customer/README.md.
 envConfig:
   GIN_MODE: "release"
   ENV_APP_NAME: "beaesthetic-customers"

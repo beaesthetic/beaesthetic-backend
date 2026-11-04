@@ -1,0 +1,35 @@
+name: Customer tests
+
+on:
+  pull_request:
+    paths:
+      - 'customer/**'
+      - 'core/**'
+      - '.github/workflows/customer-tests.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'customer/**'
+      - 'core/**'
+      - '.github/workflows/customer-tests.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: customer/go.mod
+          cache-dependency-path: |
+            customer/go.sum
+            core/go.sum
+      - run: go test ./...
+        working-directory: customer
+      - run: go vet ./...
+        working-directory: customer
+      - run: go build ./cmd/customer
+        working-directory: customer
