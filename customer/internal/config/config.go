@@ -3,9 +3,10 @@ package config
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 	"strings"
 	"time"
+
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 
 	"github.com/knadh/koanf/parsers/dotenv"
 	"github.com/knadh/koanf/providers/env"
@@ -82,14 +83,10 @@ func stripUnderscore(value, newDelimiter string) string {
 // PublicKeysJSON preserves key IDs exactly, including dots and underscores.
 type AuthConfig struct {
 	Issuer         string `koanf:"issuer"`
-	OrganizationID string `koanf:"organization_id"`
 	PublicKeysJSON string `koanf:"public_keys"`
 }
 
 func (c AuthConfig) NewVerifier() (*auth.Verifier, error) {
-	if strings.TrimSpace(c.OrganizationID) == "" {
-		return nil, fmt.Errorf("auth organization ID is required")
-	}
 	var keys map[string]string
 	if err := json.Unmarshal([]byte(c.PublicKeysJSON), &keys); err != nil {
 		return nil, fmt.Errorf("invalid auth public keys: %w", err)

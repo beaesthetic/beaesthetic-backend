@@ -33,6 +33,8 @@ paths:
 
   /admin/wallets/giftCard:
     post:
+      parameters:
+        - $ref: '#/components/parameters/OrganizationID'
       tags:
         - wallets-admin
       operationId: addGiftCard
@@ -69,6 +71,7 @@ paths:
         - wallets-admin
       operationId: chargeWallet
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - in: path
           name: walletId
           required: true
@@ -102,6 +105,7 @@ paths:
         - wallets-admin
       operationId: getWalletById
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - in: path
           name: walletId
           required: true
@@ -125,6 +129,7 @@ paths:
         - wallets-admin
       operationId: getWallets
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - in: query
           name: filter
           schema:
@@ -143,12 +148,21 @@ paths:
           description: Bad request
 
 components:
+  parameters:
+    OrganizationID:
+      name: X-Organization-ID
+      in: header
+      required: true
+      description: Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+      schema:
+        type: string
+        minLength: 1
   securitySchemes:
     pasetoBearer:
       type: http
       scheme: bearer
       bearerFormat: PASETO v4.public
-      description: Membership token for the configured organization. Read operations (including phone search POST) require customer.read; mutations require customer.write.
+      description: Membership token matching the X-Organization-ID request header. Read operations (including phone search POST) require customer.read; mutations require customer.write.
   schemas:
     Wallet:
       type: object

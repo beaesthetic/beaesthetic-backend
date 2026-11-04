@@ -74,6 +74,9 @@ type CustomersPaginated struct {
 	NextCursor      *string             `json:"nextCursor,omitempty"`
 }
 
+// OrganizationID defines model for OrganizationID.
+type OrganizationID = string
+
 // pasetoBearerContextKey is the context key for pasetoBearer security scheme
 type pasetoBearerContextKey string
 
@@ -84,6 +87,15 @@ type GetAllCustomersParams struct {
 
 	// Filter Text to filter by (optional)
 	Filter *string `form:"filter,omitempty" json:"filter,omitempty"`
+
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
+}
+
+// CreateCustomerParams defines parameters for CreateCustomer.
+type CreateCustomerParams struct {
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
 }
 
 // GetCustomerByPageParams defines parameters for GetCustomerByPage.
@@ -96,10 +108,31 @@ type GetCustomerByPageParams struct {
 
 	// SortBy Sort by specified field
 	SortBy *string `form:"sortBy,omitempty" json:"sortBy,omitempty"`
+
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
 }
 
 // GetCustomerByPageParamsDirection defines parameters for GetCustomerByPage.
 type GetCustomerByPageParamsDirection string
+
+// DeleteCustomerParams defines parameters for DeleteCustomer.
+type DeleteCustomerParams struct {
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
+}
+
+// GetCustomerByIdParams defines parameters for GetCustomerById.
+type GetCustomerByIdParams struct {
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
+}
+
+// UpdateCustomerByIdParams defines parameters for UpdateCustomerById.
+type UpdateCustomerByIdParams struct {
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
+}
 
 // SearchCustomerParams defines parameters for SearchCustomer.
 type SearchCustomerParams struct {
@@ -108,11 +141,20 @@ type SearchCustomerParams struct {
 
 	// Filter Text to filter by (required)
 	Filter *string `form:"filter,omitempty" json:"filter,omitempty"`
+
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
 }
 
 // SearchCustomerByPhoneJSONBody defines parameters for SearchCustomerByPhone.
 type SearchCustomerByPhoneJSONBody struct {
 	Phone string `json:"phone"`
+}
+
+// SearchCustomerByPhoneParams defines parameters for SearchCustomerByPhone.
+type SearchCustomerByPhoneParams struct {
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
 }
 
 // CreateCustomerJSONRequestBody defines body for CreateCustomer for application/json ContentType.
@@ -131,25 +173,25 @@ type ServerInterface interface {
 	GetAllCustomers(c *gin.Context, params GetAllCustomersParams)
 	// Create a new customer
 	// (POST /admin/customers)
-	CreateCustomer(c *gin.Context)
+	CreateCustomer(c *gin.Context, params CreateCustomerParams)
 	// Get customers with pagination
 	// (GET /admin/customers/page/{direction})
 	GetCustomerByPage(c *gin.Context, direction GetCustomerByPageParamsDirection, params GetCustomerByPageParams)
 	// Delete customer by ID
 	// (DELETE /admin/customers/{customerId})
-	DeleteCustomer(c *gin.Context, customerId string)
+	DeleteCustomer(c *gin.Context, customerId string, params DeleteCustomerParams)
 	// Get customer by ID
 	// (GET /admin/customers/{customerId})
-	GetCustomerById(c *gin.Context, customerId string)
+	GetCustomerById(c *gin.Context, customerId string, params GetCustomerByIdParams)
 	// Update customer by ID
 	// (PUT /admin/customers/{customerId})
-	UpdateCustomerById(c *gin.Context, customerId string)
+	UpdateCustomerById(c *gin.Context, customerId string, params UpdateCustomerByIdParams)
 	// Search for customers
 	// (GET /customers/search)
 	SearchCustomer(c *gin.Context, params SearchCustomerParams)
 	// Search by phone number
 	// (POST /customers/search:byPhone)
-	SearchCustomerByPhone(c *gin.Context)
+	SearchCustomerByPhone(c *gin.Context, params SearchCustomerByPhoneParams)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -188,6 +230,30 @@ func (siw *ServerInterfaceWrapper) GetAllCustomers(c *gin.Context) {
 		return
 	}
 
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -201,7 +267,37 @@ func (siw *ServerInterfaceWrapper) GetAllCustomers(c *gin.Context) {
 // CreateCustomer operation middleware
 func (siw *ServerInterfaceWrapper) CreateCustomer(c *gin.Context) {
 
+	var err error
+	_ = err
+
 	c.Set(string(PasetoBearerScopes), []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateCustomerParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -210,7 +306,7 @@ func (siw *ServerInterfaceWrapper) CreateCustomer(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.CreateCustomer(c)
+	siw.Handler.CreateCustomer(c, params)
 }
 
 // GetCustomerByPage operation middleware
@@ -257,6 +353,30 @@ func (siw *ServerInterfaceWrapper) GetCustomerByPage(c *gin.Context) {
 		return
 	}
 
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -284,6 +404,33 @@ func (siw *ServerInterfaceWrapper) DeleteCustomer(c *gin.Context) {
 
 	c.Set(string(PasetoBearerScopes), []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params DeleteCustomerParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -291,7 +438,7 @@ func (siw *ServerInterfaceWrapper) DeleteCustomer(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.DeleteCustomer(c, customerId)
+	siw.Handler.DeleteCustomer(c, customerId, params)
 }
 
 // GetCustomerById operation middleware
@@ -311,6 +458,33 @@ func (siw *ServerInterfaceWrapper) GetCustomerById(c *gin.Context) {
 
 	c.Set(string(PasetoBearerScopes), []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetCustomerByIdParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -318,7 +492,7 @@ func (siw *ServerInterfaceWrapper) GetCustomerById(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetCustomerById(c, customerId)
+	siw.Handler.GetCustomerById(c, customerId, params)
 }
 
 // UpdateCustomerById operation middleware
@@ -338,6 +512,33 @@ func (siw *ServerInterfaceWrapper) UpdateCustomerById(c *gin.Context) {
 
 	c.Set(string(PasetoBearerScopes), []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UpdateCustomerByIdParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -345,7 +546,7 @@ func (siw *ServerInterfaceWrapper) UpdateCustomerById(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.UpdateCustomerById(c, customerId)
+	siw.Handler.UpdateCustomerById(c, customerId, params)
 }
 
 // SearchCustomer operation middleware
@@ -375,6 +576,30 @@ func (siw *ServerInterfaceWrapper) SearchCustomer(c *gin.Context) {
 		return
 	}
 
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -388,7 +613,37 @@ func (siw *ServerInterfaceWrapper) SearchCustomer(c *gin.Context) {
 // SearchCustomerByPhone operation middleware
 func (siw *ServerInterfaceWrapper) SearchCustomerByPhone(c *gin.Context) {
 
+	var err error
+	_ = err
+
 	c.Set(string(PasetoBearerScopes), []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params SearchCustomerByPhoneParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -397,7 +652,7 @@ func (siw *ServerInterfaceWrapper) SearchCustomerByPhone(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.SearchCustomerByPhone(c)
+	siw.Handler.SearchCustomerByPhone(c, params)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -460,7 +715,8 @@ func (response GetAllCustomers200JSONResponse) VisitGetAllCustomersResponse(w ht
 }
 
 type CreateCustomerRequestObject struct {
-	Body *CreateCustomerJSONRequestBody
+	Params CreateCustomerParams
+	Body   *CreateCustomerJSONRequestBody
 }
 
 type CreateCustomerResponseObject interface {
@@ -508,6 +764,7 @@ func (response GetCustomerByPage200JSONResponse) VisitGetCustomerByPageResponse(
 
 type DeleteCustomerRequestObject struct {
 	CustomerId string `json:"customerId"`
+	Params     DeleteCustomerParams
 }
 
 type DeleteCustomerResponseObject interface {
@@ -524,6 +781,7 @@ func (response DeleteCustomer204Response) VisitDeleteCustomerResponse(w http.Res
 
 type GetCustomerByIdRequestObject struct {
 	CustomerId string `json:"customerId"`
+	Params     GetCustomerByIdParams
 }
 
 type GetCustomerByIdResponseObject interface {
@@ -546,6 +804,7 @@ func (response GetCustomerById200JSONResponse) VisitGetCustomerByIdResponse(w ht
 
 type UpdateCustomerByIdRequestObject struct {
 	CustomerId string `json:"customerId"`
+	Params     UpdateCustomerByIdParams
 	Body       *UpdateCustomerByIdJSONRequestBody
 }
 
@@ -590,7 +849,8 @@ func (response SearchCustomer200JSONResponse) VisitSearchCustomerResponse(w http
 }
 
 type SearchCustomerByPhoneRequestObject struct {
-	Body *SearchCustomerByPhoneJSONRequestBody
+	Params SearchCustomerByPhoneParams
+	Body   *SearchCustomerByPhoneJSONRequestBody
 }
 
 type SearchCustomerByPhoneResponseObject interface {
@@ -731,8 +991,10 @@ func (sh *strictHandler) GetAllCustomers(ctx *gin.Context, params GetAllCustomer
 }
 
 // CreateCustomer operation middleware
-func (sh *strictHandler) CreateCustomer(ctx *gin.Context) {
+func (sh *strictHandler) CreateCustomer(ctx *gin.Context, params CreateCustomerParams) {
 	var request CreateCustomerRequestObject
+
+	request.Params = params
 
 	var body CreateCustomerJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
@@ -789,10 +1051,11 @@ func (sh *strictHandler) GetCustomerByPage(ctx *gin.Context, direction GetCustom
 }
 
 // DeleteCustomer operation middleware
-func (sh *strictHandler) DeleteCustomer(ctx *gin.Context, customerId string) {
+func (sh *strictHandler) DeleteCustomer(ctx *gin.Context, customerId string, params DeleteCustomerParams) {
 	var request DeleteCustomerRequestObject
 
 	request.CustomerId = customerId
+	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.DeleteCustomer(ctx, request.(DeleteCustomerRequestObject))
@@ -815,10 +1078,11 @@ func (sh *strictHandler) DeleteCustomer(ctx *gin.Context, customerId string) {
 }
 
 // GetCustomerById operation middleware
-func (sh *strictHandler) GetCustomerById(ctx *gin.Context, customerId string) {
+func (sh *strictHandler) GetCustomerById(ctx *gin.Context, customerId string, params GetCustomerByIdParams) {
 	var request GetCustomerByIdRequestObject
 
 	request.CustomerId = customerId
+	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetCustomerById(ctx, request.(GetCustomerByIdRequestObject))
@@ -841,10 +1105,11 @@ func (sh *strictHandler) GetCustomerById(ctx *gin.Context, customerId string) {
 }
 
 // UpdateCustomerById operation middleware
-func (sh *strictHandler) UpdateCustomerById(ctx *gin.Context, customerId string) {
+func (sh *strictHandler) UpdateCustomerById(ctx *gin.Context, customerId string, params UpdateCustomerByIdParams) {
 	var request UpdateCustomerByIdRequestObject
 
 	request.CustomerId = customerId
+	request.Params = params
 
 	var body UpdateCustomerByIdJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
@@ -900,8 +1165,10 @@ func (sh *strictHandler) SearchCustomer(ctx *gin.Context, params SearchCustomerP
 }
 
 // SearchCustomerByPhone operation middleware
-func (sh *strictHandler) SearchCustomerByPhone(ctx *gin.Context) {
+func (sh *strictHandler) SearchCustomerByPhone(ctx *gin.Context, params SearchCustomerByPhoneParams) {
 	var request SearchCustomerByPhoneRequestObject
+
+	request.Params = params
 
 	var body SearchCustomerByPhoneJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {

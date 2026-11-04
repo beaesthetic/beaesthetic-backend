@@ -1,10 +1,11 @@
 package config
 
 import (
-	"aidanwoods.dev/go-paseto"
 	"encoding/base64"
 	"testing"
 	"time"
+
+	"aidanwoods.dev/go-paseto"
 )
 
 func TestLoadReadsEnvPrefix(t *testing.T) {
@@ -43,24 +44,19 @@ func TestAuthConfiguration(t *testing.T) {
 	key := paseto.NewV4AsymmetricSecretKey()
 	encoded := base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes())
 	t.Setenv("ENV_AUTH_ISSUER", "identity")
-	t.Setenv("ENV_AUTH_ORGANIZATION__ID", "org-1")
 	t.Setenv("ENV_AUTH_PUBLIC__KEYS", `{"key.with_dots":"`+encoded+`"}`)
 	cfg, err := Load("")
 	if err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Auth.OrganizationID != "org-1" {
-		t.Fatalf("organization=%q", cfg.Auth.OrganizationID)
-	}
 	if _, err := cfg.Auth.NewVerifier(); err != nil {
 		t.Fatal(err)
 	}
 	for _, c := range []AuthConfig{
-		{}, {Issuer: "identity", OrganizationID: "org-1", PublicKeysJSON: "{}"},
-		{Issuer: "identity", OrganizationID: "org-1", PublicKeysJSON: "bad"},
-		{Issuer: "identity", OrganizationID: "org-1", PublicKeysJSON: `{"key":"bad"}`},
-		{OrganizationID: "org-1", PublicKeysJSON: cfg.Auth.PublicKeysJSON},
-		{Issuer: "identity", PublicKeysJSON: cfg.Auth.PublicKeysJSON},
+		{}, {Issuer: "identity", PublicKeysJSON: "{}"},
+		{Issuer: "identity", PublicKeysJSON: "bad"},
+		{Issuer: "identity", PublicKeysJSON: `{"key":"bad"}`},
+		{PublicKeysJSON: cfg.Auth.PublicKeysJSON},
 	} {
 		if _, err := c.NewVerifier(); err == nil {
 			t.Errorf("accepted invalid auth config: %+v", c)

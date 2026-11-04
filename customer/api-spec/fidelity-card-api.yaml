@@ -32,6 +32,8 @@ security:
 paths:
   /admin/fidelity-cards:
     post:
+      parameters:
+        - $ref: '#/components/parameters/OrganizationID'
       tags:
         - fidelity-cards-admin
       operationId: createFidelityCard
@@ -56,6 +58,8 @@ paths:
         '400':
           description: Bad request
     get:
+      parameters:
+        - $ref: '#/components/parameters/OrganizationID'
       tags:
         - fidelity-cards-admin
       operationId: getFidelityCards
@@ -77,6 +81,7 @@ paths:
         - fidelity-cards-admin
       operationId: getFidelityCardById
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - in: path
           name: cardId
           required: true
@@ -101,6 +106,7 @@ paths:
         - fidelity-cards-admin
       operationId: getFidelityCardsByCustomerId
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - in: path
           name: customerId
           required: true
@@ -125,6 +131,7 @@ paths:
         - fidelity-cards-admin
       operationId: notifyPurchase
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - in: path
           name: cardId
           required: true
@@ -147,6 +154,7 @@ paths:
         - fidelity-cards-admin
       operationId: useVoucher
       parameters:
+        - $ref: '#/components/parameters/OrganizationID'
         - in: path
           name: voucherId
           required: true
@@ -163,12 +171,21 @@ paths:
                 $ref: "#/components/schemas/FidelityCardResponse"
 
 components:
+  parameters:
+    OrganizationID:
+      name: X-Organization-ID
+      in: header
+      required: true
+      description: Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+      schema:
+        type: string
+        minLength: 1
   securitySchemes:
     pasetoBearer:
       type: http
       scheme: bearer
       bearerFormat: PASETO v4.public
-      description: Membership token for the configured organization. Read operations (including phone search POST) require customer.read; mutations require customer.write.
+      description: Membership token matching the X-Organization-ID request header. Read operations (including phone search POST) require customer.read; mutations require customer.write.
   schemas:
     Customer:
       type: object

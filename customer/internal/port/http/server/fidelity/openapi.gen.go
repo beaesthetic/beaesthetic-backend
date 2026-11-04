@@ -101,12 +101,51 @@ type Voucher struct {
 	union json.RawMessage
 }
 
+// OrganizationID defines model for OrganizationID.
+type OrganizationID = string
+
 // pasetoBearerContextKey is the context key for pasetoBearer security scheme
 type pasetoBearerContextKey string
+
+// GetFidelityCardsParams defines parameters for GetFidelityCards.
+type GetFidelityCardsParams struct {
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
+}
 
 // CreateFidelityCardJSONBody defines parameters for CreateFidelityCard.
 type CreateFidelityCardJSONBody struct {
 	CustomerId CustomerId `json:"customerId"`
+}
+
+// CreateFidelityCardParams defines parameters for CreateFidelityCard.
+type CreateFidelityCardParams struct {
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
+}
+
+// GetFidelityCardsByCustomerIdParams defines parameters for GetFidelityCardsByCustomerId.
+type GetFidelityCardsByCustomerIdParams struct {
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
+}
+
+// UseVoucherParams defines parameters for UseVoucher.
+type UseVoucherParams struct {
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
+}
+
+// GetFidelityCardByIdParams defines parameters for GetFidelityCardById.
+type GetFidelityCardByIdParams struct {
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
+}
+
+// NotifyPurchaseParams defines parameters for NotifyPurchase.
+type NotifyPurchaseParams struct {
+	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
+	XOrganizationID OrganizationID `json:"X-Organization-ID"`
 }
 
 // CreateFidelityCardJSONRequestBody defines body for CreateFidelityCard for application/json ContentType.
@@ -238,22 +277,22 @@ func (t *Voucher) UnmarshalJSON(b []byte) error {
 type ServerInterface interface {
 
 	// (GET /admin/fidelity-cards)
-	GetFidelityCards(c *gin.Context)
+	GetFidelityCards(c *gin.Context, params GetFidelityCardsParams)
 
 	// (POST /admin/fidelity-cards)
-	CreateFidelityCard(c *gin.Context)
+	CreateFidelityCard(c *gin.Context, params CreateFidelityCardParams)
 
 	// (GET /admin/fidelity-cards/customers/{customerId})
-	GetFidelityCardsByCustomerId(c *gin.Context, customerId CustomerId)
+	GetFidelityCardsByCustomerId(c *gin.Context, customerId CustomerId, params GetFidelityCardsByCustomerIdParams)
 
 	// (DELETE /admin/fidelity-cards/vouchers/{voucherId})
-	UseVoucher(c *gin.Context, voucherId openapi_types.UUID)
+	UseVoucher(c *gin.Context, voucherId openapi_types.UUID, params UseVoucherParams)
 
 	// (GET /admin/fidelity-cards/{cardId})
-	GetFidelityCardById(c *gin.Context, cardId FidelityCardId)
+	GetFidelityCardById(c *gin.Context, cardId FidelityCardId, params GetFidelityCardByIdParams)
 
 	// (PUT /admin/fidelity-cards/{cardId}/purchase)
-	NotifyPurchase(c *gin.Context, cardId FidelityCardId)
+	NotifyPurchase(c *gin.Context, cardId FidelityCardId, params NotifyPurchaseParams)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -268,7 +307,37 @@ type MiddlewareFunc func(c *gin.Context)
 // GetFidelityCards operation middleware
 func (siw *ServerInterfaceWrapper) GetFidelityCards(c *gin.Context) {
 
+	var err error
+	_ = err
+
 	c.Set(string(PasetoBearerScopes), []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetFidelityCardsParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -277,13 +346,43 @@ func (siw *ServerInterfaceWrapper) GetFidelityCards(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetFidelityCards(c)
+	siw.Handler.GetFidelityCards(c, params)
 }
 
 // CreateFidelityCard operation middleware
 func (siw *ServerInterfaceWrapper) CreateFidelityCard(c *gin.Context) {
 
+	var err error
+	_ = err
+
 	c.Set(string(PasetoBearerScopes), []string{})
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params CreateFidelityCardParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -292,7 +391,7 @@ func (siw *ServerInterfaceWrapper) CreateFidelityCard(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.CreateFidelityCard(c)
+	siw.Handler.CreateFidelityCard(c, params)
 }
 
 // GetFidelityCardsByCustomerId operation middleware
@@ -312,6 +411,33 @@ func (siw *ServerInterfaceWrapper) GetFidelityCardsByCustomerId(c *gin.Context) 
 
 	c.Set(string(PasetoBearerScopes), []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetFidelityCardsByCustomerIdParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -319,7 +445,7 @@ func (siw *ServerInterfaceWrapper) GetFidelityCardsByCustomerId(c *gin.Context) 
 		}
 	}
 
-	siw.Handler.GetFidelityCardsByCustomerId(c, customerId)
+	siw.Handler.GetFidelityCardsByCustomerId(c, customerId, params)
 }
 
 // UseVoucher operation middleware
@@ -339,6 +465,33 @@ func (siw *ServerInterfaceWrapper) UseVoucher(c *gin.Context) {
 
 	c.Set(string(PasetoBearerScopes), []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params UseVoucherParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -346,7 +499,7 @@ func (siw *ServerInterfaceWrapper) UseVoucher(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.UseVoucher(c, voucherId)
+	siw.Handler.UseVoucher(c, voucherId, params)
 }
 
 // GetFidelityCardById operation middleware
@@ -366,6 +519,33 @@ func (siw *ServerInterfaceWrapper) GetFidelityCardById(c *gin.Context) {
 
 	c.Set(string(PasetoBearerScopes), []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetFidelityCardByIdParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -373,7 +553,7 @@ func (siw *ServerInterfaceWrapper) GetFidelityCardById(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetFidelityCardById(c, cardId)
+	siw.Handler.GetFidelityCardById(c, cardId, params)
 }
 
 // NotifyPurchase operation middleware
@@ -393,6 +573,33 @@ func (siw *ServerInterfaceWrapper) NotifyPurchase(c *gin.Context) {
 
 	c.Set(string(PasetoBearerScopes), []string{})
 
+	// Parameter object where we will unmarshal all parameters from the context
+	var params NotifyPurchaseParams
+
+	headers := c.Request.Header
+
+	// ------------- Required header parameter "X-Organization-ID" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
+		var XOrganizationID OrganizationID
+		n := len(valueList)
+		if n != 1 {
+			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
+			return
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
+		if err != nil {
+			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
+			return
+		}
+
+		params.XOrganizationID = XOrganizationID
+
+	} else {
+		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
+		return
+	}
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -400,7 +607,7 @@ func (siw *ServerInterfaceWrapper) NotifyPurchase(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.NotifyPurchase(c, cardId)
+	siw.Handler.NotifyPurchase(c, cardId, params)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -439,6 +646,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 }
 
 type GetFidelityCardsRequestObject struct {
+	Params GetFidelityCardsParams
 }
 
 type GetFidelityCardsResponseObject interface {
@@ -468,7 +676,8 @@ func (response GetFidelityCards400Response) VisitGetFidelityCardsResponse(w http
 }
 
 type CreateFidelityCardRequestObject struct {
-	Body *CreateFidelityCardJSONRequestBody
+	Params CreateFidelityCardParams
+	Body   *CreateFidelityCardJSONRequestBody
 }
 
 type CreateFidelityCardResponseObject interface {
@@ -499,6 +708,7 @@ func (response CreateFidelityCard400Response) VisitCreateFidelityCardResponse(w 
 
 type GetFidelityCardsByCustomerIdRequestObject struct {
 	CustomerId CustomerId `json:"customerId"`
+	Params     GetFidelityCardsByCustomerIdParams
 }
 
 type GetFidelityCardsByCustomerIdResponseObject interface {
@@ -529,6 +739,7 @@ func (response GetFidelityCardsByCustomerId400Response) VisitGetFidelityCardsByC
 
 type UseVoucherRequestObject struct {
 	VoucherId openapi_types.UUID `json:"voucherId"`
+	Params    UseVoucherParams
 }
 
 type UseVoucherResponseObject interface {
@@ -551,6 +762,7 @@ func (response UseVoucher200JSONResponse) VisitUseVoucherResponse(w http.Respons
 
 type GetFidelityCardByIdRequestObject struct {
 	CardId FidelityCardId `json:"cardId"`
+	Params GetFidelityCardByIdParams
 }
 
 type GetFidelityCardByIdResponseObject interface {
@@ -589,6 +801,7 @@ func (response GetFidelityCardById404Response) VisitGetFidelityCardByIdResponse(
 
 type NotifyPurchaseRequestObject struct {
 	CardId FidelityCardId `json:"cardId"`
+	Params NotifyPurchaseParams
 	Body   *NotifyPurchaseJSONRequestBody
 }
 
@@ -684,8 +897,10 @@ type strictHandler struct {
 }
 
 // GetFidelityCards operation middleware
-func (sh *strictHandler) GetFidelityCards(ctx *gin.Context) {
+func (sh *strictHandler) GetFidelityCards(ctx *gin.Context, params GetFidelityCardsParams) {
 	var request GetFidelityCardsRequestObject
+
+	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetFidelityCards(ctx, request.(GetFidelityCardsRequestObject))
@@ -708,8 +923,10 @@ func (sh *strictHandler) GetFidelityCards(ctx *gin.Context) {
 }
 
 // CreateFidelityCard operation middleware
-func (sh *strictHandler) CreateFidelityCard(ctx *gin.Context) {
+func (sh *strictHandler) CreateFidelityCard(ctx *gin.Context, params CreateFidelityCardParams) {
 	var request CreateFidelityCardRequestObject
+
+	request.Params = params
 
 	var body CreateFidelityCardJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
@@ -739,10 +956,11 @@ func (sh *strictHandler) CreateFidelityCard(ctx *gin.Context) {
 }
 
 // GetFidelityCardsByCustomerId operation middleware
-func (sh *strictHandler) GetFidelityCardsByCustomerId(ctx *gin.Context, customerId CustomerId) {
+func (sh *strictHandler) GetFidelityCardsByCustomerId(ctx *gin.Context, customerId CustomerId, params GetFidelityCardsByCustomerIdParams) {
 	var request GetFidelityCardsByCustomerIdRequestObject
 
 	request.CustomerId = customerId
+	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetFidelityCardsByCustomerId(ctx, request.(GetFidelityCardsByCustomerIdRequestObject))
@@ -765,10 +983,11 @@ func (sh *strictHandler) GetFidelityCardsByCustomerId(ctx *gin.Context, customer
 }
 
 // UseVoucher operation middleware
-func (sh *strictHandler) UseVoucher(ctx *gin.Context, voucherId openapi_types.UUID) {
+func (sh *strictHandler) UseVoucher(ctx *gin.Context, voucherId openapi_types.UUID, params UseVoucherParams) {
 	var request UseVoucherRequestObject
 
 	request.VoucherId = voucherId
+	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.UseVoucher(ctx, request.(UseVoucherRequestObject))
@@ -791,10 +1010,11 @@ func (sh *strictHandler) UseVoucher(ctx *gin.Context, voucherId openapi_types.UU
 }
 
 // GetFidelityCardById operation middleware
-func (sh *strictHandler) GetFidelityCardById(ctx *gin.Context, cardId FidelityCardId) {
+func (sh *strictHandler) GetFidelityCardById(ctx *gin.Context, cardId FidelityCardId, params GetFidelityCardByIdParams) {
 	var request GetFidelityCardByIdRequestObject
 
 	request.CardId = cardId
+	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetFidelityCardById(ctx, request.(GetFidelityCardByIdRequestObject))
@@ -817,10 +1037,11 @@ func (sh *strictHandler) GetFidelityCardById(ctx *gin.Context, cardId FidelityCa
 }
 
 // NotifyPurchase operation middleware
-func (sh *strictHandler) NotifyPurchase(ctx *gin.Context, cardId FidelityCardId) {
+func (sh *strictHandler) NotifyPurchase(ctx *gin.Context, cardId FidelityCardId, params NotifyPurchaseParams) {
 	var request NotifyPurchaseRequestObject
 
 	request.CardId = cardId
+	request.Params = params
 
 	var body NotifyPurchaseJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
