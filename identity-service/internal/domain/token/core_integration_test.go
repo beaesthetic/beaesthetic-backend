@@ -105,7 +105,7 @@ func TestIssuerVerificationRetainsRotationKeys(t *testing.T) {
 	old := newIssuer("old", nil)
 	rotated := newIssuer("new", map[string]string{"old": old.PublicKeys()[0].PublicKeyB64})
 	for _, issuer := range []*token.Issuer{old, rotated} {
-		signed, _, err := issuer.Issue(token.IssueRequest{Subject: "user", IdentityType: token.IdentityHuman, Scope: token.ScopeUser, AuthMethod: "test"})
+		signed, _, err := issuer.Issue(token.IssueRequest{Subject: "user", IdentityType: auth.IdentityHuman, Scope: auth.ScopeUser, AuthMethod: "test"})
 		if err != nil {
 			t.Fatal(err)
 		}

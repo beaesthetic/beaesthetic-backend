@@ -55,9 +55,9 @@ func New(cfg Config, issuer *token.Issuer, exchange *application.ExchangeService
 			badRequest(ctx, err)
 			return
 		}
-		scope := token.ScopeUser
+		scope := auth.ScopeUser
 		if request.GetOrganizationId() != "" || request.GetMembershipId() != "" {
-			scope = token.ScopeMembership
+			scope = auth.ScopeMembership
 		}
 		accessToken, claims, err := issuer.Issue(token.IssueRequest{Subject: request.GetSubject(), IdentityType: identityType, Scope: scope, OrganizationID: request.GetOrganizationId(), MembershipID: request.GetMembershipId(), Roles: request.GetRoles(), Permissions: request.GetPermissions(), AuthMethod: request.GetAuthMethod()})
 		if err != nil {
@@ -284,11 +284,11 @@ func writeProtoJSON(ctx *gin.Context, statusCode int, message proto.Message) {
 	ctx.Data(statusCode, "application/json", body)
 }
 
-func accessTokenProto(value string, claims token.Claims) *identity.AccessToken {
+func accessTokenProto(value string, claims auth.Claims) *identity.AccessToken {
 	return &identity.AccessToken{AccessToken: value, TokenType: "Bearer", ExpiresIn: int64(claims.ExpiresAt.Sub(claims.IssuedAt).Seconds()), ExpiresAt: timestamppb.New(claims.ExpiresAt)}
 }
 
-func authorizationFromClaims(claims token.Claims) *identity.EffectiveAuthorization {
+func authorizationFromClaims(claims auth.Claims) *identity.EffectiveAuthorization {
 	return &identity.EffectiveAuthorization{UserId: claims.Subject, MembershipId: claims.MembershipID, OrganizationId: claims.OrganizationID, Roles: claims.Roles, Permissions: claims.Permissions, IdentityType: protobufIdentityType(claims.IdentityType)}
 }
 
@@ -296,24 +296,24 @@ func membershipAuthorization(record membership.Membership) *identity.EffectiveAu
 	return &identity.EffectiveAuthorization{UserId: record.UserID, MembershipId: record.ID, OrganizationId: record.OrganizationID, Roles: record.Roles, Permissions: record.Permissions, IdentityType: identity.IdentityType_IDENTITY_TYPE_HUMAN}
 }
 
-func tokenIdentityType(value identity.IdentityType) (token.IdentityType, error) {
+func tokenIdentityType(value identity.IdentityType) (auth.IdentityType, error) {
 	switch value {
 	case identity.IdentityType_IDENTITY_TYPE_HUMAN:
-		return token.IdentityHuman, nil
+		return auth.IdentityHuman, nil
 	case identity.IdentityType_IDENTITY_TYPE_SERVICE:
-		return token.IdentityService, nil
+		return auth.IdentityService, nil
 	case identity.IdentityType_IDENTITY_TYPE_INTEGRATION:
-		return token.IdentityIntegration, nil
+		return auth.IdentityIntegration, nil
 	default:
 		return "", fmt.Errorf("invalid identityType")
 	}
 }
 
-func protobufIdentityType(value token.IdentityType) identity.IdentityType {
+func protobufIdentityType(value auth.IdentityType) identity.IdentityType {
 	switch value {
-	case token.IdentityService:
+	case auth.IdentityService:
 		return identity.IdentityType_IDENTITY_TYPE_SERVICE
-	case token.IdentityIntegration:
+	case auth.IdentityIntegration:
 		return identity.IdentityType_IDENTITY_TYPE_INTEGRATION
 	default:
 		return identity.IdentityType_IDENTITY_TYPE_HUMAN
@@ -351,7 +351,7 @@ func authenticate(verifier *auth.Verifier) gin.HandlerFunc {
 	}
 }
 
-func bearerClaims(ctx *gin.Context) (token.Claims, bool) {
+func bearerClaims(ctx *gin.Context) (auth.Claims, bool) {
 	return auth.FromContext(ctx.Request.Context())
 }
 
@@ -364,21 +364,21 @@ func containsRole(roles []string, expected string) bool {
 	return false
 }
 
-func managementAccess(ctx *gin.Context, repository membership.Repository, permission string) (membership.ManagementRepository, token.Claims, bool) {
+func managementAccess(ctx *gin.Context, repository membership.Repository, permission string) (membership.ManagementRepository, auth.Claims, bool) {
 	claims, ok := bearerClaims(ctx)
 	management, supported := repository.(membership.ManagementRepository)
 	if !ok {
 		unauthorized(ctx)
-		return nil, token.Claims{}, false
+		return nil, auth.Claims{}, false
 	}
 	allowed := false
 	auth.Require(auth.Policy{Scope: auth.ScopeMembership, OrganizationID: ctx.Param("organization_id"), Permissions: []string{permission}})(http.HandlerFunc(func(http.ResponseWriter, *http.Request) { allowed = true })).ServeHTTP(ctx.Writer, ctx.Request)
 	if !allowed {
-		return nil, token.Claims{}, false
+		return nil, auth.Claims{}, false
 	}
 	if !supported {
 		writeJSON(ctx, http.StatusServiceUnavailable, map[string]string{"error": "temporarily_unavailable"})
-		return nil, token.Claims{}, false
+		return nil, auth.Claims{}, false
 	}
 	return management, claims, true
 }

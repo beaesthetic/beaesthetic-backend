@@ -67,22 +67,22 @@ func NewIssuer(cfg Config) (*Issuer, error) {
 	return &Issuer{cfg.Issuer, cfg.ActiveKeyID, privateKey, verifier, publicB64, cfg.TTL, clock}, nil
 }
 
-func (i *Issuer) Issue(request IssueRequest) (string, Claims, error) {
+func (i *Issuer) Issue(request IssueRequest) (string, auth.Claims, error) {
 	if request.Subject == "" || request.AuthMethod == "" || !request.IdentityType.Valid() || !request.Scope.Valid() {
-		return "", Claims{}, fmt.Errorf("subject, auth method, valid identity type, and valid scope are required")
+		return "", auth.Claims{}, fmt.Errorf("subject, auth method, valid identity type, and valid scope are required")
 	}
-	if request.Scope == ScopeUser && (request.OrganizationID != "" || request.MembershipID != "" || len(request.Roles) != 0) {
-		return "", Claims{}, fmt.Errorf("user-scoped token cannot contain membership claims")
+	if request.Scope == auth.ScopeUser && (request.OrganizationID != "" || request.MembershipID != "" || len(request.Roles) != 0) {
+		return "", auth.Claims{}, fmt.Errorf("user-scoped token cannot contain membership claims")
 	}
-	if request.Scope == ScopeMembership && (request.OrganizationID == "" || request.MembershipID == "") {
-		return "", Claims{}, fmt.Errorf("membership-scoped token requires organization and membership IDs")
+	if request.Scope == auth.ScopeMembership && (request.OrganizationID == "" || request.MembershipID == "") {
+		return "", auth.Claims{}, fmt.Errorf("membership-scoped token requires organization and membership IDs")
 	}
 	now := i.clock().UTC()
 	tokenID, err := randomID()
 	if err != nil {
-		return "", Claims{}, err
+		return "", auth.Claims{}, err
 	}
-	claims := Claims{
+	claims := auth.Claims{
 		Issuer: i.issuer, Subject: request.Subject,
 		IssuedAt: now, ExpiresAt: now.Add(i.ttl), TokenID: tokenID, KeyID: i.activeKeyID,
 		IdentityType: request.IdentityType, Scope: request.Scope, Permissions: normalizedPermissions(request.Permissions), AuthMethod: request.AuthMethod,
@@ -108,7 +108,7 @@ func (i *Issuer) Issue(request IssueRequest) (string, Claims, error) {
 // Verifier exposes only public-key verification for access-token middleware.
 func (i *Issuer) Verifier() *auth.Verifier { return i.verifier }
 
-func (i *Issuer) Verify(signed string) (Claims, error) {
+func (i *Issuer) Verify(signed string) (auth.Claims, error) {
 	return i.verifier.Verify(signed)
 }
 

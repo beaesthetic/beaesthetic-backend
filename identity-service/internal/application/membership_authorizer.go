@@ -3,6 +3,7 @@ package application
 import (
 	"context"
 
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/membership"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/token"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/user"
@@ -25,8 +26,8 @@ func (a *MembershipAuthorizer) Authorize(ctx context.Context, identity ExternalI
 	}
 	return token.IssueRequest{
 		Subject:        user.ID,
-		IdentityType:   token.IdentityHuman,
-		Scope:          token.ScopeMembership,
+		IdentityType:   auth.IdentityHuman,
+		Scope:          auth.ScopeMembership,
 		OrganizationID: record.OrganizationID,
 		MembershipID:   record.ID,
 		Roles:          record.Roles,
