@@ -40,6 +40,9 @@ func newRouter(handlers *HttpHandlers, log *zap.Logger, security func(...string)
 		log = zap.NewNop()
 	}
 	r := gin.New()
+	// Generated strict handlers pass gin.Context as context.Context.
+	// Forward verified request claims to application handlers as well.
+	r.ContextWithFallback = true
 	r.RedirectTrailingSlash = false
 	r.Use(gin.Recovery())
 	r.Use(ginErrorLogger(log))
@@ -95,7 +98,7 @@ func newRouter(handlers *HttpHandlers, log *zap.Logger, security func(...string)
 	r.GET("/admin/fidelity-cards/", security("customer.read"), fidelity.GetFidelityCards)
 	r.POST("/admin/fidelity-cards/", security("customer.write"), fidelity.CreateFidelityCard)
 	r.GET("/admin/wallets/", security("customer.read"), func(ctx *gin.Context) {
-		walletHandler.GetWallets(ctx, walletapi.GetWalletsParams{Filter: stringPtrIfNotEmpty(ctx.Query("filter")), XOrganizationID: ctx.GetHeader(organizationHeader)})
+		walletHandler.GetWallets(ctx, walletapi.GetWalletsParams{Filter: stringPtrIfNotEmpty(ctx.Query("filter"))})
 	})
 	r.POST("/admin/wallets/giftCard/", security("customer.write"), wallets.AddGiftCard)
 	r.GET("/health", healthCheck(handlers.DB))

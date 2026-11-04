@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/base64"
 	"net/http"
 	"net/http/httptest"
@@ -11,6 +12,7 @@ import (
 	"aidanwoods.dev/go-paseto"
 	"github.com/gin-gonic/gin"
 	"github.com/petretiandrea/beaesthetic-backend/core/auth"
+	customerapi "github.com/petretiandrea/beaesthetic-backend/customer/internal/port/http/server/customer"
 )
 
 func TestRoutePermissions(t *testing.T) {
@@ -20,7 +22,8 @@ func TestRoutePermissions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	router, err := New(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, verifier)
+	readHandler := &customerReadStub{}
+	router, err := New(&HttpHandlers{Customer: readHandler, Fidelity: &Server{}, Wallet: &Server{}}, nil, verifier)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +57,7 @@ func TestRoutePermissions(t *testing.T) {
 	// and aborts before each generated endpoint is invoked.
 	terminal := func(c *gin.Context) {
 		claims, ok := auth.FromContext(c.Request.Context())
-		if !ok || claims.OrganizationID != c.GetHeader(organizationHeader) {
+		if !ok || claims.OrganizationID == "" || claims.Scope != auth.ScopeMembership {
 			t.Error("missing verified claims")
 		}
 		reached = true
@@ -88,16 +91,19 @@ func TestRoutePermissions(t *testing.T) {
 			status       int
 			headers      []string
 		}{
-			{"missing", "", 401, []string{"org-1"}}, {"invalid", "bad", 401, []string{"org-1"}}, {"expired", token(wantPermission, "org-1", "membership", true), 401, []string{"org-1"}},
-			{"other permission", token(other, "org-1", "membership", false), 403, []string{"org-1"}}, {"wildcard", token("*", "org-1", "membership", false), 403, []string{"org-1"}},
-			{"tenant", token(wantPermission, "org-2", "membership", false), 403, []string{"org-1"}}, {"user scope", token(wantPermission, "", "user", false), 403, []string{"org-1"}},
-			{"allowed", token(wantPermission, "org-1", "membership", false), 204, []string{"org-1"}},
-			{"missing organization", token(wantPermission, "org-1", "membership", false), 400, nil},
-			{"empty organization", token(wantPermission, "org-1", "membership", false), 400, []string{""}},
-			{"whitespace organization", token(wantPermission, "org-1", "membership", false), 400, []string{" "}},
-			{"duplicate organization", token(wantPermission, "org-1", "membership", false), 400, []string{"org-1", "org-1"}},
-			{"ambiguous organization", token(wantPermission, "org-1", "membership", false), 400, []string{"org-1,org-2"}},
-			{"another matching organization", token(wantPermission, "org-2", "membership", false), 204, []string{"org-2"}},
+
+			{"missing", "", 401, nil},
+			{"invalid", "bad", 401, nil},
+			{"expired", token(wantPermission, "org-1", "membership", true), 401, nil},
+			{"other permission", token(other, "org-1", "membership", false), 403, nil},
+			{"wildcard", token("*", "org-1", "membership", false), 403, nil},
+			{"user scope", token(wantPermission, "", "user", false), 403, nil},
+			{"membership without organization", token(wantPermission, "", "membership", false), 401, nil},
+			{"allowed without organization header", token(wantPermission, "org-1", "membership", false), 204, nil},
+			{"another token organization", token(wantPermission, "org-2", "membership", false), 204, nil},
+			{"organization header ignored", token(wantPermission, "org-1", "membership", false), 204, []string{"org-2"}},
+			{"empty organization header ignored", token(wantPermission, "org-1", "membership", false), 204, []string{""}},
+			{"duplicate organization header ignored", token(wantPermission, "org-1", "membership", false), 204, []string{"org-2", "org-3"}},
 		}
 		for _, tc := range cases {
 			t.Run(route.Method+" "+route.Path+"/"+tc.name, func(t *testing.T) {
@@ -107,7 +113,7 @@ func TestRoutePermissions(t *testing.T) {
 					r.Header.Set("Authorization", "Bearer "+tc.bearer)
 				}
 				for _, value := range tc.headers {
-					r.Header.Add(organizationHeader, value)
+					r.Header.Add("X-Organization-ID", value)
 				}
 				w := httptest.NewRecorder()
 				secured.ServeHTTP(w, r)
@@ -127,6 +133,20 @@ func TestRoutePermissions(t *testing.T) {
 			})
 		}
 	}
+	// Exercise generated binding and the strict handler without an organization header.
+	for _, headers := range [][]string{nil, {"unrelated-org"}, {"org-2", "org-3"}} {
+		readHandler.called = false
+		request := httptest.NewRequest(http.MethodGet, "/admin/customers", nil)
+		request.Header.Set("Authorization", "Bearer "+token("customer.read", "org-1", "membership", false))
+		for _, value := range headers {
+			request.Header.Add("X-Organization-ID", value)
+		}
+		response := httptest.NewRecorder()
+		router.ServeHTTP(response, request)
+		if response.Code != 200 || !readHandler.called || readHandler.claims.OrganizationID != "org-1" {
+			t.Fatalf("status=%d called=%v claims=%+v", response.Code, readHandler.called, readHandler.claims)
+		}
+	}
 	w := httptest.NewRecorder()
 	secured.ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/health", nil))
 	if w.Code != 503 {
@@ -135,4 +155,17 @@ func TestRoutePermissions(t *testing.T) {
 	if _, err := New(&HttpHandlers{}, nil, nil); err == nil {
 		t.Error("nil verifier accepted")
 	}
+}
+
+// Embedding supplies unused operations; only the read path is invoked here.
+type customerReadStub struct {
+	*Server
+	called bool
+	claims auth.Claims
+}
+
+func (s *customerReadStub) GetAllCustomers(ctx context.Context, _ customerapi.GetAllCustomersRequestObject) (customerapi.GetAllCustomersResponseObject, error) {
+	s.called = true
+	s.claims, _ = auth.FromContext(ctx)
+	return customerapi.GetAllCustomers200JSONResponse{}, nil
 }
