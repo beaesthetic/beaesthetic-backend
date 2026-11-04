@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	identity "github.com/petretiandrea/beaesthetic-backend/core-contracts/identity"
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/membership"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/token"
@@ -64,9 +65,9 @@ func (s *TokenServer) IssueInternalToken(ctx context.Context, request *identity.
 	if err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
-	scope := token.ScopeUser
+	scope := auth.ScopeUser
 	if request.GetOrganizationId() != "" || request.GetMembershipId() != "" {
-		scope = token.ScopeMembership
+		scope = auth.ScopeMembership
 	}
 	accessToken, claims, err := s.issuer.Issue(token.IssueRequest{Subject: request.GetSubject(), IdentityType: identityType, Scope: scope, OrganizationID: request.GetOrganizationId(), MembershipID: request.GetMembershipId(), Roles: request.GetRoles(), Permissions: request.GetPermissions(), AuthMethod: request.GetAuthMethod()})
 	if err != nil {
@@ -118,11 +119,11 @@ func (s *MembershipServer) GetEffectiveAuthorization(ctx context.Context, reques
 	return &identity.GetEffectiveAuthorizationResponse{Authorization: membershipAuthorization(record)}, nil
 }
 
-func accessTokenResponse(value string, claims token.Claims) *identity.AccessToken {
+func accessTokenResponse(value string, claims auth.Claims) *identity.AccessToken {
 	return &identity.AccessToken{AccessToken: value, TokenType: "Bearer", ExpiresIn: int64(claims.ExpiresAt.Sub(claims.IssuedAt).Seconds()), ExpiresAt: timestamppb.New(claims.ExpiresAt)}
 }
 
-func authorization(claims token.Claims) *identity.EffectiveAuthorization {
+func authorization(claims auth.Claims) *identity.EffectiveAuthorization {
 	return &identity.EffectiveAuthorization{UserId: claims.Subject, MembershipId: claims.MembershipID, OrganizationId: claims.OrganizationID, Roles: claims.Roles, Permissions: claims.Permissions, IdentityType: protobufIdentityType(claims.IdentityType)}
 }
 
@@ -130,24 +131,24 @@ func membershipAuthorization(record membership.Membership) *identity.EffectiveAu
 	return &identity.EffectiveAuthorization{UserId: record.UserID, MembershipId: record.ID, OrganizationId: record.OrganizationID, Roles: record.Roles, Permissions: record.Permissions, IdentityType: identity.IdentityType_IDENTITY_TYPE_HUMAN}
 }
 
-func identityType(value identity.IdentityType) (token.IdentityType, error) {
+func identityType(value identity.IdentityType) (auth.IdentityType, error) {
 	switch value {
 	case identity.IdentityType_IDENTITY_TYPE_HUMAN:
-		return token.IdentityHuman, nil
+		return auth.IdentityHuman, nil
 	case identity.IdentityType_IDENTITY_TYPE_SERVICE:
-		return token.IdentityService, nil
+		return auth.IdentityService, nil
 	case identity.IdentityType_IDENTITY_TYPE_INTEGRATION:
-		return token.IdentityIntegration, nil
+		return auth.IdentityIntegration, nil
 	default:
 		return "", fmt.Errorf("invalid identity type")
 	}
 }
 
-func protobufIdentityType(value token.IdentityType) identity.IdentityType {
+func protobufIdentityType(value auth.IdentityType) identity.IdentityType {
 	switch value {
-	case token.IdentityService:
+	case auth.IdentityService:
 		return identity.IdentityType_IDENTITY_TYPE_SERVICE
-	case token.IdentityIntegration:
+	case auth.IdentityIntegration:
 		return identity.IdentityType_IDENTITY_TYPE_INTEGRATION
 	default:
 		return identity.IdentityType_IDENTITY_TYPE_HUMAN

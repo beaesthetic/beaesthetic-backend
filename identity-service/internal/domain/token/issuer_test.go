@@ -6,6 +6,8 @@ import (
 	"encoding/base64"
 	"testing"
 	"time"
+
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 )
 
 func TestIssueAndVerify(t *testing.T) {
@@ -18,7 +20,7 @@ func TestIssueAndVerify(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	signed, claims, err := issuer.Issue(IssueRequest{Subject: "person-1", IdentityType: IdentityHuman, Scope: ScopeUser, Permissions: []string{"identity.memberships.read", " identity.memberships.read "}, AuthMethod: "provider:xyz"})
+	signed, claims, err := issuer.Issue(IssueRequest{Subject: "person-1", IdentityType: auth.IdentityHuman, Scope: auth.ScopeUser, Permissions: []string{"identity.memberships.read", " identity.memberships.read "}, AuthMethod: "provider:xyz"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -29,7 +31,7 @@ func TestIssueAndVerify(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if verified.Subject != "person-1" || verified.Scope != ScopeUser {
+	if verified.Subject != "person-1" || verified.Scope != auth.ScopeUser {
 		t.Fatalf("unexpected verified claims: %+v", verified)
 	}
 }
@@ -43,7 +45,7 @@ func TestVerifyRejectsTampering(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	signed, _, err := issuer.Issue(IssueRequest{Subject: "service-1", IdentityType: IdentityService, Scope: ScopeUser, AuthMethod: "client_credentials"})
+	signed, _, err := issuer.Issue(IssueRequest{Subject: "service-1", IdentityType: auth.IdentityService, Scope: auth.ScopeUser, AuthMethod: "client_credentials"})
 	if err != nil {
 		t.Fatal(err)
 	}

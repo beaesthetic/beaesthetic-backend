@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/token"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/user"
 )
@@ -26,7 +27,7 @@ func (a *UserAuthorizer) Authorize(ctx context.Context, identity ExternalIdentit
 	}
 	return token.IssueRequest{
 		Subject:      resolvedUser.ID,
-		IdentityType: token.IdentityHuman,
-		Scope:        token.ScopeUser,
+		IdentityType: auth.IdentityHuman,
+		Scope:        auth.ScopeUser,
 	}, nil
 }

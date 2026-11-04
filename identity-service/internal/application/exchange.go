@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/token"
 )
 
@@ -47,25 +48,25 @@ func NewExchangeService(issuer *token.Issuer, authenticators []Authenticator, au
 
 type Request struct{ GrantType, SubjectTokenType, Authenticator, Authorizer, SubjectToken, OrganizationID string }
 
-func (s *ExchangeService) Exchange(ctx context.Context, request Request) (string, token.Claims, error) {
+func (s *ExchangeService) Exchange(ctx context.Context, request Request) (string, auth.Claims, error) {
 	if request.GrantType != TokenExchangeGrant || request.SubjectTokenType != JWTSubjectTokenType || request.Authenticator == "" || request.Authorizer == "" || request.SubjectToken == "" {
-		return "", token.Claims{}, fmt.Errorf("invalid token exchange request")
+		return "", auth.Claims{}, fmt.Errorf("invalid token exchange request")
 	}
 	authenticator, ok := s.authenticators[request.Authenticator]
 	if !ok {
-		return "", token.Claims{}, fmt.Errorf("unsupported authenticator %q", request.Authenticator)
+		return "", auth.Claims{}, fmt.Errorf("unsupported authenticator %q", request.Authenticator)
 	}
 	identity, err := authenticator.Authenticate(ctx, request.SubjectToken)
 	if err != nil {
-		return "", token.Claims{}, fmt.Errorf("verify external token: %w", err)
+		return "", auth.Claims{}, fmt.Errorf("verify external token: %w", err)
 	}
 	authorizer, ok := s.authorizers[request.Authorizer]
 	if !ok {
-		return "", token.Claims{}, fmt.Errorf("unsupported authorizer %q", request.Authorizer)
+		return "", auth.Claims{}, fmt.Errorf("unsupported authorizer %q", request.Authorizer)
 	}
 	issueRequest, err := authorizer.Authorize(ctx, identity, request.OrganizationID)
 	if err != nil {
-		return "", token.Claims{}, fmt.Errorf("resolve authorization: %w", err)
+		return "", auth.Claims{}, fmt.Errorf("resolve authorization: %w", err)
 	}
 	issueRequest.AuthMethod = identity.Provider
 	return s.issuer.Issue(issueRequest)

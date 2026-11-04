@@ -11,6 +11,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/application"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/membership"
 	"github.com/petretiandrea/beaesthetic-backend/identity-service/internal/domain/token"
@@ -77,7 +78,7 @@ func TestEffectiveAuthorization(t *testing.T) {
 func TestUserScopeEndpointsDoNotRequirePermissions(t *testing.T) {
 	issuer := testIssuer(t)
 	handler := New(Config{}, issuer, nil, httpMembershipRepository{})
-	token := signedToken(t, issuer, token.IssueRequest{Subject: "user_1", IdentityType: token.IdentityHuman, Scope: token.ScopeUser})
+	token := signedToken(t, issuer, token.IssueRequest{Subject: "user_1", IdentityType: auth.IdentityHuman, Scope: auth.ScopeUser})
 
 	for _, path := range []string{"/v1/me/organizations", "/v1/organizations/org_1/authorization"} {
 		request := httptest.NewRequest(http.MethodGet, path, nil)
@@ -93,8 +94,8 @@ func TestUserScopeEndpointsDoNotRequirePermissions(t *testing.T) {
 func TestMembershipManagementPermissions(t *testing.T) {
 	issuer := testIssuer(t)
 	handler := New(Config{}, issuer, nil, httpMembershipRepository{})
-	readToken := signedToken(t, issuer, token.IssueRequest{Subject: "user_1", IdentityType: token.IdentityHuman, Scope: token.ScopeMembership, OrganizationID: "org_1", MembershipID: "membership_1", Permissions: []string{"identity.memberships.read"}})
-	writeToken := signedToken(t, issuer, token.IssueRequest{Subject: "user_1", IdentityType: token.IdentityHuman, Scope: token.ScopeMembership, OrganizationID: "org_1", MembershipID: "membership_1", Permissions: []string{"identity.memberships.write"}})
+	readToken := signedToken(t, issuer, token.IssueRequest{Subject: "user_1", IdentityType: auth.IdentityHuman, Scope: auth.ScopeMembership, OrganizationID: "org_1", MembershipID: "membership_1", Permissions: []string{"identity.memberships.read"}})
+	writeToken := signedToken(t, issuer, token.IssueRequest{Subject: "user_1", IdentityType: auth.IdentityHuman, Scope: auth.ScopeMembership, OrganizationID: "org_1", MembershipID: "membership_1", Permissions: []string{"identity.memberships.write"}})
 
 	list := httptest.NewRequest(http.MethodGet, "/v1/organizations/org_1/members", nil)
 	list.Header.Set("Authorization", "Bearer "+readToken)
@@ -108,7 +109,7 @@ func TestMembershipManagementPermissions(t *testing.T) {
 	denied.Header.Set("Authorization", "Bearer "+readToken)
 	deniedResponse := httptest.NewRecorder()
 	handler.ServeHTTP(deniedResponse, denied)
-	if deniedResponse.Code != http.StatusUnauthorized {
+	if deniedResponse.Code != http.StatusForbidden {
 		t.Fatalf("read token post status = %d: %s", deniedResponse.Code, deniedResponse.Body.String())
 	}
 
@@ -124,7 +125,7 @@ func TestMembershipManagementPermissions(t *testing.T) {
 func TestNonOwnerCannotAssignOrRemoveOwner(t *testing.T) {
 	issuer := testIssuer(t)
 	handler := New(Config{}, issuer, nil, httpMembershipRepository{})
-	accessToken := signedToken(t, issuer, token.IssueRequest{Subject: "admin_1", IdentityType: token.IdentityHuman, Scope: token.ScopeMembership, OrganizationID: "org_1", MembershipID: "membership_admin", Roles: []string{"admin"}, Permissions: []string{"identity.memberships.write"}})
+	accessToken := signedToken(t, issuer, token.IssueRequest{Subject: "admin_1", IdentityType: auth.IdentityHuman, Scope: auth.ScopeMembership, OrganizationID: "org_1", MembershipID: "membership_admin", Roles: []string{"admin"}, Permissions: []string{"identity.memberships.write"}})
 
 	for _, request := range []*http.Request{
 		httptest.NewRequest(http.MethodPost, "/v1/organizations/org_1/members", strings.NewReader(`{"email":"owner@example.com","roles":["owner"]}`)),
@@ -146,8 +147,8 @@ func TestRemoveMember(t *testing.T) {
 	handler := New(Config{}, issuer, nil, repository)
 	accessToken := signedToken(t, issuer, token.IssueRequest{
 		Subject:        "owner_1",
-		IdentityType:   token.IdentityHuman,
-		Scope:          token.ScopeMembership,
+		IdentityType:   auth.IdentityHuman,
+		Scope:          auth.ScopeMembership,
 		OrganizationID: "org_1",
 		MembershipID:   "membership_owner",
 		Roles:          []string{"owner"},
@@ -176,7 +177,7 @@ type httpAuthorizer struct{}
 
 func (httpAuthorizer) Name() string { return "test" }
 func (httpAuthorizer) Authorize(context.Context, application.ExternalIdentity, string) (token.IssueRequest, error) {
-	return token.IssueRequest{Subject: "user_1", IdentityType: token.IdentityHuman, Scope: token.ScopeUser, AuthMethod: "test"}, nil
+	return token.IssueRequest{Subject: "user_1", IdentityType: auth.IdentityHuman, Scope: auth.ScopeUser, AuthMethod: "test"}, nil
 }
 
 type httpMembershipRepository struct{}
@@ -237,4 +238,60 @@ func testIssuer(t *testing.T) *token.Issuer {
 		t.Fatal(err)
 	}
 	return issuer
+}
+
+func TestSharedAuthenticationAndManagementPolicies(t *testing.T) {
+	issuer := testIssuer(t)
+	handler := New(Config{}, issuer, nil, httpMembershipRepository{})
+	user := signedToken(t, issuer, token.IssueRequest{Subject: "user_1", IdentityType: auth.IdentityHuman, Scope: auth.ScopeUser})
+	wrongOrg := signedToken(t, issuer, token.IssueRequest{Subject: "user_1", IdentityType: auth.IdentityHuman, Scope: auth.ScopeMembership, OrganizationID: "org_other", MembershipID: "member", Permissions: []string{"identity.memberships.read", "identity.memberships.write"}})
+	noPermission := signedToken(t, issuer, token.IssueRequest{Subject: "user_1", IdentityType: auth.IdentityHuman, Scope: auth.ScopeMembership, OrganizationID: "org_1", MembershipID: "member", Roles: []string{"owner"}, Permissions: []string{"*"}})
+	for _, route := range []struct{ method, path string }{
+		{http.MethodGet, "/v1/organizations/org_1/members"},
+		{http.MethodPost, "/v1/organizations/org_1/members"},
+		{http.MethodPut, "/v1/organizations/org_1/members/user_1/roles"},
+		{http.MethodDelete, "/v1/organizations/org_1/members/user_1"},
+	} {
+		for _, tc := range []struct {
+			name    string
+			headers []string
+			status  int
+		}{
+			{"missing", nil, http.StatusUnauthorized},
+			{"invalid", []string{"Bearer invalid"}, http.StatusUnauthorized},
+			{"duplicate", []string{"Bearer " + user, "Bearer " + user}, http.StatusUnauthorized},
+			{"user scope", []string{"Bearer " + user}, http.StatusForbidden},
+			{"wrong organization", []string{"Bearer " + wrongOrg}, http.StatusForbidden},
+			{"no exact permission", []string{"Bearer " + noPermission}, http.StatusForbidden},
+		} {
+			t.Run(route.method+"/"+tc.name, func(t *testing.T) {
+				request := httptest.NewRequest(route.method, route.path, nil)
+				for _, header := range tc.headers {
+					request.Header.Add("Authorization", header)
+				}
+				response := httptest.NewRecorder()
+				handler.ServeHTTP(response, request)
+				if response.Code != tc.status {
+					t.Fatalf("status = %d, want %d: %s", response.Code, tc.status, response.Body.String())
+				}
+				if tc.status == http.StatusUnauthorized && response.Header().Get("WWW-Authenticate") != "Bearer" {
+					t.Fatal("missing Bearer challenge")
+				}
+			})
+		}
+	}
+	for _, path := range []string{"/v1/me/organizations", "/v1/organizations/org_1/authorization", "/v1/roles"} {
+		request := httptest.NewRequest(http.MethodGet, path, nil)
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		if response.Code != http.StatusUnauthorized {
+			t.Fatalf("unprotected %s: %d", path, response.Code)
+		}
+		request.Header.Set("Authorization", "bearer "+user)
+		response = httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		if response.Code != http.StatusOK {
+			t.Fatalf("%s rejected valid token: %d", path, response.Code)
+		}
+	}
 }

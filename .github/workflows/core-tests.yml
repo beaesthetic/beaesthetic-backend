@@ -4,11 +4,15 @@ on:
   pull_request:
     paths:
       - 'core/**'
+      - 'identity-service/**'
+      - 'core-contracts/identity/**'
       - '.github/workflows/core-tests.yml'
   push:
     branches: [main]
     paths:
       - 'core/**'
+      - 'identity-service/**'
+      - 'core-contracts/identity/**'
       - '.github/workflows/core-tests.yml'
 
 permissions:
@@ -22,8 +26,17 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: core/go.mod
-          cache-dependency-path: core/go.sum
+          cache-dependency-path: |
+            core/go.sum
+            identity-service/go.sum
+            core-contracts/identity/go.sum
       - run: go test ./...
         working-directory: core
       - run: go vet ./...
         working-directory: core
+      - run: go test ./...
+        working-directory: identity-service
+      - run: go vet ./...
+        working-directory: identity-service
+      - run: go build ./cmd/identity
+        working-directory: identity-service
