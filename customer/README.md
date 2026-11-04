@@ -2,8 +2,7 @@
 
 The HTTP API verifies Identity `v4.public` PASETO tokens through `core/auth`.
 All customer, fidelity card and wallet endpoints (including trailing slash
-aliases) require a membership token and an `X-Organization-ID` request header.
-The header must match the token’s `organization_id`:
+aliases) require a verified membership token:
 
 | Operations | Permission |
 | --- | --- |
@@ -12,9 +11,8 @@ The header must match the token’s `organization_id`:
 
 Permissions match exactly; owner/admin roles and wildcard strings do not grant
 access by themselves. Missing/invalid tokens return 401 with a Bearer challenge;
-insufficient permissions, user scope or a mismatched organization return 403 before
-request binding, cache or database access. Missing, empty or duplicate organization
-headers return 400 after authentication. `/health` remains public.
+insufficient permissions or user scope return 403 before request binding, cache
+or database access. `/health` remains public.
 
 Required application configuration (environment or `--env-file`):
 
@@ -30,13 +28,16 @@ migrations do not require authentication configuration. No private signing key i
 needed. Helm deployments supply these variables through `envConfig` or
 `secretKeyRef` before rolling out this version.
 
-Organization selection is per request, with no fixed organization in service
-configuration. Internal callers, including appointment and notification, must send
-both `Authorization: Bearer <token>` and `X-Organization-ID`.
+Customer currently serves a single organization, and its database/cache do not
+partition data by tenant. The service neither requires nor uses an organization
+header, and applies no organization-specific authorization constraint. The core
+verifier still validates membership token structure, including `organization_id`,
+and exposes the verified claims in request context.
 
-The header/token comparison authorizes the requested organization. The existing
-repositories and cache do not partition data by organization; this change does not
-add database/cache tenant isolation.
+Internal callers, including appointment and notification, must send
+`Authorization: Bearer <token>` with the appropriate customer permission.
+Tenant isolation will need database/cache partitioning and organization policies
+before this service can support multiple organizations.
 
 Run checks with `cd customer && go test ./... && go vet ./...`.
 Build the container from the repository root:

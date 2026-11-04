@@ -86,18 +86,12 @@ type WalletOperation struct {
 	union json.RawMessage
 }
 
-// OrganizationID defines model for OrganizationID.
-type OrganizationID = string
-
 // pasetoBearerContextKey is the context key for pasetoBearer security scheme
 type pasetoBearerContextKey string
 
 // GetWalletsParams defines parameters for GetWallets.
 type GetWalletsParams struct {
 	Filter *string `form:"filter,omitempty" json:"filter,omitempty"`
-
-	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
-	XOrganizationID OrganizationID `json:"X-Organization-ID"`
 }
 
 // AddGiftCardJSONBody defines parameters for AddGiftCard.
@@ -106,27 +100,9 @@ type AddGiftCardJSONBody struct {
 	CustomerId CustomerId `json:"customerId"`
 }
 
-// AddGiftCardParams defines parameters for AddGiftCard.
-type AddGiftCardParams struct {
-	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
-	XOrganizationID OrganizationID `json:"X-Organization-ID"`
-}
-
-// GetWalletByIdParams defines parameters for GetWalletById.
-type GetWalletByIdParams struct {
-	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
-	XOrganizationID OrganizationID `json:"X-Organization-ID"`
-}
-
 // ChargeWalletJSONBody defines parameters for ChargeWallet.
 type ChargeWalletJSONBody struct {
 	Amount float32 `json:"amount"`
-}
-
-// ChargeWalletParams defines parameters for ChargeWallet.
-type ChargeWalletParams struct {
-	// XOrganizationID Organization requested by the caller; must match organization_id in the verified membership token. Missing or ambiguous headers return 400 after authentication; a mismatch returns 403.
-	XOrganizationID OrganizationID `json:"X-Organization-ID"`
 }
 
 // AddGiftCardJSONRequestBody defines body for AddGiftCard for application/json ContentType.
@@ -291,13 +267,13 @@ type ServerInterface interface {
 	GetWallets(c *gin.Context, params GetWalletsParams)
 
 	// (POST /admin/wallets/giftCard)
-	AddGiftCard(c *gin.Context, params AddGiftCardParams)
+	AddGiftCard(c *gin.Context)
 
 	// (GET /admin/wallets/{walletId})
-	GetWalletById(c *gin.Context, walletId WalletId, params GetWalletByIdParams)
+	GetWalletById(c *gin.Context, walletId WalletId)
 
 	// (PUT /admin/wallets/{walletId}/charge)
-	ChargeWallet(c *gin.Context, walletId WalletId, params ChargeWalletParams)
+	ChargeWallet(c *gin.Context, walletId WalletId)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -328,30 +304,6 @@ func (siw *ServerInterfaceWrapper) GetWallets(c *gin.Context) {
 		return
 	}
 
-	headers := c.Request.Header
-
-	// ------------- Required header parameter "X-Organization-ID" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
-		var XOrganizationID OrganizationID
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
-			return
-		}
-
-		params.XOrganizationID = XOrganizationID
-
-	} else {
-		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -365,37 +317,7 @@ func (siw *ServerInterfaceWrapper) GetWallets(c *gin.Context) {
 // AddGiftCard operation middleware
 func (siw *ServerInterfaceWrapper) AddGiftCard(c *gin.Context) {
 
-	var err error
-	_ = err
-
 	c.Set(string(PasetoBearerScopes), []string{})
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AddGiftCardParams
-
-	headers := c.Request.Header
-
-	// ------------- Required header parameter "X-Organization-ID" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
-		var XOrganizationID OrganizationID
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
-			return
-		}
-
-		params.XOrganizationID = XOrganizationID
-
-	} else {
-		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
-		return
-	}
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -404,7 +326,7 @@ func (siw *ServerInterfaceWrapper) AddGiftCard(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.AddGiftCard(c, params)
+	siw.Handler.AddGiftCard(c)
 }
 
 // GetWalletById operation middleware
@@ -424,33 +346,6 @@ func (siw *ServerInterfaceWrapper) GetWalletById(c *gin.Context) {
 
 	c.Set(string(PasetoBearerScopes), []string{})
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params GetWalletByIdParams
-
-	headers := c.Request.Header
-
-	// ------------- Required header parameter "X-Organization-ID" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
-		var XOrganizationID OrganizationID
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
-			return
-		}
-
-		params.XOrganizationID = XOrganizationID
-
-	} else {
-		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -458,7 +353,7 @@ func (siw *ServerInterfaceWrapper) GetWalletById(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.GetWalletById(c, walletId, params)
+	siw.Handler.GetWalletById(c, walletId)
 }
 
 // ChargeWallet operation middleware
@@ -478,33 +373,6 @@ func (siw *ServerInterfaceWrapper) ChargeWallet(c *gin.Context) {
 
 	c.Set(string(PasetoBearerScopes), []string{})
 
-	// Parameter object where we will unmarshal all parameters from the context
-	var params ChargeWalletParams
-
-	headers := c.Request.Header
-
-	// ------------- Required header parameter "X-Organization-ID" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("X-Organization-ID")]; found {
-		var XOrganizationID OrganizationID
-		n := len(valueList)
-		if n != 1 {
-			siw.ErrorHandler(c, fmt.Errorf("Expected one value for X-Organization-ID, got %d", n), http.StatusBadRequest)
-			return
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "X-Organization-ID", valueList[0], &XOrganizationID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true, Type: "string", Format: ""})
-		if err != nil {
-			siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter X-Organization-ID: %w", err), http.StatusBadRequest)
-			return
-		}
-
-		params.XOrganizationID = XOrganizationID
-
-	} else {
-		siw.ErrorHandler(c, fmt.Errorf("Header parameter X-Organization-ID is required, but not found"), http.StatusBadRequest)
-		return
-	}
-
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -512,7 +380,7 @@ func (siw *ServerInterfaceWrapper) ChargeWallet(c *gin.Context) {
 		}
 	}
 
-	siw.Handler.ChargeWallet(c, walletId, params)
+	siw.Handler.ChargeWallet(c, walletId)
 }
 
 // GinServerOptions provides options for the Gin server.
@@ -579,8 +447,7 @@ func (response GetWallets400Response) VisitGetWalletsResponse(w http.ResponseWri
 }
 
 type AddGiftCardRequestObject struct {
-	Params AddGiftCardParams
-	Body   *AddGiftCardJSONRequestBody
+	Body *AddGiftCardJSONRequestBody
 }
 
 type AddGiftCardResponseObject interface {
@@ -613,7 +480,6 @@ func (response AddGiftCard400Response) VisitAddGiftCardResponse(w http.ResponseW
 
 type GetWalletByIdRequestObject struct {
 	WalletId WalletId `json:"walletId"`
-	Params   GetWalletByIdParams
 }
 
 type GetWalletByIdResponseObject interface {
@@ -652,7 +518,6 @@ func (response GetWalletById404Response) VisitGetWalletByIdResponse(w http.Respo
 
 type ChargeWalletRequestObject struct {
 	WalletId WalletId `json:"walletId"`
-	Params   ChargeWalletParams
 	Body     *ChargeWalletJSONRequestBody
 }
 
@@ -776,10 +641,8 @@ func (sh *strictHandler) GetWallets(ctx *gin.Context, params GetWalletsParams) {
 }
 
 // AddGiftCard operation middleware
-func (sh *strictHandler) AddGiftCard(ctx *gin.Context, params AddGiftCardParams) {
+func (sh *strictHandler) AddGiftCard(ctx *gin.Context) {
 	var request AddGiftCardRequestObject
-
-	request.Params = params
 
 	var body AddGiftCardJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
@@ -809,11 +672,10 @@ func (sh *strictHandler) AddGiftCard(ctx *gin.Context, params AddGiftCardParams)
 }
 
 // GetWalletById operation middleware
-func (sh *strictHandler) GetWalletById(ctx *gin.Context, walletId WalletId, params GetWalletByIdParams) {
+func (sh *strictHandler) GetWalletById(ctx *gin.Context, walletId WalletId) {
 	var request GetWalletByIdRequestObject
 
 	request.WalletId = walletId
-	request.Params = params
 
 	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
 		return sh.ssi.GetWalletById(ctx, request.(GetWalletByIdRequestObject))
@@ -836,11 +698,10 @@ func (sh *strictHandler) GetWalletById(ctx *gin.Context, walletId WalletId, para
 }
 
 // ChargeWallet operation middleware
-func (sh *strictHandler) ChargeWallet(ctx *gin.Context, walletId WalletId, params ChargeWalletParams) {
+func (sh *strictHandler) ChargeWallet(ctx *gin.Context, walletId WalletId) {
 	var request ChargeWalletRequestObject
 
 	request.WalletId = walletId
-	request.Params = params
 
 	var body ChargeWalletJSONRequestBody
 	if err := ctx.ShouldBindJSON(&body); err != nil {
