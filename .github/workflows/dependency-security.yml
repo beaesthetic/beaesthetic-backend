@@ -53,11 +53,11 @@ jobs:
         working-directory: ${{ matrix.module }}
         # SARIF output is uploaded below so known CVEs are tracked in GitHub
         # Code Scanning without blocking dependency-update pull requests.
-        # Scan every package in the module. Some module roots (for example
-        # customer/) only contain a build-tagged magefile; scanning the root
-        # package alone therefore fails with "build constraints exclude all Go
-        # files" even though the module has application packages below it.
-        run: govulncheck -scan=module -format=sarif ./... > govulncheck.sarif
+        # Module scans intentionally take no package pattern. This reports
+        # known vulnerabilities across each module's dependency graph and
+        # avoids compiling roots such as customer/, which only has a
+        # build-tagged magefile.
+        run: govulncheck -scan=module -format=sarif > govulncheck.sarif
 
       - name: Upload vulnerability results
         uses: github/codeql-action/upload-sarif@v4
