@@ -18,6 +18,7 @@ on:
 
 permissions:
   contents: read
+  security-events: write
 
 jobs:
   govulncheck:
@@ -50,4 +51,12 @@ jobs:
 
       - name: Check all module dependencies for known vulnerabilities
         working-directory: ${{ matrix.module }}
-        run: govulncheck -scan=module
+        # SARIF output is uploaded below so known CVEs are tracked in GitHub
+        # Code Scanning without blocking dependency-update pull requests.
+        run: govulncheck -scan=module -format=sarif > govulncheck.sarif
+
+      - name: Upload vulnerability results
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: ${{ matrix.module }}/govulncheck.sarif
+          category: govulncheck/${{ matrix.module }}
