@@ -1,0 +1,53 @@
+name: Dependency security
+
+on:
+  pull_request:
+    paths:
+      - "**/go.mod"
+      - "**/go.sum"
+      - ".github/workflows/dependency-security.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**/go.mod"
+      - "**/go.sum"
+      - ".github/workflows/dependency-security.yml"
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  govulncheck:
+    name: Scan ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        module:
+          - appointment
+          - consent-service
+          - customer
+          - identity-service
+          - notification
+          - core
+          - core-contracts/appointment
+          - core-contracts/identity
+          - core-contracts/notification
+          - core-contracts/runtime
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ matrix.module }}/go.mod
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+
+      - name: Install govulncheck
+        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+
+      - name: Check all module dependencies for known vulnerabilities
+        working-directory: ${{ matrix.module }}
+        run: govulncheck -scan=module ./...
