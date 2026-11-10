@@ -50,4 +50,4 @@ jobs:
 
       - name: Check all module dependencies for known vulnerabilities
         working-directory: ${{ matrix.module }}
-        run: govulncheck -scan=module ./...
+        run: govulncheck -scan=module
