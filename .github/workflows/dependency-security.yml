@@ -27,17 +27,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        module:
-          - appointment
-          - consent-service
-          - customer
-          - identity-service
-          - notification
-          - core
-          - core-contracts/appointment
-          - core-contracts/identity
-          - core-contracts/notification
-          - core-contracts/runtime
+        include:
+          - module: appointment
+            scan-directory: appointment/cmd/appointment
+          - module: consent-service
+            scan-directory: consent-service/cmd/server
+          - module: customer
+            scan-directory: customer/cmd/customer
+          - module: identity-service
+            scan-directory: identity-service/cmd/identity
+          - module: notification
+            scan-directory: notification/cmd
+          - module: core
+            scan-directory: core/auth
+          - module: core-contracts/appointment
+            scan-directory: core-contracts/appointment
+          - module: core-contracts/identity
+            scan-directory: core-contracts/identity
+          - module: core-contracts/notification
+            scan-directory: core-contracts/notification
+          - module: core-contracts/runtime
+            scan-directory: core-contracts/runtime
     steps:
       - uses: actions/checkout@v4
 
@@ -47,20 +57,25 @@ jobs:
           cache-dependency-path: ${{ matrix.module }}/go.sum
 
       - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+        # v1.1.3 supports the Go 1.24 toolchain declared by these modules.
+        # Pinning also prevents an upstream release with a newer Go minimum
+        # version from breaking the security workflow.
+        run: go install golang.org/x/vuln/cmd/govulncheck@v1.1.3
 
       - name: Check all module dependencies for known vulnerabilities
-        working-directory: ${{ matrix.module }}
+        working-directory: ${{ matrix.scan-directory }}
+        # govulncheck exits non-zero when it finds a vulnerability. Retain
+        # that result in SARIF rather than failing the update workflow.
+        continue-on-error: true
         # SARIF output is uploaded below so known CVEs are tracked in GitHub
         # Code Scanning without blocking dependency-update pull requests.
-        # Module scans intentionally take no package pattern. This reports
-        # known vulnerabilities across each module's dependency graph and
-        # avoids compiling roots such as customer/, which only has a
-        # build-tagged magefile.
+        # Module scans intentionally take no package pattern. Service module
+        # roots only contain a build-tagged magefile, so scan from each
+        # service's executable package while preserving its parent go.mod.
         run: govulncheck -scan=module -format=sarif > govulncheck.sarif
 
       - name: Upload vulnerability results
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: ${{ matrix.module }}/govulncheck.sarif
+          sarif_file: ${{ matrix.scan-directory }}/govulncheck.sarif
           category: govulncheck/${{ matrix.module }}
