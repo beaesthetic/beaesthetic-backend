@@ -12,15 +12,6 @@ on:
       - "core-contracts/**"
       - "core/**"
       - ".github/workflows/branches.yaml"
-  pull_request:
-    paths:
-      - "appointment/**"
-      - "customer/**"
-      - "notification/**"
-      - "identity-service/**"
-      - "core-contracts/**"
-      - "core/**"
-      - ".github/workflows/branches.yaml"
   workflow_dispatch:
 
 permissions:
