@@ -75,7 +75,9 @@ jobs:
         # Some vulnerability records carry duplicate tags. Normalise those
         # arrays before upload because GitHub validates SARIF uniqueness.
         run: |
-          govulncheck -scan=module -format=sarif > govulncheck.raw.sarif
+          # A non-zero exit status means findings were reported. Continue so
+          # the SARIF result is normalised and uploaded to Code Scanning.
+          govulncheck -scan=module -format=sarif > govulncheck.raw.sarif || true
           jq '(.runs[].tool.driver.rules[]?.properties.tags) |= unique' \
             govulncheck.raw.sarif > govulncheck.sarif
 
