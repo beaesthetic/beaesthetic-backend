@@ -1,8 +1,8 @@
 module github.com/beaesthetic/consent-service
 
-go 1.22.5
+go 1.26.0
 
-toolchain go1.23.4
+toolchain go1.26.0
 
 require (
 	github.com/getkin/kin-openapi v0.133.0
