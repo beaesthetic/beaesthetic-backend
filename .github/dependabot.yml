@@ -2,11 +2,15 @@ version: 2
 updates:
   # Keep Go dependency PRs scoped to the module that owns them. This prevents a
   # change for one deployable service from being bundled with another service.
+  # `allow: direct` is explicit because Go module files contain both direct and
+  # indirect requirements; indirect upgrades are resolved by `go mod tidy`.
   - package-ecosystem: gomod
     directory: /appointment
     schedule:
       interval: weekly
       day: monday
+    allow:
+      - dependency-type: direct
     commit-message:
       prefix: "chore(appointment)"
     groups:
@@ -19,6 +23,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    allow:
+      - dependency-type: direct
     commit-message:
       prefix: "chore(consent-service)"
     groups:
@@ -31,6 +37,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    allow:
+      - dependency-type: direct
     commit-message:
       prefix: "chore(customer)"
     groups:
@@ -43,6 +51,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    allow:
+      - dependency-type: direct
     commit-message:
       prefix: "chore(identity-service)"
     groups:
@@ -55,6 +65,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    allow:
+      - dependency-type: direct
     commit-message:
       prefix: "chore(notification)"
     groups:
@@ -67,6 +79,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    allow:
+      - dependency-type: direct
     commit-message:
       prefix: "chore(core)"
     groups:
@@ -79,6 +93,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    allow:
+      - dependency-type: direct
     commit-message:
       prefix: "chore(core-contracts-appointment)"
     groups:
@@ -91,6 +107,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    allow:
+      - dependency-type: direct
     commit-message:
       prefix: "chore(core-contracts-identity)"
     groups:
@@ -103,6 +121,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    allow:
+      - dependency-type: direct
     commit-message:
       prefix: "chore(core-contracts-notification)"
     groups:
@@ -115,6 +135,8 @@ updates:
     schedule:
       interval: weekly
       day: monday
+    allow:
+      - dependency-type: direct
     commit-message:
       prefix: "chore(core-contracts-runtime)"
     groups:
