@@ -9,6 +9,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(appointment)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /consent-service
     schedule:
@@ -16,6 +21,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(consent-service)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /customer
     schedule:
@@ -23,6 +33,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(customer)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /identity-service
     schedule:
@@ -30,6 +45,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(identity-service)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /notification
     schedule:
@@ -37,6 +57,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(notification)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /core
     schedule:
@@ -44,6 +69,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(core)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /core-contracts/appointment
     schedule:
@@ -51,6 +81,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(core-contracts-appointment)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /core-contracts/identity
     schedule:
@@ -58,6 +93,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(core-contracts-identity)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /core-contracts/notification
     schedule:
@@ -65,6 +105,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(core-contracts-notification)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /core-contracts/runtime
     schedule:
@@ -72,6 +117,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(core-contracts-runtime)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
 
   # Base-image updates are also isolated by service, just like Go modules.
   - package-ecosystem: docker
@@ -81,6 +131,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(appointment)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: docker
     directory: /consent-service
     schedule:
@@ -88,6 +143,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(consent-service)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: docker
     directory: /customer
     schedule:
@@ -95,6 +155,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(customer)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: docker
     directory: /identity-service
     schedule:
@@ -102,6 +167,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(identity-service)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
   - package-ecosystem: docker
     directory: /notification
     schedule:
@@ -109,6 +179,11 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(notification)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
 
   - package-ecosystem: github-actions
     directory: /
@@ -117,3 +192,8 @@ updates:
       day: monday
     commit-message:
       prefix: "chore(ci)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
