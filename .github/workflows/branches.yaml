@@ -12,15 +12,6 @@ on:
       - "core-contracts/**"
       - "core/**"
       - ".github/workflows/branches.yaml"
-  pull_request:
-    paths:
-      - "appointment/**"
-      - "customer/**"
-      - "notification/**"
-      - "identity-service/**"
-      - "core-contracts/**"
-      - "core/**"
-      - ".github/workflows/branches.yaml"
   workflow_dispatch:
 
 permissions:
@@ -134,7 +125,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        if: (github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true') && github.event_name != 'pull_request'
+        if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -147,10 +138,7 @@ jobs:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
           build-contexts: ${{ matrix.build_contexts }}
-          # Pull-request workflows do not receive repository secrets. Build the
-          # image there for validation, but publish only from branch pushes or
-          # a manual dispatch.
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           platforms: ${{ env.TARGET_PLATFORMS }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
