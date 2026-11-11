@@ -2,9 +2,8 @@ module github.com/beaesthetic/consent-service
 
 go 1.26.0
 
-toolchain go1.26.0
-
 require (
+	github.com/alexliesenfeld/health v0.8.1
 	github.com/getkin/kin-openapi v0.133.0
 	github.com/gin-gonic/gin v1.9.1
 	github.com/google/uuid v1.6.0
@@ -19,7 +18,6 @@ require (
 )
 
 require (
-	github.com/alexliesenfeld/health v0.8.1 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/bytedance/sonic v1.11.3 // indirect
 	github.com/chenzhuoyu/base64x v0.0.0-20230717121745-296ad89f973d // indirect
