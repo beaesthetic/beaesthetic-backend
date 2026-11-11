@@ -14,7 +14,7 @@ require (
 	github.com/knadh/koanf/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.8.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime v0.0.0
-	github.com/petretiandrea/outbox-go/pkg/outbox v0.1.0
+	github.com/petretiandrea/outbox-go/pkg/outbox v1.7.1
 	github.com/rabbitmq/amqp091-go v1.16.0
 	github.com/spf13/cobra v1.10.2
 	go.uber.org/zap v1.28.0
