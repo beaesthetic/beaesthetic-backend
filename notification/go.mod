@@ -15,7 +15,7 @@ require (
 	github.com/oapi-codegen/runtime v1.4.2
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime v0.0.0
 	github.com/petretiandrea/outbox-go/pkg/outbox v0.0.0-20260622171345-cccb1d641543
-	github.com/rabbitmq/amqp091-go v1.11.0
+	github.com/rabbitmq/amqp091-go v1.14.0
 	github.com/spf13/cobra v1.9.1
 	go.uber.org/zap v1.27.0
 	golang.org/x/sync v0.21.0 // indirect
