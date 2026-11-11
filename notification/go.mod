@@ -1,6 +1,6 @@
 module github.com/petretiandrea/beaesthetic-backend/notification
 
-go 1.25.11
+go 1.26.0
 
 require (
 	github.com/alexliesenfeld/health v0.8.1
