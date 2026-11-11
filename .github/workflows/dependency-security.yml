@@ -1,0 +1,86 @@
+name: Dependency security
+
+on:
+  pull_request:
+    paths:
+      - "**/go.mod"
+      - "**/go.sum"
+      - ".github/workflows/dependency-security.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**/go.mod"
+      - "**/go.sum"
+      - ".github/workflows/dependency-security.yml"
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  govulncheck:
+    name: Scan ${{ matrix.module }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - module: appointment
+            scan-directory: appointment/cmd/appointment
+          - module: consent-service
+            scan-directory: consent-service/cmd/server
+          - module: customer
+            scan-directory: customer/cmd/customer
+          - module: identity-service
+            scan-directory: identity-service/cmd/identity
+          - module: notification
+            scan-directory: notification/cmd
+          - module: core
+            scan-directory: core/auth
+          - module: core-contracts/appointment
+            scan-directory: core-contracts/appointment
+          - module: core-contracts/identity
+            scan-directory: core-contracts/identity
+          - module: core-contracts/notification
+            scan-directory: core-contracts/notification
+          - module: core-contracts/runtime
+            scan-directory: core-contracts/runtime
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: ${{ matrix.module }}/go.mod
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+
+      - name: Install govulncheck
+        # v1.1.3 no longer compiles with the Go 1.25 toolchain used by most
+        # modules in this repository. Keep the scanner current so it remains
+        # compatible with the supported Go toolchains.
+        run: go install golang.org/x/vuln/cmd/govulncheck@v1.9.0
+
+      - name: Check all module dependencies for known vulnerabilities
+        working-directory: ${{ matrix.scan-directory }}
+        # govulncheck exits non-zero when it finds a vulnerability. Retain
+        # that result in SARIF rather than failing the update workflow.
+        continue-on-error: true
+        # SARIF output is uploaded below so known CVEs are tracked in GitHub
+        # Code Scanning without blocking dependency-update pull requests.
+        # Module scans intentionally take no package pattern. Service module
+        # roots only contain a build-tagged magefile, so scan from each
+        # service's executable package while preserving its parent go.mod.
+        # Some vulnerability records carry duplicate tags. Normalise those
+        # arrays before upload because GitHub validates SARIF uniqueness.
+        run: |
+          govulncheck -scan=module -format=sarif > govulncheck.raw.sarif
+          jq '(.runs[].tool.driver.rules[]?.properties.tags) |= unique' \
+            govulncheck.raw.sarif > govulncheck.sarif
+
+      - name: Upload vulnerability results
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: ${{ matrix.scan-directory }}/govulncheck.sarif
+          category: govulncheck/${{ matrix.module }}

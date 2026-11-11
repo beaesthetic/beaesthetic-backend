@@ -1,0 +1,199 @@
+version: 2
+updates:
+  # Keep Go dependency PRs scoped to the module that owns them. This prevents a
+  # change for one deployable service from being bundled with another service.
+  - package-ecosystem: gomod
+    directory: /appointment
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(appointment)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: gomod
+    directory: /consent-service
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(consent-service)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: gomod
+    directory: /customer
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(customer)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: gomod
+    directory: /identity-service
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(identity-service)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: gomod
+    directory: /notification
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(notification)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: gomod
+    directory: /core
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(core)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: gomod
+    directory: /core-contracts/appointment
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(core-contracts-appointment)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: gomod
+    directory: /core-contracts/identity
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(core-contracts-identity)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: gomod
+    directory: /core-contracts/notification
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(core-contracts-notification)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: gomod
+    directory: /core-contracts/runtime
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(core-contracts-runtime)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # Base-image updates are also isolated by service, just like Go modules.
+  - package-ecosystem: docker
+    directory: /appointment
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(appointment)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: docker
+    directory: /consent-service
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(consent-service)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: docker
+    directory: /customer
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(customer)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: docker
+    directory: /identity-service
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(identity-service)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: docker
+    directory: /notification
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(notification)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: "chore(ci)"
+    groups:
+      major:
+        update-types: [major]
+      minor-and-patch:
+        update-types: [minor, patch]
