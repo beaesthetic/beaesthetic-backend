@@ -4,6 +4,9 @@ updates:
   # change for one deployable service from being bundled with another service.
   - package-ecosystem: gomod
     directory: /appointment
+    # Go version updates must never promote indirect requirements on their own.
+    allow:
+      - dependency-type: direct
     schedule:
       interval: weekly
       day: monday
@@ -16,6 +19,8 @@ updates:
         update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /consent-service
+    allow:
+      - dependency-type: direct
     schedule:
       interval: weekly
       day: monday
@@ -28,6 +33,8 @@ updates:
         update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /customer
+    allow:
+      - dependency-type: direct
     schedule:
       interval: weekly
       day: monday
@@ -40,6 +47,8 @@ updates:
         update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /identity-service
+    allow:
+      - dependency-type: direct
     schedule:
       interval: weekly
       day: monday
@@ -52,6 +61,8 @@ updates:
         update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /notification
+    allow:
+      - dependency-type: direct
     schedule:
       interval: weekly
       day: monday
@@ -64,6 +75,8 @@ updates:
         update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /core
+    allow:
+      - dependency-type: direct
     schedule:
       interval: weekly
       day: monday
@@ -76,6 +89,8 @@ updates:
         update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /core-contracts/appointment
+    allow:
+      - dependency-type: direct
     schedule:
       interval: weekly
       day: monday
@@ -88,6 +103,8 @@ updates:
         update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /core-contracts/identity
+    allow:
+      - dependency-type: direct
     schedule:
       interval: weekly
       day: monday
@@ -100,6 +117,8 @@ updates:
         update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /core-contracts/notification
+    allow:
+      - dependency-type: direct
     schedule:
       interval: weekly
       day: monday
@@ -112,6 +131,8 @@ updates:
         update-types: [minor, patch]
   - package-ecosystem: gomod
     directory: /core-contracts/runtime
+    allow:
+      - dependency-type: direct
     schedule:
       interval: weekly
       day: monday

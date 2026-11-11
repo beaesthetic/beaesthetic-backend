@@ -1,0 +1,56 @@
+name: Tidy Go modules in Dependabot PRs
+
+on:
+  pull_request_target:
+    types: [opened, reopened, synchronize]
+    paths:
+      - "**/go.mod"
+      - "**/go.sum"
+
+# This workflow runs only for Dependabot branches. It checks out the precise
+# Dependabot commit and runs the Go module command only; it does not execute
+# repository scripts or tests from the pull request.
+permissions:
+  contents: write
+
+jobs:
+  tidy:
+    if: github.actor == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the Dependabot commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: true
+
+      - name: Set up the newest Go version used by this repository
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.25.x"
+
+      - name: Tidy each changed Go module
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- '**/go.mod' '**/go.sum' |
+            xargs -r -n1 dirname |
+            sort -u |
+            while IFS= read -r module; do
+              echo "Tidying $module"
+              (cd "$module" && go mod tidy)
+            done
+
+      - name: Commit tidy changes
+        run: |
+          if git diff --quiet -- '**/go.mod' '**/go.sum'; then
+            echo "Go module files are already tidy."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- '**/go.mod' '**/go.sum'
+          git commit -m "chore: tidy Go modules"
+          git push origin "HEAD:${{ github.event.pull_request.head.ref }}"
