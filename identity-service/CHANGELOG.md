@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/beaesthetic/beaesthetic-backend/compare/identity-service-v0.4.0...identity-service-v0.4.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* bump Go to 1.27.4 ([#171](https://github.com/beaesthetic/beaesthetic-backend/issues/171)) ([d19f048](https://github.com/beaesthetic/beaesthetic-backend/commit/d19f0486c90b33a43f18f51ea9ecb9ce505ac0a9))
+
 ## [0.4.0](https://github.com/beaesthetic/beaesthetic-backend/compare/identity-service-v0.3.1...identity-service-v0.4.0) (2026-11-12)
 
 

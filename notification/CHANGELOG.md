@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.9.3](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.9.2...notification-service-v2.9.3) (2026-11-12)
+
+
+### Bug Fixes
+
+* bump Go to 1.27.4 ([#171](https://github.com/beaesthetic/beaesthetic-backend/issues/171)) ([d19f048](https://github.com/beaesthetic/beaesthetic-backend/commit/d19f0486c90b33a43f18f51ea9ecb9ce505ac0a9))
+
 ## [2.9.2](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.9.1...notification-service-v2.9.2) (2026-11-12)
 
 
