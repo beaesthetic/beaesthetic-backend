@@ -1,0 +1,54 @@
+name: Force Patch Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: Type "release-all" to open the all-services patch-release trigger PR
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  trigger-release:
+    if: github.event.inputs.confirm == 'release-all'
+    runs-on: ubuntu-24.04-arm
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Create patch-release trigger commits
+        env:
+          BRANCH: automation/force-patch-release-${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git switch -c "$BRANCH"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          for service in appointment customer notification identity-service consent-service; do
+            printf 'Requested by workflow run %s at %s\n' \
+              "${{ github.run_id }}" "$(date -u +%FT%TZ)" > "$service/.release-please-trigger"
+            git add "$service/.release-please-trigger"
+            git commit -m "fix($service): force patch release"
+          done
+
+          git push origin "$BRANCH"
+
+      - name: Open trigger pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: automation/force-patch-release-${{ github.run_id }}
+        run: |
+          gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "fix: force patch release for all services" \
+            --body "Merging this PR asks Release Please to prepare patch releases for appointment, customer, notification, identity-service, and consent-service."

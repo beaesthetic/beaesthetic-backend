@@ -12,7 +12,7 @@ updates:
     allow:
       - dependency-type: direct
     commit-message:
-      prefix: "chore(appointment)"
+      prefix: "fix(appointment)"
     groups:
       major:
         update-types: [major]
@@ -26,7 +26,7 @@ updates:
     allow:
       - dependency-type: direct
     commit-message:
-      prefix: "chore(consent-service)"
+      prefix: "fix(consent-service)"
     groups:
       major:
         update-types: [major]
@@ -40,7 +40,7 @@ updates:
     allow:
       - dependency-type: direct
     commit-message:
-      prefix: "chore(customer)"
+      prefix: "fix(customer)"
     groups:
       major:
         update-types: [major]
@@ -54,7 +54,7 @@ updates:
     allow:
       - dependency-type: direct
     commit-message:
-      prefix: "chore(identity-service)"
+      prefix: "fix(identity-service)"
     groups:
       major:
         update-types: [major]
@@ -68,7 +68,7 @@ updates:
     allow:
       - dependency-type: direct
     commit-message:
-      prefix: "chore(notification)"
+      prefix: "fix(notification)"
     groups:
       major:
         update-types: [major]
@@ -82,7 +82,7 @@ updates:
     allow:
       - dependency-type: direct
     commit-message:
-      prefix: "chore(core)"
+      prefix: "fix(core)"
     groups:
       major:
         update-types: [major]
@@ -96,7 +96,7 @@ updates:
     allow:
       - dependency-type: direct
     commit-message:
-      prefix: "chore(core-contracts-appointment)"
+      prefix: "fix(core-contracts-appointment)"
     groups:
       major:
         update-types: [major]
@@ -110,7 +110,7 @@ updates:
     allow:
       - dependency-type: direct
     commit-message:
-      prefix: "chore(core-contracts-identity)"
+      prefix: "fix(core-contracts-identity)"
     groups:
       major:
         update-types: [major]
@@ -124,7 +124,7 @@ updates:
     allow:
       - dependency-type: direct
     commit-message:
-      prefix: "chore(core-contracts-notification)"
+      prefix: "fix(core-contracts-notification)"
     groups:
       major:
         update-types: [major]
@@ -138,7 +138,7 @@ updates:
     allow:
       - dependency-type: direct
     commit-message:
-      prefix: "chore(core-contracts-runtime)"
+      prefix: "fix(core-contracts-runtime)"
     groups:
       major:
         update-types: [major]
@@ -152,7 +152,7 @@ updates:
       interval: weekly
       day: monday
     commit-message:
-      prefix: "chore(appointment)"
+      prefix: "fix(appointment)"
     groups:
       major:
         update-types: [major]
@@ -164,7 +164,7 @@ updates:
       interval: weekly
       day: monday
     commit-message:
-      prefix: "chore(consent-service)"
+      prefix: "fix(consent-service)"
     groups:
       major:
         update-types: [major]
@@ -176,7 +176,7 @@ updates:
       interval: weekly
       day: monday
     commit-message:
-      prefix: "chore(customer)"
+      prefix: "fix(customer)"
     groups:
       major:
         update-types: [major]
@@ -188,7 +188,7 @@ updates:
       interval: weekly
       day: monday
     commit-message:
-      prefix: "chore(identity-service)"
+      prefix: "fix(identity-service)"
     groups:
       major:
         update-types: [major]
@@ -200,7 +200,7 @@ updates:
       interval: weekly
       day: monday
     commit-message:
-      prefix: "chore(notification)"
+      prefix: "fix(notification)"
     groups:
       major:
         update-types: [major]
@@ -213,7 +213,7 @@ updates:
       interval: weekly
       day: monday
     commit-message:
-      prefix: "chore(ci)"
+      prefix: "fix(ci)"
     groups:
       major:
         update-types: [major]
