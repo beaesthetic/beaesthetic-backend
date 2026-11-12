@@ -18,7 +18,7 @@ require (
 	github.com/rabbitmq/amqp091-go v1.16.0
 	github.com/spf13/cobra v1.10.2
 	go.uber.org/zap v1.28.0
-	golang.org/x/sync v0.22.0 // indirect
+	golang.org/x/sync v0.25.0 // indirect
 )
 
 require github.com/goodsign/monday v1.0.2
