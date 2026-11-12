@@ -49,7 +49,10 @@ func (consumer *AppointmentLifecycleConsumer) Process(ctx context.Context, deliv
 }
 
 func appointmentLifecycleEventFromDelivery(delivery amqp.Delivery) (appointmentLifecycleEvent, error) {
-	message := outboxamqp.MessageFromDelivery(delivery)
+	message, err := outboxamqp.MessageFromDelivery(delivery)
+	if err != nil {
+		return appointmentLifecycleEvent{}, fmt.Errorf("parse outbox delivery: %w", err)
+	}
 	if message.Channel != "" && string(message.Channel) != ChannelAppointmentInternalJob {
 		return appointmentLifecycleEvent{}, fmt.Errorf("unsupported outbox channel %q", message.Channel)
 	}
