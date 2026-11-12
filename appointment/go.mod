@@ -15,7 +15,7 @@ require (
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/appointment v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/notification v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime v0.0.0
-	github.com/petretiandrea/outbox-go/pkg/outbox v0.0.0-20260622171345-cccb1d641543
+	github.com/petretiandrea/outbox-go/pkg/outbox v1.7.1
 	github.com/rabbitmq/amqp091-go v1.16.0
 	github.com/riverqueue/river v0.51.1
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.51.1
