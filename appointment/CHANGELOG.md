@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.1](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.18.0...appointment-service-v1.18.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* force patch release for all services ([#169](https://github.com/beaesthetic/beaesthetic-backend/issues/169)) ([713b71c](https://github.com/beaesthetic/beaesthetic-backend/commit/713b71c674e66a3569e43f028d3508b5cb94163f))
+
 ## [1.18.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.17.0...appointment-service-v1.18.0) (2026-09-13)
 
 

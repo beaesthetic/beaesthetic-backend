@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.1](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.15.0...customer-service-v1.15.1) (2026-11-12)
+
+
+### Bug Fixes
+
+* force patch release for all services ([#169](https://github.com/beaesthetic/beaesthetic-backend/issues/169)) ([713b71c](https://github.com/beaesthetic/beaesthetic-backend/commit/713b71c674e66a3569e43f028d3508b5cb94163f))
+
 ## [1.15.0](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.14.0...customer-service-v1.15.0) (2026-07-22)
 
 
