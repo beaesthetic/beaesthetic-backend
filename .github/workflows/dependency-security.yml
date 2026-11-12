@@ -75,11 +75,18 @@ jobs:
         # Some vulnerability records carry duplicate tags. Normalise those
         # arrays before upload because GitHub validates SARIF uniqueness.
         run: |
-          # A non-zero exit status means findings were reported. Continue so
-          # the SARIF result is normalised and uploaded to Code Scanning.
-          govulncheck -scan=module -format=sarif > govulncheck.raw.sarif || true
-          jq '(.runs[].tool.driver.rules[]?.properties.tags) |= unique' \
+          govulncheck -scan=module -format=sarif > govulncheck.raw.sarif
+
+          # Rules without a tags array are valid SARIF. Only de-duplicate a
+          # field when it is actually an array; applying `unique` to null made
+          # jq abort and left an empty file for the upload step.
+          jq '(.runs[].tool.driver.rules[]?.properties.tags) |=
+                (if type == "array" then unique else . end)' \
             govulncheck.raw.sarif > govulncheck.sarif
+
+          # Fail here with the transformation error instead of sending an
+          # empty or malformed report to GitHub Code Scanning.
+          jq -e . govulncheck.sarif >/dev/null
 
       - name: Upload vulnerability results
         uses: github/codeql-action/upload-sarif@v4
