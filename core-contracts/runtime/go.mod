@@ -1,6 +1,6 @@
 module github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime
 
-go 1.26.0
+go 1.27.4
 
 require (
 	go.uber.org/zap v1.28.0

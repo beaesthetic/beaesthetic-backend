@@ -1,6 +1,6 @@
 module github.com/petretiandrea/beaesthetic-backend/identity-service
 
-go 1.26.0
+go 1.27.4
 
 require (
 	aidanwoods.dev/go-paseto v1.6.0

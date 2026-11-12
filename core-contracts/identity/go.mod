@@ -1,6 +1,6 @@
 module github.com/petretiandrea/beaesthetic-backend/core-contracts/identity
 
-go 1.26.0
+go 1.27.4
 
 require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20260817212433-ac3dfec99bb1
