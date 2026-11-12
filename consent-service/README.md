@@ -11,7 +11,7 @@ Subject-agnostic consent management service for handling privacy policies, marke
 
 ## Technology Stack
 
-- **Go 1.21**
+- **Go 1.27.4**
 - **Gin** - HTTP router
 - **MongoDB** - Data storage
 - **Zerolog** - Structured logging
@@ -21,7 +21,7 @@ Subject-agnostic consent management service for handling privacy policies, marke
 
 ### Prerequisites
 
-- Go 1.21+
+- Go 1.27.4+
 - MongoDB 6.0+
 - Docker (optional)
 
