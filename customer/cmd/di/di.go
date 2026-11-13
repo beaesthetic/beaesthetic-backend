@@ -63,5 +63,7 @@ func singletonWithErrorResult[T any](container *DiContainer, key string, factory
 }
 
 func (d *DiContainer) GetAuthVerifier() (*auth.Verifier, error) {
-	return singletonWithErrorResult(d, "authVerifier", d.Config.Auth.NewVerifier)
+	return singletonWithErrorResult(d, "authVerifier", func() (*auth.Verifier, error) {
+		return auth.NewVerifier(d.Config.Auth)
+	})
 }

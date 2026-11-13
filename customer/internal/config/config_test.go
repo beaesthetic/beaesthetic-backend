@@ -50,7 +50,7 @@ func TestAuthConfiguration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := cfg.Auth.NewVerifier(); err != nil {
+	if _, err := auth.NewVerifier(cfg.Auth); err != nil {
 		t.Fatal(err)
 	}
 	for _, c := range []auth.Config{
@@ -59,7 +59,7 @@ func TestAuthConfiguration(t *testing.T) {
 		{Issuer: "identity", PublicKeysJSON: `{"key":"bad"}`},
 		{PublicKeysJSON: cfg.Auth.PublicKeysJSON},
 	} {
-		if _, err := c.NewVerifier(); err == nil {
+		if _, err := auth.NewVerifier(c); err == nil {
 			t.Errorf("accepted invalid auth config: %+v", c)
 		}
 	}

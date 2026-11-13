@@ -10,10 +10,10 @@ Reusable backend behavior belongs here; generated API contracts remain in `core-
 The verifier checks the signature before returning any data, verifies issuer and matching signed `kid`, requires subject, token ID, authentication method, supported identity type and scope, and validates `iat`/`exp` against one clock reading. Expiration is exclusive; future issuance is rejected without clock tolerance. Identity does not emit `nbf`; if supplied, it is also enforced. User scope cannot carry organization, membership or roles; membership scope requires both organization and membership IDs.
 
 ```go
-verifier, err := auth.Config{
+verifier, err := auth.NewVerifier(auth.Config{
     Issuer:         "identity", // must match Identity configuration
     PublicKeysJSON: `{"key-1":"` + publicKeyB64 + `"}`,
-}.NewVerifier()
+})
 if err != nil {
     return err // fail service startup on invalid configuration
 }

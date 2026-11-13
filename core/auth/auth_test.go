@@ -17,7 +17,7 @@ var testNow = time.Date(2026, 11, 3, 12, 0, 0, 0, time.UTC)
 func fixture(t *testing.T) (*Verifier, paseto.V4AsymmetricSecretKey) {
 	t.Helper()
 	key := paseto.NewV4AsymmetricSecretKey()
-	v, err := NewVerifier(VerifierConfig{Issuer: "identity", PublicKeys: map[string]string{"active": base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes())}, Clock: func() time.Time { return testNow }})
+	v, err := NewVerifier(Config{Issuer: "identity", PublicKeys: map[string]string{"active": base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes())}, Clock: func() time.Time { return testNow }})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -96,14 +96,14 @@ func TestVerifier(t *testing.T) {
 func TestRotationAndConfig(t *testing.T) {
 	v, key := fixture(t)
 	second := paseto.NewV4AsymmetricSecretKey()
-	rotated, err := NewVerifier(VerifierConfig{Issuer: "identity", PublicKeys: map[string]string{"active": base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes()), "old": base64.RawURLEncoding.EncodeToString(second.Public().ExportBytes())}, Clock: v.clock})
+	rotated, err := NewVerifier(Config{Issuer: "identity", PublicKeys: map[string]string{"active": base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes()), "old": base64.RawURLEncoding.EncodeToString(second.Public().ExportBytes())}, Clock: v.clock})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if _, err := rotated.Verify(signedToken(second, func(p *paseto.Token) { p.Set("kid", "old") })); err != nil {
 		t.Fatal(err)
 	}
-	for _, cfg := range []VerifierConfig{{}, {Issuer: "identity"}, {Issuer: "identity", PublicKeys: map[string]string{"": "x"}}, {Issuer: "identity", PublicKeys: map[string]string{"key": "%%%"}}, {Issuer: "identity", PublicKeys: map[string]string{"key": "eA"}}} {
+	for _, cfg := range []Config{{}, {Issuer: "identity"}, {Issuer: "identity", PublicKeys: map[string]string{"": "x"}}, {Issuer: "identity", PublicKeys: map[string]string{"key": "%%%"}}, {Issuer: "identity", PublicKeys: map[string]string{"key": "eA"}}} {
 		if _, err := NewVerifier(cfg); err == nil {
 			t.Fatal("invalid config accepted")
 		}
@@ -113,11 +113,11 @@ func TestRotationAndConfig(t *testing.T) {
 func TestServiceConfig(t *testing.T) {
 	_, key := fixture(t)
 	encoded := base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes())
-	if _, err := (Config{Issuer: "identity", PublicKeysJSON: `{"active":"` + encoded + `"}`}).NewVerifier(); err != nil {
+	if _, err := NewVerifier(Config{Issuer: "identity", PublicKeysJSON: `{"active":"` + encoded + `"}`}); err != nil {
 		t.Fatal(err)
 	}
 	for _, cfg := range []Config{{}, {Issuer: "identity", PublicKeysJSON: "{}"}, {Issuer: "identity", PublicKeysJSON: "bad"}, {Issuer: "identity", PublicKeysJSON: `{"key":"bad"}`}} {
-		if _, err := cfg.NewVerifier(); err == nil {
+		if _, err := NewVerifier(cfg); err == nil {
 			t.Errorf("accepted invalid service config: %+v", cfg)
 		}
 	}
@@ -196,7 +196,7 @@ func TestIdentityIssuerCompatibility(t *testing.T) {
 	if err := json.Unmarshal(data, &fixture); err != nil {
 		t.Fatal(err)
 	}
-	v, err := NewVerifier(VerifierConfig{Issuer: "identity", PublicKeys: map[string]string{"fixture": fixture.PublicKey}, Clock: func() time.Time { return testNow.Add(time.Minute) }})
+	v, err := NewVerifier(Config{Issuer: "identity", PublicKeys: map[string]string{"fixture": fixture.PublicKey}, Clock: func() time.Time { return testNow.Add(time.Minute) }})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -212,7 +212,7 @@ func TestIdentityIssuerCompatibility(t *testing.T) {
 func TestPublicKeyAliases(t *testing.T) {
 	_, key := fixture(t)
 	encoded := base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes())
-	v, err := NewVerifier(VerifierConfig{Issuer: "identity", PublicKeys: map[string]string{"active": encoded, "alias": encoded}, Clock: func() time.Time { return testNow }})
+	v, err := NewVerifier(Config{Issuer: "identity", PublicKeys: map[string]string{"active": encoded, "alias": encoded}, Clock: func() time.Time { return testNow }})
 	if err != nil {
 		t.Fatal(err)
 	}

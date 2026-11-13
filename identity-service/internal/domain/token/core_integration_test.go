@@ -27,7 +27,7 @@ func TestIssuerCoreAuthCompatibility(t *testing.T) {
 	for _, key := range issuer.PublicKeys() {
 		keys[key.KeyID] = key.PublicKeyB64
 	}
-	verifier, err := auth.NewVerifier(auth.VerifierConfig{Issuer: "identity", PublicKeys: keys, Clock: func() time.Time { return now }})
+	verifier, err := auth.NewVerifier(auth.Config{Issuer: "identity", PublicKeys: keys, Clock: func() time.Time { return now }})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,7 +77,7 @@ func TestIssuerCoreAuthCompatibility(t *testing.T) {
 				if _, err := verifier.Verify(signed + "x"); err == nil {
 					t.Fatal("tampered token accepted")
 				}
-				expired, err := auth.NewVerifier(auth.VerifierConfig{Issuer: "identity", PublicKeys: keys, Clock: func() time.Time { return now.Add(time.Minute) }})
+				expired, err := auth.NewVerifier(auth.Config{Issuer: "identity", PublicKeys: keys, Clock: func() time.Time { return now.Add(time.Minute) }})
 				if err != nil {
 					t.Fatal(err)
 				}
