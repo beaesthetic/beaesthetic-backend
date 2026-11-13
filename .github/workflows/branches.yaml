@@ -73,7 +73,7 @@ jobs:
               core-contracts=./core-contracts
           - key: customer
             image: petretiandrea/customer-service-v2
-            context: ./customer
+            context: .
             dockerfile: ./customer/Dockerfile
             build_contexts: |
               core-contracts=./core-contracts
