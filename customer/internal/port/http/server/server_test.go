@@ -62,6 +62,7 @@ func TestRegisteredRoutesMatchContracts(t *testing.T) {
 	expected.POST("/admin/fidelity-cards/", noop)
 	expected.GET("/admin/wallets/", noop)
 	expected.POST("/admin/wallets/giftCard/", noop)
+	expected.GET("/internal/customers/:customerId", noop)
 	expected.GET("/health", noop)
 	routes := map[string]bool{}
 	for _, route := range expected.Routes() {
@@ -76,5 +77,22 @@ func TestRegisteredRoutesMatchContracts(t *testing.T) {
 	}
 	for key := range routes {
 		t.Errorf("missing route %s", key)
+	}
+}
+
+func TestInternalCustomerEndpointReturnsMinimumCustomerDataWithoutPaseto(t *testing.T) {
+	t.Parallel()
+
+	router := newRouter(&HttpHandlers{Customer: &customerReadStub{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, nil)
+	request := httptest.NewRequest(http.MethodGet, "/internal/customers/customer-1", nil)
+	response := httptest.NewRecorder()
+
+	router.ServeHTTP(response, request)
+
+	if response.Code != http.StatusOK {
+		t.Fatalf("status=%d want=%d", response.Code, http.StatusOK)
+	}
+	if got := response.Body.String(); got != `{"id":"customer-1","name":"Ada","surname":"Lovelace"}` {
+		t.Fatalf("body=%s", got)
 	}
 }

@@ -30,6 +30,33 @@ servers:
 security:
   - pasetoBearer: []
 paths:
+  /internal/customers/{customerId}:
+    get:
+      summary: Get customer contact details for internal services
+      description: |
+        This endpoint is intended only for private service-to-service traffic from
+        appointment and notification. It is deliberately outside the PASETO-protected
+        public API and must be restricted by the deployment network policy.
+      operationId: getInternalCustomerById
+      tags:
+        - customers-internal
+      security: []
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: Customer ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalCustomerResponse'
+        '404':
+          description: Customer not found
   /admin/customers/page/{direction}:
     get:
       summary: Get customers with pagination
@@ -237,6 +264,25 @@ components:
       bearerFormat: PASETO v4.public
       description: Membership token required. Organization is carried in the verified PASETO claims; no organization header or tenant constraint is applied by this single-organization service. Read operations (including phone search POST) require customer.read; mutations require customer.write.
   schemas:
+    InternalCustomerResponse:
+      type: object
+      description: Minimum customer data needed by internal services.
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        surname:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+      required:
+        - id
+        - name
+        - surname
     CustomerResponse:
       type: object
       properties:

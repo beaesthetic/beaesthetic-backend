@@ -74,7 +74,7 @@ func TestRoutePermissions(t *testing.T) {
 		}
 	})
 	for _, route := range secured.Routes() {
-		if route.Path == "/health" {
+		if route.Path == "/health" || route.Path == "/internal/customers/:customerId" {
 			continue
 		}
 		path := strings.NewReplacer(":customerId", "1", ":cardId", "1", ":walletId", "1", ":voucherId", "1", ":direction", "next").Replace(route.Path)
@@ -168,4 +168,8 @@ func (s *customerReadStub) GetAllCustomers(ctx context.Context, _ customerapi.Ge
 	s.called = true
 	s.claims, _ = auth.FromContext(ctx)
 	return customerapi.GetAllCustomers200JSONResponse{}, nil
+}
+
+func (s *customerReadStub) GetCustomerById(_ context.Context, _ customerapi.GetCustomerByIdRequestObject) (customerapi.GetCustomerByIdResponseObject, error) {
+	return customerapi.GetCustomerById200JSONResponse{Id: "customer-1", Name: "Ada", Surname: "Lovelace"}, nil
 }
