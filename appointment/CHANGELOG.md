@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.0](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.18.2...appointment-service-v1.19.0) (2026-11-13)
+
+
+### Features
+
+* migrate appointment and notification customer clients ([#173](https://github.com/beaesthetic/beaesthetic-backend/issues/173)) ([6f7eb8e](https://github.com/beaesthetic/beaesthetic-backend/commit/6f7eb8e6878e6d906aa10b7c49413b398ad91ce0))
+
 ## [1.18.2](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.18.1...appointment-service-v1.18.2) (2026-11-12)
 
 
