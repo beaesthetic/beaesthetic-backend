@@ -54,15 +54,6 @@ type CustomerResponse struct {
 	Surname string               `json:"surname"`
 }
 
-// InternalCustomerResponse defines model for InternalCustomerResponse.
-type InternalCustomerResponse struct {
-	Email   *string `json:"email,omitempty"`
-	Id      string  `json:"id"`
-	Name    string  `json:"name"`
-	Phone   *string `json:"phone,omitempty"`
-	Surname string  `json:"surname"`
-}
-
 // CustomerUpdate defines model for CustomerUpdate.
 type CustomerUpdate struct {
 	Email   *string `json:"email,omitempty"`
@@ -79,6 +70,15 @@ type CustomersPaginated struct {
 	ItemCount       *float32            `json:"itemCount,omitempty"`
 	Items           *[]CustomerResponse `json:"items,omitempty"`
 	NextCursor      *string             `json:"nextCursor,omitempty"`
+}
+
+// InternalCustomerResponse defines model for InternalCustomerResponse.
+type InternalCustomerResponse struct {
+	Email   *string `json:"email,omitempty"`
+	Id      string  `json:"id"`
+	Name    string  `json:"name"`
+	Phone   *string `json:"phone,omitempty"`
+	Surname string  `json:"surname"`
 }
 
 // GetAllCustomersParams defines parameters for GetAllCustomers.
@@ -201,9 +201,6 @@ func WithRequestEditorFn(fn RequestEditorFn) ClientOption {
 
 // The interface specification for the client above.
 type ClientInterface interface {
-	// GetInternalCustomerById request
-	GetInternalCustomerById(ctx context.Context, customerId string, reqEditors ...RequestEditorFn) (*http.Response, error)
-
 	// GetAllCustomers request
 	GetAllCustomers(ctx context.Context, params *GetAllCustomersParams, reqEditors ...RequestEditorFn) (*http.Response, error)
 
@@ -233,18 +230,9 @@ type ClientInterface interface {
 	SearchCustomerByPhoneWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	SearchCustomerByPhone(ctx context.Context, body SearchCustomerByPhoneJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
-}
 
-func (c *Client) GetInternalCustomerById(ctx context.Context, customerId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewGetInternalCustomerByIdRequest(c.Server, customerId)
-	if err != nil {
-		return nil, err
-	}
-	req = req.WithContext(ctx)
-	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
-		return nil, err
-	}
-	return c.Client.Do(req)
+	// GetInternalCustomerById request
+	GetInternalCustomerById(ctx context.Context, customerId string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) GetAllCustomers(ctx context.Context, params *GetAllCustomersParams, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -369,6 +357,18 @@ func (c *Client) SearchCustomerByPhoneWithBody(ctx context.Context, contentType 
 
 func (c *Client) SearchCustomerByPhone(ctx context.Context, body SearchCustomerByPhoneJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewSearchCustomerByPhoneRequest(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetInternalCustomerById(ctx context.Context, customerId string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetInternalCustomerByIdRequest(c.Server, customerId)
 	if err != nil {
 		return nil, err
 	}
@@ -605,28 +605,6 @@ func NewDeleteCustomerRequest(server string, customerId string) (*http.Request, 
 }
 
 // NewGetCustomerByIdRequest generates requests for GetCustomerById
-// NewGetInternalCustomerByIdRequest generates requests for GetInternalCustomerById
-func NewGetInternalCustomerByIdRequest(server string, customerId string) (*http.Request, error) {
-	pathParam0, err := runtime.StyleParamWithOptions("simple", false, "customerId", customerId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
-	if err != nil {
-		return nil, err
-	}
-	serverURL, err := url.Parse(server)
-	if err != nil {
-		return nil, err
-	}
-	operationPath := fmt.Sprintf("/internal/customers/%s", pathParam0)
-	if operationPath[0] == '/' {
-		operationPath = "." + operationPath
-	}
-	queryURL, err := serverURL.Parse(operationPath)
-	if err != nil {
-		return nil, err
-	}
-	return http.NewRequest(http.MethodGet, queryURL.String(), nil)
-}
-
-// NewGetCustomerByIdRequest generates requests for GetCustomerById
 func NewGetCustomerByIdRequest(server string, customerId string) (*http.Request, error) {
 	var err error
 
@@ -813,6 +791,40 @@ func NewSearchCustomerByPhoneRequestWithBody(server string, contentType string, 
 	return req, nil
 }
 
+// NewGetInternalCustomerByIdRequest generates requests for GetInternalCustomerById
+func NewGetInternalCustomerByIdRequest(server string, customerId string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithOptions("simple", false, "customerId", customerId, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationPath, Type: "string", Format: ""})
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/internal/customers/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func (c *Client) applyEditors(ctx context.Context, req *http.Request, additionalEditors []RequestEditorFn) error {
 	for _, r := range c.RequestEditors {
 		if err := r(ctx, req); err != nil {
@@ -856,9 +868,6 @@ func WithBaseURL(baseURL string) ClientOption {
 
 // ClientWithResponsesInterface is the interface specification for the client with responses above.
 type ClientWithResponsesInterface interface {
-	// GetInternalCustomerByIdWithResponse request
-	GetInternalCustomerByIdWithResponse(ctx context.Context, customerId string, reqEditors ...RequestEditorFn) (*GetInternalCustomerByIdResponse, error)
-
 	// GetAllCustomersWithResponse request
 	GetAllCustomersWithResponse(ctx context.Context, params *GetAllCustomersParams, reqEditors ...RequestEditorFn) (*GetAllCustomersResponse, error)
 
@@ -888,19 +897,9 @@ type ClientWithResponsesInterface interface {
 	SearchCustomerByPhoneWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*SearchCustomerByPhoneResponse, error)
 
 	SearchCustomerByPhoneWithResponse(ctx context.Context, body SearchCustomerByPhoneJSONRequestBody, reqEditors ...RequestEditorFn) (*SearchCustomerByPhoneResponse, error)
-}
 
-type GetInternalCustomerByIdResponse struct {
-	Body         []byte
-	HTTPResponse *http.Response
-	JSON200      *InternalCustomerResponse
-}
-
-func (r GetInternalCustomerByIdResponse) StatusCode() int {
-	if r.HTTPResponse != nil {
-		return r.HTTPResponse.StatusCode
-	}
-	return 0
+	// GetInternalCustomerByIdWithResponse request
+	GetInternalCustomerByIdWithResponse(ctx context.Context, customerId string, reqEditors ...RequestEditorFn) (*GetInternalCustomerByIdResponse, error)
 }
 
 type GetAllCustomersResponse struct {
@@ -1144,14 +1143,34 @@ func (r SearchCustomerByPhoneResponse) ContentType() string {
 	return ""
 }
 
-// GetAllCustomersWithResponse request returning *GetAllCustomersResponse
-// GetInternalCustomerByIdWithResponse request returning *GetInternalCustomerByIdResponse
-func (c *ClientWithResponses) GetInternalCustomerByIdWithResponse(ctx context.Context, customerId string, reqEditors ...RequestEditorFn) (*GetInternalCustomerByIdResponse, error) {
-	rsp, err := c.GetInternalCustomerById(ctx, customerId, reqEditors...)
-	if err != nil {
-		return nil, err
+type GetInternalCustomerByIdResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *InternalCustomerResponse
+}
+
+// Status returns HTTPResponse.Status
+func (r GetInternalCustomerByIdResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
 	}
-	return ParseGetInternalCustomerByIdResponse(rsp)
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetInternalCustomerByIdResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetInternalCustomerByIdResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
 }
 
 // GetAllCustomersWithResponse request returning *GetAllCustomersResponse
@@ -1248,6 +1267,15 @@ func (c *ClientWithResponses) SearchCustomerByPhoneWithResponse(ctx context.Cont
 		return nil, err
 	}
 	return ParseSearchCustomerByPhoneResponse(rsp)
+}
+
+// GetInternalCustomerByIdWithResponse request returning *GetInternalCustomerByIdResponse
+func (c *ClientWithResponses) GetInternalCustomerByIdWithResponse(ctx context.Context, customerId string, reqEditors ...RequestEditorFn) (*GetInternalCustomerByIdResponse, error) {
+	rsp, err := c.GetInternalCustomerById(ctx, customerId, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetInternalCustomerByIdResponse(rsp)
 }
 
 // ParseGetAllCustomersResponse parses an HTTP response from a GetAllCustomersWithResponse call
@@ -1347,25 +1375,6 @@ func ParseDeleteCustomerResponse(rsp *http.Response) (*DeleteCustomerResponse, e
 }
 
 // ParseGetCustomerByIdResponse parses an HTTP response from a GetCustomerByIdWithResponse call
-// ParseGetInternalCustomerByIdResponse parses an HTTP response from a GetInternalCustomerByIdWithResponse call
-func ParseGetInternalCustomerByIdResponse(rsp *http.Response) (*GetInternalCustomerByIdResponse, error) {
-	bodyBytes, err := io.ReadAll(rsp.Body)
-	defer func() { _ = rsp.Body.Close() }()
-	if err != nil {
-		return nil, err
-	}
-	response := &GetInternalCustomerByIdResponse{Body: bodyBytes, HTTPResponse: rsp}
-	if strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == http.StatusOK {
-		var dest InternalCustomerResponse
-		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
-			return nil, err
-		}
-		response.JSON200 = &dest
-	}
-	return response, nil
-}
-
-// ParseGetCustomerByIdResponse parses an HTTP response from a GetCustomerByIdWithResponse call
 func ParseGetCustomerByIdResponse(rsp *http.Response) (*GetCustomerByIdResponse, error) {
 	bodyBytes, err := io.ReadAll(rsp.Body)
 	defer func() { _ = rsp.Body.Close() }()
@@ -1459,6 +1468,32 @@ func ParseSearchCustomerByPhoneResponse(rsp *http.Response) (*SearchCustomerByPh
 	switch {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest CustomerResponse
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetInternalCustomerByIdResponse parses an HTTP response from a GetInternalCustomerByIdWithResponse call
+func ParseGetInternalCustomerByIdResponse(rsp *http.Response) (*GetInternalCustomerByIdResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetInternalCustomerByIdResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest InternalCustomerResponse
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err
 		}

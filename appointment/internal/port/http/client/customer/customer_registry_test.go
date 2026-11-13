@@ -51,9 +51,9 @@ func TestCustomerRegistryFindByCustomerIDReturnsTransportError(t *testing.T) {
 		t.Fatalf("NewCustomerRegistry() error = %v", err)
 	}
 	expected := errors.New("connection refused")
-	api, err := NewClientWithResponses("https://customer.example", WithHTTPClient(roundTripperFunc(func(*http.Request) (*http.Response, error) {
+	api, err := NewClientWithResponses("https://customer.example", WithHTTPClient(&http.Client{Transport: roundTripperFunc(func(*http.Request) (*http.Response, error) {
 		return nil, expected
-	}))
+	})}))
 	if err != nil {
 		t.Fatalf("NewClientWithResponses() error = %v", err)
 	}
