@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 	"github.com/petretiandrea/beaesthetic-backend/customer/internal/config"
 	"go.uber.org/zap"
 )
@@ -46,4 +47,21 @@ func singletonWithError[T any](container *DiContainer, key string, factory func(
 	}
 	container.deps.Store(key, instance)
 	return instance
+}
+
+func singletonWithErrorResult[T any](container *DiContainer, key string, factory func() (T, error)) (T, error) {
+	if dep, ok := container.deps.Load(key); ok {
+		return dep.(T), nil
+	}
+	instance, err := factory()
+	if err != nil {
+		var zero T
+		return zero, err
+	}
+	actual, _ := container.deps.LoadOrStore(key, instance)
+	return actual.(T), nil
+}
+
+func (d *DiContainer) GetAuthVerifier() (*auth.Verifier, error) {
+	return singletonWithErrorResult(d, "authVerifier", d.Config.Auth.NewVerifier)
 }

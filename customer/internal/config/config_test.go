@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"aidanwoods.dev/go-paseto"
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 )
 
 func TestLoadReadsEnvPrefix(t *testing.T) {
@@ -52,7 +53,7 @@ func TestAuthConfiguration(t *testing.T) {
 	if _, err := cfg.Auth.NewVerifier(); err != nil {
 		t.Fatal(err)
 	}
-	for _, c := range []AuthConfig{
+	for _, c := range []auth.Config{
 		{}, {Issuer: "identity", PublicKeysJSON: "{}"},
 		{Issuer: "identity", PublicKeysJSON: "bad"},
 		{Issuer: "identity", PublicKeysJSON: `{"key":"bad"}`},

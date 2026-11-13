@@ -60,7 +60,7 @@ func NewIssuer(cfg Config) (*Issuer, error) {
 	if clock == nil {
 		clock = time.Now
 	}
-	verifier, err := auth.NewVerifier(auth.Config{Issuer: cfg.Issuer, PublicKeys: publicB64, Clock: clock})
+	verifier, err := auth.NewVerifier(auth.VerifierConfig{Issuer: cfg.Issuer, PublicKeys: publicB64, Clock: clock})
 	if err != nil {
 		return nil, err
 	}

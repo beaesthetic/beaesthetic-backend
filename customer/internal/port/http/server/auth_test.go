@@ -18,7 +18,7 @@ import (
 func TestRoutePermissions(t *testing.T) {
 	key := paseto.NewV4AsymmetricSecretKey()
 	now := time.Now().UTC()
-	verifier, err := auth.NewVerifier(auth.Config{Issuer: "identity", PublicKeys: map[string]string{"test": base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes())}, Clock: func() time.Time { return now }})
+	verifier, err := auth.NewVerifier(auth.VerifierConfig{Issuer: "identity", PublicKeys: map[string]string{"test": base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes())}, Clock: func() time.Time { return now }})
 	if err != nil {
 		t.Fatal(err)
 	}

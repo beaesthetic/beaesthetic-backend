@@ -14,9 +14,27 @@ import (
 // ErrInvalidToken intentionally does not expose signature or claim details.
 var ErrInvalidToken = errors.New("invalid access token")
 
-// Config accepts the raw URL-base64 public keys published by Identity, indexed by kid.
-// Keys are copied at construction; create a new Verifier when rotating the key set.
+// Config is the shared service configuration for Identity PASETO verification.
+// PublicKeysJSON preserves key IDs exactly, including dots and underscores.
 type Config struct {
+	Issuer         string `koanf:"issuer"`
+	PublicKeysJSON string `koanf:"public_keys"`
+}
+
+// NewVerifier builds a verifier from service configuration. PublicKeysJSON is
+// a JSON object whose keys are Identity key IDs and whose values are raw,
+// URL-base64 Ed25519 public keys.
+func (c Config) NewVerifier() (*Verifier, error) {
+	var keys map[string]string
+	if err := json.Unmarshal([]byte(c.PublicKeysJSON), &keys); err != nil {
+		return nil, fmt.Errorf("invalid auth public keys: %w", err)
+	}
+	return NewVerifier(VerifierConfig{Issuer: c.Issuer, PublicKeys: keys})
+}
+
+// VerifierConfig is the programmatic configuration for constructing a verifier.
+// Keys are copied at construction; create a new Verifier when rotating the key set.
+type VerifierConfig struct {
 	Issuer     string
 	PublicKeys map[string]string
 	Clock      func() time.Time
@@ -28,7 +46,7 @@ type Verifier struct {
 	clock  func() time.Time
 }
 
-func NewVerifier(cfg Config) (*Verifier, error) {
+func NewVerifier(cfg VerifierConfig) (*Verifier, error) {
 	if cfg.Issuer == "" || len(cfg.PublicKeys) == 0 {
 		return nil, fmt.Errorf("issuer and public keys are required")
 	}

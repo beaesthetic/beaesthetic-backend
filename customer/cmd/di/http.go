@@ -7,7 +7,7 @@ import (
 )
 
 func (d *DiContainer) GetHttpServer() (*nethttp.Server, error) {
-	verifier, err := d.Config.Auth.NewVerifier()
+	verifier, err := d.GetAuthVerifier()
 	if err != nil {
 		return nil, err
 	}
