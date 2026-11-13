@@ -62,7 +62,6 @@ func TestRegisteredRoutesMatchContracts(t *testing.T) {
 	expected.POST("/admin/fidelity-cards/", noop)
 	expected.GET("/admin/wallets/", noop)
 	expected.POST("/admin/wallets/giftCard/", noop)
-	expected.GET("/internal/customers/:customerId", noop)
 	expected.GET("/health", noop)
 	routes := map[string]bool{}
 	for _, route := range expected.Routes() {

@@ -173,3 +173,7 @@ func (s *customerReadStub) GetAllCustomers(ctx context.Context, _ customerapi.Ge
 func (s *customerReadStub) GetCustomerById(_ context.Context, _ customerapi.GetCustomerByIdRequestObject) (customerapi.GetCustomerByIdResponseObject, error) {
 	return customerapi.GetCustomerById200JSONResponse{Id: "customer-1", Name: "Ada", Surname: "Lovelace"}, nil
 }
+
+func (s *customerReadStub) GetInternalCustomerById(_ context.Context, _ customerapi.GetInternalCustomerByIdRequestObject) (customerapi.GetInternalCustomerByIdResponseObject, error) {
+	return customerapi.GetInternalCustomerById200JSONResponse{Id: "customer-1", Name: "Ada", Surname: "Lovelace"}, nil
+}

@@ -74,9 +74,6 @@ func newRouter(handlers *HttpHandlers, log *zap.Logger, security func(...string)
 	fidelity := fidelityapi.ServerInterfaceWrapper{Handler: fidelityHandler, ErrorHandler: bindingError}
 	wallets := walletapi.ServerInterfaceWrapper{Handler: walletHandler, ErrorHandler: bindingError}
 
-	// This route is intentionally outside the public PASETO-protected API. Its
-	// deployment must be restricted to the private service network.
-	r.GET("/internal/customers/:customerId", internalCustomerByID(handlers.Customer, log))
 	r.GET("/admin/customers", security("customer.read"), customers.GetAllCustomers)
 	r.POST("/admin/customers", security("customer.write"), customers.CreateCustomer)
 	r.GET("/admin/customers/page/:direction", security("customer.read"), customers.GetCustomerByPage)
@@ -85,6 +82,9 @@ func newRouter(handlers *HttpHandlers, log *zap.Logger, security func(...string)
 	r.PUT("/admin/customers/:customerId", security("customer.write"), customers.UpdateCustomerById)
 	r.GET("/customers/search", security("customer.read"), customers.SearchCustomer)
 	r.POST("/customers/search:byPhone", security("customer.read"), customers.SearchCustomerByPhone)
+	// This route is intentionally outside the public PASETO-protected API. Its
+	// deployment must be restricted to the private service network.
+	r.GET("/internal/customers/:customerId", customers.GetInternalCustomerById)
 
 	r.GET("/admin/fidelity-cards", security("customer.read"), fidelity.GetFidelityCards)
 	r.POST("/admin/fidelity-cards", security("customer.write"), fidelity.CreateFidelityCard)

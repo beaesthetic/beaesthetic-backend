@@ -74,6 +74,15 @@ type CustomersPaginated struct {
 	NextCursor      *string             `json:"nextCursor,omitempty"`
 }
 
+// InternalCustomerResponse defines model for InternalCustomerResponse.
+type InternalCustomerResponse struct {
+	Email   *openapi_types.Email `json:"email,omitempty"`
+	Id      string               `json:"id"`
+	Name    string               `json:"name"`
+	Phone   *string              `json:"phone,omitempty"`
+	Surname string               `json:"surname"`
+}
+
 // pasetoBearerContextKey is the context key for pasetoBearer security scheme
 type pasetoBearerContextKey string
 
@@ -150,6 +159,9 @@ type ServerInterface interface {
 	// Search by phone number
 	// (POST /customers/search:byPhone)
 	SearchCustomerByPhone(c *gin.Context)
+	// Get customer contact details for internal services
+	// (GET /internal/customers/{customerId})
+	GetInternalCustomerById(c *gin.Context, customerId string)
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -400,6 +412,33 @@ func (siw *ServerInterfaceWrapper) SearchCustomerByPhone(c *gin.Context) {
 	siw.Handler.SearchCustomerByPhone(c)
 }
 
+// GetInternalCustomerById operation middleware
+func (siw *ServerInterfaceWrapper) GetInternalCustomerById(c *gin.Context) {
+
+	var err error
+	_ = err
+
+	// ------------- Path parameter "customerId" -------------
+	var customerId string
+
+	err = runtime.BindStyledParameterWithOptions("simple", "customerId", c.Param("customerId"), &customerId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true, Type: "string", Format: ""})
+	if err != nil {
+		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter customerId: %w", err), http.StatusBadRequest)
+		return
+	}
+
+	c.Set(string(PasetoBearerScopes), []string{})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		middleware(c)
+		if c.IsAborted() {
+			return
+		}
+	}
+
+	siw.Handler.GetInternalCustomerById(c, customerId)
+}
+
 // GinServerOptions provides options for the Gin server.
 type GinServerOptions struct {
 	BaseURL      string
@@ -435,6 +474,7 @@ func RegisterHandlersWithOptions(router gin.IRouter, si ServerInterface, options
 	router.PUT(options.BaseURL+"/admin/customers/:customerId", wrapper.UpdateCustomerById)
 	router.GET(options.BaseURL+"/customers/search", wrapper.SearchCustomer)
 	router.POST(options.BaseURL+"/customers/search:byPhone", wrapper.SearchCustomerByPhone)
+	router.GET(options.BaseURL+"/internal/customers/:customerId", wrapper.GetInternalCustomerById)
 }
 
 type GetAllCustomersRequestObject struct {
@@ -533,6 +573,28 @@ type GetCustomerByIdResponseObject interface {
 type GetCustomerById200JSONResponse CustomerResponse
 
 func (response GetCustomerById200JSONResponse) VisitGetCustomerByIdResponse(w http.ResponseWriter) error {
+
+	var buf bytes.Buffer
+	if err := json.NewEncoder(&buf).Encode(response); err != nil {
+		return err
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+	_, err := buf.WriteTo(w)
+	return err
+}
+
+type GetInternalCustomerByIdRequestObject struct {
+	CustomerId string `json:"customerId"`
+}
+
+type GetInternalCustomerByIdResponseObject interface {
+	VisitGetInternalCustomerByIdResponse(w http.ResponseWriter) error
+}
+
+type GetInternalCustomerById200JSONResponse InternalCustomerResponse
+
+func (response GetInternalCustomerById200JSONResponse) VisitGetInternalCustomerByIdResponse(w http.ResponseWriter) error {
 
 	var buf bytes.Buffer
 	if err := json.NewEncoder(&buf).Encode(response); err != nil {
@@ -645,6 +707,9 @@ type StrictServerInterface interface {
 	// Search by phone number
 	// (POST /customers/search:byPhone)
 	SearchCustomerByPhone(ctx context.Context, request SearchCustomerByPhoneRequestObject) (SearchCustomerByPhoneResponseObject, error)
+	// Get customer contact details for internal services
+	// (GET /internal/customers/{customerId})
+	GetInternalCustomerById(ctx context.Context, request GetInternalCustomerByIdRequestObject) (GetInternalCustomerByIdResponseObject, error)
 }
 
 type StrictHandlerFunc func(ctx *gin.Context, request any) (any, error)
@@ -923,6 +988,32 @@ func (sh *strictHandler) SearchCustomerByPhone(ctx *gin.Context) {
 		sh.options.HandlerErrorFunc(ctx, err)
 	} else if validResponse, ok := response.(SearchCustomerByPhoneResponseObject); ok {
 		if err := validResponse.VisitSearchCustomerByPhoneResponse(ctx.Writer); err != nil {
+			sh.options.ResponseErrorHandlerFunc(ctx, err)
+		}
+	} else if response != nil {
+		sh.options.ResponseErrorHandlerFunc(ctx, fmt.Errorf("unexpected response type: %T", response))
+	}
+}
+
+// GetInternalCustomerById operation middleware
+func (sh *strictHandler) GetInternalCustomerById(ctx *gin.Context, customerId string) {
+	var request GetInternalCustomerByIdRequestObject
+
+	request.CustomerId = customerId
+
+	handler := func(ctx *gin.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetInternalCustomerById(ctx, request.(GetInternalCustomerByIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetInternalCustomerById")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		sh.options.HandlerErrorFunc(ctx, err)
+	} else if validResponse, ok := response.(GetInternalCustomerByIdResponseObject); ok {
+		if err := validResponse.VisitGetInternalCustomerByIdResponse(ctx.Writer); err != nil {
 			sh.options.ResponseErrorHandlerFunc(ctx, err)
 		}
 	} else if response != nil {
