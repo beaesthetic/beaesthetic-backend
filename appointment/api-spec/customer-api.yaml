@@ -28,6 +28,28 @@ info:
 servers:
   - url: https://agenda.beaesthetic.it/customer-service/
 paths:
+  /internal/customers/{customerId}:
+    get:
+      operationId: getInternalCustomerById
+      summary: Get a customer for internal service traffic
+      tags:
+        - customers-internal
+      parameters:
+        - name: customerId
+          in: path
+          required: true
+          description: Customer ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalCustomerResponse'
+        '404':
+          description: Customer not found
   /admin/customers/page/{direction}:
     get:
       summary: Get customers with pagination
@@ -181,6 +203,23 @@ paths:
 
 components:
   schemas:
+    InternalCustomerResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        surname:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+      required:
+        - id
+        - name
+        - surname
     CustomerResponse:
       type: object
       properties:

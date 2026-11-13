@@ -23,7 +23,7 @@ func NewClient(baseURL string) (*Client, error) {
 }
 
 func (client *Client) GetCustomer(ctx context.Context, id string) (application.Customer, error) {
-	resp, err := client.api.GetCustomerByIdWithResponse(ctx, id)
+	resp, err := client.api.GetInternalCustomerByIdWithResponse(ctx, id)
 	if err != nil {
 		return application.Customer{}, err
 	}
@@ -37,13 +37,10 @@ func (client *Client) GetCustomer(ctx context.Context, id string) (application.C
 		Surname: customer.Surname,
 	}
 	if customer.Email != nil {
-		result.Email = string(*customer.Email)
+		result.Email = *customer.Email
 	}
 	if customer.Phone != nil {
 		result.Phone = *customer.Phone
-	}
-	if customer.Note != nil {
-		result.Note = *customer.Note
 	}
 	return result, nil
 }

@@ -2,6 +2,8 @@ package customer
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/application"
@@ -9,21 +11,27 @@ import (
 )
 
 type CustomerRegistry struct {
-	client *ClientWithResponses
+	api ClientWithResponsesInterface
 }
 
 func NewCustomerRegistry(baseURL string) (*CustomerRegistry, error) {
-	client, err := NewClientWithResponses(baseURL)
+	api, err := NewClientWithResponses(baseURL)
 	if err != nil {
 		return nil, err
 	}
-	return &CustomerRegistry{client: client}, nil
+	return &CustomerRegistry{api: api}, nil
 }
 
 func (r *CustomerRegistry) FindByCustomerID(ctx context.Context, customerID string) (*application.Customer, error) {
-	response, err := r.client.GetCustomerByIdWithResponse(ctx, customerID)
-	if err != nil || response.JSON200 == nil {
+	response, err := r.api.GetInternalCustomerByIdWithResponse(ctx, customerID)
+	if err != nil {
 		return nil, err
+	}
+	if response.StatusCode() == http.StatusNotFound {
+		return nil, nil
+	}
+	if response.StatusCode() != http.StatusOK || response.JSON200 == nil {
+		return nil, fmt.Errorf("customer service returned status %d for customer %s", response.StatusCode(), customerID)
 	}
 	customer := response.JSON200
 	return &application.Customer{
