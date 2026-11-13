@@ -7,6 +7,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+
+	customerapi "github.com/petretiandrea/beaesthetic-backend/notification/internal/api/customer"
 )
 
 func TestClientGetCustomerUsesInternalEndpoint(t *testing.T) {
@@ -52,9 +54,13 @@ func TestClientGetCustomerReturnsTransportError(t *testing.T) {
 		t.Fatalf("NewClient() error = %v", err)
 	}
 	expected := errors.New("connection refused")
-	client.httpClient = &http.Client{Transport: roundTripperFunc(func(*http.Request) (*http.Response, error) {
+	api, err := customerapi.NewClientWithResponses("https://customer.example", customerapi.WithHTTPClient(roundTripperFunc(func(*http.Request) (*http.Response, error) {
 		return nil, expected
-	})}
+	}))
+	if err != nil {
+		t.Fatalf("NewClientWithResponses() error = %v", err)
+	}
+	client.api = api
 
 	_, err = client.GetCustomer(context.Background(), "customer-1")
 	if !errors.Is(err, expected) {
