@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.10.0](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.9.3...notification-service-v2.10.0) (2026-11-13)
+
+
+### Features
+
+* migrate appointment and notification customer clients ([#173](https://github.com/beaesthetic/beaesthetic-backend/issues/173)) ([6f7eb8e](https://github.com/beaesthetic/beaesthetic-backend/commit/6f7eb8e6878e6d906aa10b7c49413b398ad91ce0))
+
 ## [2.9.3](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.9.2...notification-service-v2.9.3) (2026-11-12)
 
 
