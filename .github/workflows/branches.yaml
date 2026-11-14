@@ -67,25 +67,29 @@ jobs:
         include:
           - key: appointment
             image: petretiandrea/appointment-service-v2
-            context: ./appointment
+            context: .
+            test_context: ./appointment
             dockerfile: ./appointment/Dockerfile
             build_contexts: |
               core-contracts=./core-contracts
           - key: customer
             image: petretiandrea/customer-service-v2
             context: .
+            test_context: .
             dockerfile: ./customer/Dockerfile
             build_contexts: |
               core-contracts=./core-contracts
           - key: notification
             image: petretiandrea/notification-service-v2
             context: ./notification
+            test_context: ./notification
             dockerfile: ./notification/Dockerfile
             build_contexts: |
               core-contracts=./core-contracts
           - key: identity
             image: petretiandrea/identity-service
             context: ./identity-service
+            test_context: ./identity-service
             dockerfile: ./identity-service/Dockerfile
             build_contexts: |
               core-contracts=./core-contracts
@@ -100,9 +104,9 @@ jobs:
       - name: Run tests
         if: github.event_name == 'workflow_dispatch' || needs.changes.outputs[matrix.key] == 'true'
         run: |
-          cd "${{ matrix.context }}"
+          cd "${{ matrix.test_context }}"
           if [ ! -f go.mod ]; then
-            echo "No Go module in ${{ matrix.context }}; skipping Go tests"
+            echo "No Go module in ${{ matrix.test_context }}; skipping Go tests"
             exit 0
           fi
           go test ./...

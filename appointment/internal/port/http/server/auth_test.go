@@ -38,7 +38,7 @@ func TestCalendarRoutesRequirePermissions(t *testing.T) {
 		p.Set("organization_id", "org-1")
 		p.Set("auth_method", "oidc")
 		p.Set("permissions", []string{permission})
-		return p.V4PublicSign(key, nil)
+		return p.V4Sign(key, nil)
 	}
 
 	router, err := New(&HttpHandlers{
