@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.5](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.15.4...customer-service-v1.15.5) (2026-11-14)
+
+
+### Bug Fixes
+
+* **auth:** discover Identity public keys at startup ([#180](https://github.com/beaesthetic/beaesthetic-backend/issues/180)) ([2147d8b](https://github.com/beaesthetic/beaesthetic-backend/commit/2147d8b8d8621a8f4731a07a95b4ae50a3d45f63))
+
 ## [1.15.4](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.15.3...customer-service-v1.15.4) (2026-11-14)
 
 
