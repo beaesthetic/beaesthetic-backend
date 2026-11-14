@@ -64,7 +64,7 @@ jobs:
         include:
           - key: appointment
             image: petretiandrea/appointment-service-v2
-            context: ./appointment
+            context: .
             dockerfile: ./appointment/Dockerfile
           - key: customer
             image: petretiandrea/customer-service-v2

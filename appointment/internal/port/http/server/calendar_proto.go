@@ -30,17 +30,17 @@ var (
 	protoJSONMarshal   = protojson.MarshalOptions{UseProtoNames: false, EmitUnpopulated: false}
 )
 
-func registerCalendarProtoRoutes(r gin.IRouter, handler *Server) {
-	r.POST("/v1/calendar-events", handler.createCalendarEventProto)
-	r.GET("/v1/calendar-events/:id", handler.getCalendarEventProto)
-	r.GET("/v1/calendar-events", handler.listCalendarEventsProto)
-	r.PATCH("/v1/calendar-events/:id", handler.updateCalendarEventProto)
-	r.DELETE("/v1/calendar-events/:id", handler.cancelCalendarEventProto)
-	r.POST("/v1/calendar-events/:calendar_event_id/reminder/resend", handler.requestReminderResendProto)
-	r.POST("/v1/services", handler.createServiceProto)
-	r.PATCH("/v1/services/:id", handler.updateServiceProto)
-	r.GET("/v1/services:search", handler.searchServicesProto)
-	r.GET("/v1/services", handler.listServicesProto)
+func registerCalendarProtoRoutes(r gin.IRouter, handler *Server, security func(...string) gin.HandlerFunc) {
+	r.POST("/v1/calendar-events", security("appointment.write"), handler.createCalendarEventProto)
+	r.GET("/v1/calendar-events/:id", security("appointment.read"), handler.getCalendarEventProto)
+	r.GET("/v1/calendar-events", security("appointment.read"), handler.listCalendarEventsProto)
+	r.PATCH("/v1/calendar-events/:id", security("appointment.write"), handler.updateCalendarEventProto)
+	r.DELETE("/v1/calendar-events/:id", security("appointment.write"), handler.cancelCalendarEventProto)
+	r.POST("/v1/calendar-events/:calendar_event_id/reminder/resend", security("appointment.write"), handler.requestReminderResendProto)
+	r.POST("/v1/services", security("appointment.write"), handler.createServiceProto)
+	r.PATCH("/v1/services/:id", security("appointment.write"), handler.updateServiceProto)
+	r.GET("/v1/services:search", security("appointment.read"), handler.searchServicesProto)
+	r.GET("/v1/services", security("appointment.read"), handler.listServicesProto)
 }
 
 func (s *Server) createServiceProto(ctx *gin.Context) {

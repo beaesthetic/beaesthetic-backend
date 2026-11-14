@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 	"github.com/knadh/koanf/parsers/dotenv"
 	"github.com/knadh/koanf/providers/env/v2"
 	"github.com/knadh/koanf/providers/file"
@@ -13,6 +14,7 @@ import (
 const ENV_PREFIX = "ENV_"
 
 type Config struct {
+	Auth     auth.Config     `koanf:"auth"`
 	App      AppConfig      `koanf:"app"`
 	HTTP     HTTPConfig     `koanf:"http"`
 	Postgres PostgresConfig `koanf:"postgres"`

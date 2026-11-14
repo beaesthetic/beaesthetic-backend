@@ -54,10 +54,15 @@ func appCommand(envFile *string) *cobra.Command {
 			_ = c.Log.Sync()
 		}()
 
+		httpServer, err := c.GetHttpServer()
+		if err != nil {
+			return err
+		}
+
 		runner := appruntime.NewRunner(c.Log)
 		riverClient := c.GetRiverClient()
 		runner.Add(appruntime.StartStop("river reminder scheduler", riverClient.Start, riverClient.Stop, 10*time.Second))
-		runner.Add(appruntime.HTTPServer("http server", c.GetHttpServer(), 10*time.Second))
+		runner.Add(appruntime.HTTPServer("http server", httpServer, 10*time.Second))
 		runner.Add(appruntime.Consumer("appointment lifecycle consumer", c.GetAppointmentLifecycleConsumer()))
 		runner.Add(appruntime.Consumer("notification outcomes consumer", c.GetNotificationOutcomeQueueConsumer()))
 
