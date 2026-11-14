@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.19.3](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.19.2...appointment-service-v1.19.3) (2026-11-14)
+
+
+### Bug Fixes
+
+* align service token issuers ([0fdfd09](https://github.com/beaesthetic/beaesthetic-backend/commit/0fdfd096f7688cadba03ced6e054e65c5e5794b5))
+* remove obsolete identity secret references ([165893a](https://github.com/beaesthetic/beaesthetic-backend/commit/165893aff52502f519c0aff643e1dd32de0aa6ce))
+* use complete identity public key ([043600e](https://github.com/beaesthetic/beaesthetic-backend/commit/043600eca913e46315edab94ea3c8fa0653de583))
+
 ## [1.19.2](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.19.1...appointment-service-v1.19.2) (2026-11-14)
 
 

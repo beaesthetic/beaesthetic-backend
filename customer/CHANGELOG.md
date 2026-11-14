@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.15.6](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.15.5...customer-service-v1.15.6) (2026-11-14)
+
+
+### Bug Fixes
+
+* align service token issuers ([0fdfd09](https://github.com/beaesthetic/beaesthetic-backend/commit/0fdfd096f7688cadba03ced6e054e65c5e5794b5))
+* read direct redis secret value ([359ccca](https://github.com/beaesthetic/beaesthetic-backend/commit/359cccacd37542e2dce3643a5a03840997c39929))
+* remove obsolete identity secret references ([165893a](https://github.com/beaesthetic/beaesthetic-backend/commit/165893aff52502f519c0aff643e1dd32de0aa6ce))
+* use complete identity public key ([043600e](https://github.com/beaesthetic/beaesthetic-backend/commit/043600eca913e46315edab94ea3c8fa0653de583))
+
 ## [1.15.5](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.15.4...customer-service-v1.15.5) (2026-11-14)
 
 
