@@ -14,12 +14,14 @@ starting the HTTP API:
 
 ```dotenv
 ENV_AUTH_ISSUER=identity
-ENV_AUTH_PUBLIC__KEYS={"key-1":"<raw URL-base64 Ed25519 public key>"}
+ENV_AUTH_PUBLIC__KEYS__URL=http://identity-service:8080/v1/internal/keys
+ENV_AUTH_INTERNAL__API__KEY=<shared Identity internal API key>
 ```
 
-Use trusted Identity public keys and retain previous keys until their issued
-tokens have expired during key rotation. Invalid or missing authentication
-configuration prevents HTTP API startup; migrations do not require it.
+The service retrieves the trusted Identity key set at startup. Alternatively,
+set `ENV_AUTH_PUBLIC__KEYS` to a JSON `kid -> public_key_b64` map. Invalid or
+missing authentication configuration prevents HTTP API startup; migrations do
+not require it.
 
 Run checks with `cd appointment && go test ./... && go vet ./...`. Build the
 container from the repository root: `docker build -f appointment/Dockerfile .`.

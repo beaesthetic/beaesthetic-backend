@@ -18,15 +18,15 @@ Required application configuration (environment or `--env-file`):
 
 ```dotenv
 ENV_AUTH_ISSUER=identity
-ENV_AUTH_PUBLIC__KEYS={"key-1":"<raw URL-base64 Ed25519 public key>"}
+ENV_AUTH_PUBLIC__KEYS__URL=http://identity-service:8080/v1/internal/keys
+ENV_AUTH_INTERNAL__API__KEY=<shared Identity internal API key>
 ```
 
-Public keys must come from a trusted Identity configuration. Key IDs are preserved
-exactly in the JSON map. Restart with the new key set for rotation, retaining old
-keys until their tokens expire. Invalid/missing configuration prevents API startup;
-migrations do not require authentication configuration. No private signing key is
-needed. Helm deployments supply these variables through `envConfig` or
-`secretKeyRef` before rolling out this version.
+The service retrieves the trusted Identity key set at startup. Alternatively,
+set `ENV_AUTH_PUBLIC__KEYS` to a JSON `kid -> public_key_b64` map. Invalid or
+missing configuration prevents API startup; migrations do not require
+authentication configuration. No private signing key is needed. Helm deployments
+supply these variables through `envConfig` or `secretKeyRef` before rolling out.
 
 Customer currently serves a single organization, and its database/cache do not
 partition data by tenant. The service neither requires nor uses an organization

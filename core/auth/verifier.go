@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"aidanwoods.dev/go-paseto"
@@ -19,8 +20,11 @@ var ErrInvalidToken = errors.New("invalid access token")
 type Config struct {
 	Issuer         string `koanf:"issuer"`
 	PublicKeysJSON string `koanf:"public_keys"`
-	// PublicKeys and Clock support programmatic construction. Services loaded
-	// from configuration should set PublicKeysJSON instead.
+	// PublicKeysURL and InternalAPIKey let services discover Identity's
+	// verification keys at startup. PublicKeysJSON takes precedence.
+	PublicKeysURL string `koanf:"public_keys_url"`
+	InternalAPIKey string `koanf:"internal_api_key"`
+	// PublicKeys and Clock support programmatic construction.
 	PublicKeys map[string]string `koanf:"-"`
 	Clock      func() time.Time `koanf:"-"`
 }
@@ -38,7 +42,13 @@ type Verifier struct {
 func NewVerifier(cfg Config) (*Verifier, error) {
 	keys := cfg.PublicKeys
 	if keys == nil {
-		if err := json.Unmarshal([]byte(cfg.PublicKeysJSON), &keys); err != nil {
+		if strings.TrimSpace(cfg.PublicKeysJSON) == "" && strings.TrimSpace(cfg.PublicKeysURL) != "" {
+			var err error
+			keys, err = FetchPublicKeys(cfg.PublicKeysURL, cfg.InternalAPIKey)
+			if err != nil {
+				return nil, fmt.Errorf("fetch auth public keys: %w", err)
+			}
+		} else if err := json.Unmarshal([]byte(cfg.PublicKeysJSON), &keys); err != nil {
 			return nil, fmt.Errorf("invalid auth public keys: %w", err)
 		}
 	}
