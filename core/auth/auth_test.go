@@ -3,8 +3,6 @@ package auth
 import (
 	"encoding/base64"
 	"encoding/json"
-	"net/http"
-	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
@@ -120,21 +118,6 @@ func TestServiceConfig(t *testing.T) {
 		if _, err := NewVerifier(cfg); err == nil {
 			t.Errorf("accepted invalid service config: %+v", cfg)
 		}
-	}
-}
-
-func TestServiceConfigFetchesVerificationKeys(t *testing.T) {
-	_, key := fixture(t)
-	encoded := base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes())
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != http.MethodGet || r.Header.Get("X-Internal-API-Key") != "secret" {
-			t.Fatalf("unexpected request: method=%s key=%q", r.Method, r.Header.Get("X-Internal-API-Key"))
-		}
-		_, _ = w.Write([]byte(`{"keys":[{"kid":"active","publicKeyB64":"` + encoded + `"}]}`))
-	}))
-	defer server.Close()
-	if _, err := NewVerifier(Config{Issuer: "identity", PublicKeysURL: server.URL, InternalAPIKey: "secret"}); err != nil {
-		t.Fatalf("verification keys discovery failed: %v", err)
 	}
 }
 

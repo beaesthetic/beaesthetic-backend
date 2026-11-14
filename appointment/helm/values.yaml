@@ -15,7 +15,6 @@ service:
     - 8080
 envConfig:
   ENV_AUTH_ISSUER: identity
-  ENV_AUTH_PUBLIC__KEYS__URL: http://identity-service.beaesthetic.svc.cluster.local:8080/v1/internal/keys
   OTEL_SERVICE_NAME: appointment-service
   OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
   OTEL_EXPORTER_OTLP_ENDPOINT: http://opentelemetry-collector.monitoring.svc.cluster.local:4318
@@ -53,9 +52,9 @@ secretKeyRef:
   - name: ENV_RABBITMQ_URL
     secretRefName: appointment-secrets-v2
     key: rabbitmq-url
-  - name: ENV_AUTH_INTERNAL__API__KEY
+  - name: ENV_AUTH_PUBLIC__KEYS
     secretRefName: appointment-secrets-v2
-    key: internal-api-key
+    key: auth-public-keys
 readinessProbe:
   httpGet:
     path: /health
