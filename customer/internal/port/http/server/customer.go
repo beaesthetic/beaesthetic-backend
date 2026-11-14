@@ -86,6 +86,26 @@ func (s *Server) GetCustomerById(ctx context.Context, request customerapi.GetCus
 	return customerapi.GetCustomerById200JSONResponse(response), nil
 }
 
+func (s *Server) GetInternalCustomerById(ctx context.Context, request customerapi.GetInternalCustomerByIdRequestObject) (customerapi.GetInternalCustomerByIdResponseObject, error) {
+	response, err := s.GetCustomerById(ctx, customerapi.GetCustomerByIdRequestObject{CustomerId: request.CustomerId})
+	if err != nil {
+		return nil, err
+	}
+
+	customer, ok := response.(customerapi.GetCustomerById200JSONResponse)
+	if !ok {
+		return nil, errNotFound("customer")
+	}
+
+	return customerapi.GetInternalCustomerById200JSONResponse{
+		Id:      customer.Id,
+		Name:    customer.Name,
+		Surname: customer.Surname,
+		Email:   customer.Email,
+		Phone:   customer.Phone,
+	}, nil
+}
+
 func (s *Server) UpdateCustomerById(ctx context.Context, request customerapi.UpdateCustomerByIdRequestObject) (customerapi.UpdateCustomerByIdResponseObject, error) {
 	if request.Body == nil {
 		return nil, errMissingBody

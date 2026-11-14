@@ -18,7 +18,13 @@ func TestNewRegistersCompatibleRoutes(t *testing.T) {
 		}
 	}()
 
-	_ = New(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil)
+	router := New(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil)
+	for _, route := range router.Routes() {
+		if route.Method == http.MethodGet && route.Path == "/internal/customers/:customerId" {
+			return
+		}
+	}
+	t.Fatal("internal customer lookup route is not registered")
 }
 
 func TestNewNormalizesTrailingSlashWithoutRedirect(t *testing.T) {
