@@ -25,8 +25,7 @@ ENV_AUTH_PUBLIC__KEYS='{"<active-kid>":"<public-key-base64url>"}'
 active Identity public key and retained old keys until their tokens expire.
 Invalid or missing configuration prevents API startup; migrations do not require
 authentication configuration. No private signing key is needed. Helm deployments
-source the map from the `tokenPublicKeysJson` property of the
-`beaesthetic-identity` Vault secret before rolling out.
+configure the public-key map in `ENV_AUTH_PUBLIC__KEYS`.
 
 Customer currently serves a single organization, and its database/cache do not
 partition data by tenant. The service neither requires nor uses an organization
