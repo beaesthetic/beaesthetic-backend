@@ -18,15 +18,15 @@ Required application configuration (environment or `--env-file`):
 
 ```dotenv
 ENV_AUTH_ISSUER=identity
-ENV_AUTH_PUBLIC__KEYS={"key-1":"<raw URL-base64 Ed25519 public key>"}
+ENV_AUTH_PUBLIC__KEYS='{"<active-kid>":"<public-key-base64url>"}'
 ```
 
-Public keys must come from a trusted Identity configuration. Key IDs are preserved
-exactly in the JSON map. Restart with the new key set for rotation, retaining old
-keys until their tokens expire. Invalid/missing configuration prevents API startup;
-migrations do not require authentication configuration. No private signing key is
-needed. Helm deployments supply these variables through `envConfig` or
-`secretKeyRef` before rolling out this version.
+`ENV_AUTH_PUBLIC__KEYS` is a JSON `kid -> public_key_b64` map. Include the
+active Identity public key and retained old keys until their tokens expire.
+Invalid or missing configuration prevents API startup; migrations do not require
+authentication configuration. No private signing key is needed. Helm deployments
+source the map from the `tokenPublicKeysJson` property of the
+`beaesthetic-identity` Vault secret before rolling out.
 
 Customer currently serves a single organization, and its database/cache do not
 partition data by tenant. The service neither requires nor uses an organization

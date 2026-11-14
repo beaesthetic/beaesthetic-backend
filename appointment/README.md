@@ -14,12 +14,14 @@ starting the HTTP API:
 
 ```dotenv
 ENV_AUTH_ISSUER=identity
-ENV_AUTH_PUBLIC__KEYS={"key-1":"<raw URL-base64 Ed25519 public key>"}
+ENV_AUTH_PUBLIC__KEYS='{"<active-kid>":"<public-key-base64url>"}'
 ```
 
-Use trusted Identity public keys and retain previous keys until their issued
-tokens have expired during key rotation. Invalid or missing authentication
-configuration prevents HTTP API startup; migrations do not require it.
+`ENV_AUTH_PUBLIC__KEYS` is a JSON `kid -> public_key_b64` map. Include the
+active Identity public key and retained old keys until their tokens expire.
+Invalid or missing authentication configuration prevents HTTP API startup;
+migrations do not require it. Helm sources the map from the
+`tokenPublicKeysJson` property of the `beaesthetic-identity` Vault secret.
 
 Run checks with `cd appointment && go test ./... && go vet ./...`. Build the
 container from the repository root: `docker build -f appointment/Dockerfile .`.

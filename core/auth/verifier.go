@@ -19,8 +19,7 @@ var ErrInvalidToken = errors.New("invalid access token")
 type Config struct {
 	Issuer         string `koanf:"issuer"`
 	PublicKeysJSON string `koanf:"public_keys"`
-	// PublicKeys and Clock support programmatic construction. Services loaded
-	// from configuration should set PublicKeysJSON instead.
+	// PublicKeys and Clock support programmatic construction.
 	PublicKeys map[string]string `koanf:"-"`
 	Clock      func() time.Time `koanf:"-"`
 }
