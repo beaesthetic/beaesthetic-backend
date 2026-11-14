@@ -22,6 +22,7 @@ envConfig:
   ENV_APP_ENV: "prod"
   ENV_HTTP_ADDR: ":8080"
   ENV_AUTH_ISSUER: "identity"
+  ENV_AUTH_PUBLIC__KEYS: '{"2026-09":"BSfthQF-okD-IcpBpE1E1g-VquX8Aj7ivqS8zWHg"}'
   ENV_REDIS_CUSTOMERS__TTL: "1h"
   ENV_REDIS_CUSTOMERS__SEARCH__TTL: "5m"
 
@@ -32,9 +33,6 @@ secretKeyRef:
   - name: ENV_REDIS_URI
     secretRefName: customer-secrets-v2
     key: redis-uri
-  - name: ENV_AUTH_PUBLIC__KEYS
-    secretRefName: customer-secrets-v2
-    key: auth-public-keys
 
 initContainers:
   migrate:
