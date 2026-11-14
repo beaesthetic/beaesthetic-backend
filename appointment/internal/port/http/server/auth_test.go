@@ -32,7 +32,7 @@ func TestCalendarRoutesRequirePermissions(t *testing.T) {
 		p.SetIssuedAt(now.Add(-time.Minute))
 		p.SetExpiration(now.Add(time.Hour))
 		p.Set("kid", "test")
-		p.Set("identity_type", "user")
+		p.Set("identity_type", "human")
 		p.Set("token_scope", "membership")
 		p.Set("membership_id", "member-1")
 		p.Set("organization_id", "org-1")
