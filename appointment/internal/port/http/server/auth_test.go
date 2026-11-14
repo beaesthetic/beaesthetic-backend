@@ -37,6 +37,7 @@ func TestCalendarRoutesRequirePermissions(t *testing.T) {
 		p.Set("membership_id", "member-1")
 		p.Set("organization_id", "org-1")
 		p.Set("auth_method", "oidc")
+		p.Set("roles", []string{})
 		p.Set("permissions", []string{permission})
 		return p.V4Sign(key, nil)
 	}
