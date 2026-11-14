@@ -14,7 +14,7 @@ service:
   ports:
     - 8080
 envConfig:
-  ENV_AUTH_ISSUER: identity
+  ENV_AUTH_ISSUER: beaesthetic-identity
   ENV_AUTH_PUBLIC__KEYS: '{"2026-09":"BSfthQF-okD-IcpBpE1E1EE1g-VquX8Aj7ivqS8zWHg"}'
   OTEL_SERVICE_NAME: appointment-service
   OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
