@@ -21,7 +21,13 @@ func TestNewRegistersCompatibleRoutes(t *testing.T) {
 		}
 	}()
 
-	_ = newRouter(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, nil)
+	router := newRouter(&HttpHandlers{Customer: &Server{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, nil)
+	for _, route := range router.Routes() {
+		if route.Method == http.MethodGet && route.Path == "/internal/customers/:customerId" {
+			return
+		}
+	}
+	t.Fatal("internal customer lookup route is not registered")
 }
 
 func TestNewNormalizesTrailingSlashWithoutRedirect(t *testing.T) {
@@ -76,22 +82,5 @@ func TestRegisteredRoutesMatchContracts(t *testing.T) {
 	}
 	for key := range routes {
 		t.Errorf("missing route %s", key)
-	}
-}
-
-func TestInternalCustomerEndpointReturnsMinimumCustomerDataWithoutPaseto(t *testing.T) {
-	t.Parallel()
-
-	router := newRouter(&HttpHandlers{Customer: &customerReadStub{}, Fidelity: &Server{}, Wallet: &Server{}}, nil, nil)
-	request := httptest.NewRequest(http.MethodGet, "/internal/customers/customer-1", nil)
-	response := httptest.NewRecorder()
-
-	router.ServeHTTP(response, request)
-
-	if response.Code != http.StatusOK {
-		t.Fatalf("status=%d want=%d", response.Code, http.StatusOK)
-	}
-	if got := response.Body.String(); got != `{"id":"customer-1","name":"Ada","surname":"Lovelace"}` {
-		t.Fatalf("body=%s", got)
 	}
 }

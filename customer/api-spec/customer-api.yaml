@@ -32,15 +32,10 @@ security:
 paths:
   /internal/customers/{customerId}:
     get:
-      summary: Get customer contact details for internal services
-      description: |
-        This endpoint is intended only for private service-to-service traffic from
-        appointment and notification. It is deliberately outside the PASETO-protected
-        public API and must be restricted by the deployment network policy.
+      summary: Get a customer for internal service traffic
       operationId: getInternalCustomerById
       tags:
         - customers-internal
-      security: []
       parameters:
         - name: customerId
           in: path
@@ -266,7 +261,7 @@ components:
   schemas:
     InternalCustomerResponse:
       type: object
-      description: Minimum customer data needed by internal services.
+      description: Customer data required by internal services.
       properties:
         id:
           type: string
