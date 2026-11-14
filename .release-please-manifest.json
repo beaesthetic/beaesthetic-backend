@@ -1,10 +1,10 @@
 {
-  "appointment": "1.19.0",
-  "customer": "1.15.3",
+  "appointment": "1.19.1",
+  "customer": "1.15.4",
   "gateway": "1.4.0",
-  "notification": "2.10.0",
-  "identity-service": "0.4.1",
+  "notification": "2.10.1",
+  "identity-service": "0.4.2",
   "scheduler": "1.5.0",
   "insights": "1.2.0",
-  "consent-service": "0.5.2"
+  "consent-service": "0.5.3"
 }
