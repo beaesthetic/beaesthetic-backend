@@ -1,8 +1,12 @@
 package config
 
 import (
+	"encoding/base64"
 	"testing"
 	"time"
+
+	"aidanwoods.dev/go-paseto"
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 )
 
 func TestLoadReadsEnvPrefix(t *testing.T) {
@@ -34,5 +38,29 @@ func TestLoadReadsEnvPrefix(t *testing.T) {
 	}
 	if cfg.Redis.CustomersSearchTTL != 10*time.Minute {
 		t.Fatalf("Redis.CustomersSearchTTL = %s", cfg.Redis.CustomersSearchTTL)
+	}
+}
+
+func TestAuthConfiguration(t *testing.T) {
+	key := paseto.NewV4AsymmetricSecretKey()
+	encoded := base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes())
+	t.Setenv("ENV_AUTH_ISSUER", "identity")
+	t.Setenv("ENV_AUTH_PUBLIC__KEYS", `{"key.with_dots":"`+encoded+`"}`)
+	cfg, err := Load("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := auth.NewVerifier(cfg.Auth); err != nil {
+		t.Fatal(err)
+	}
+	for _, c := range []auth.Config{
+		{}, {Issuer: "identity", PublicKeysJSON: "{}"},
+		{Issuer: "identity", PublicKeysJSON: "bad"},
+		{Issuer: "identity", PublicKeysJSON: `{"key":"bad"}`},
+		{PublicKeysJSON: cfg.Auth.PublicKeysJSON},
+	} {
+		if _, err := auth.NewVerifier(c); err == nil {
+			t.Errorf("accepted invalid auth config: %+v", c)
+		}
 	}
 }

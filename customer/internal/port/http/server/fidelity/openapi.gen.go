@@ -17,6 +17,10 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+const (
+	PasetoBearerScopes pasetoBearerContextKey = "pasetoBearer.Scopes"
+)
+
 // Defines values for SupportedVoucherTreatment.
 const (
 	SOLARIUM SupportedVoucherTreatment = "SOLARIUM"
@@ -96,6 +100,9 @@ type TreatmentDiscountVoucher struct {
 type Voucher struct {
 	union json.RawMessage
 }
+
+// pasetoBearerContextKey is the context key for pasetoBearer security scheme
+type pasetoBearerContextKey string
 
 // CreateFidelityCardJSONBody defines parameters for CreateFidelityCard.
 type CreateFidelityCardJSONBody struct {
@@ -261,6 +268,8 @@ type MiddlewareFunc func(c *gin.Context)
 // GetFidelityCards operation middleware
 func (siw *ServerInterfaceWrapper) GetFidelityCards(c *gin.Context) {
 
+	c.Set(string(PasetoBearerScopes), []string{})
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -273,6 +282,8 @@ func (siw *ServerInterfaceWrapper) GetFidelityCards(c *gin.Context) {
 
 // CreateFidelityCard operation middleware
 func (siw *ServerInterfaceWrapper) CreateFidelityCard(c *gin.Context) {
+
+	c.Set(string(PasetoBearerScopes), []string{})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -299,6 +310,8 @@ func (siw *ServerInterfaceWrapper) GetFidelityCardsByCustomerId(c *gin.Context) 
 		return
 	}
 
+	c.Set(string(PasetoBearerScopes), []string{})
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -323,6 +336,8 @@ func (siw *ServerInterfaceWrapper) UseVoucher(c *gin.Context) {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter voucherId: %w", err), http.StatusBadRequest)
 		return
 	}
+
+	c.Set(string(PasetoBearerScopes), []string{})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -349,6 +364,8 @@ func (siw *ServerInterfaceWrapper) GetFidelityCardById(c *gin.Context) {
 		return
 	}
 
+	c.Set(string(PasetoBearerScopes), []string{})
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -373,6 +390,8 @@ func (siw *ServerInterfaceWrapper) NotifyPurchase(c *gin.Context) {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter cardId: %w", err), http.StatusBadRequest)
 		return
 	}
+
+	c.Set(string(PasetoBearerScopes), []string{})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)

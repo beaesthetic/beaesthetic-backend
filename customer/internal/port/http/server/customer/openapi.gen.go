@@ -15,6 +15,10 @@ import (
 	openapi_types "github.com/oapi-codegen/runtime/types"
 )
 
+const (
+	PasetoBearerScopes pasetoBearerContextKey = "pasetoBearer.Scopes"
+)
+
 // Defines values for GetCustomerByPageParamsDirection.
 const (
 	Next GetCustomerByPageParamsDirection = "next"
@@ -78,6 +82,8 @@ type InternalCustomerResponse struct {
 	Phone   *string              `json:"phone,omitempty"`
 	Surname string               `json:"surname"`
 }
+// pasetoBearerContextKey is the context key for pasetoBearer security scheme
+type pasetoBearerContextKey string
 
 // GetAllCustomersParams defines parameters for GetAllCustomers.
 type GetAllCustomersParams struct {
@@ -172,6 +178,8 @@ func (siw *ServerInterfaceWrapper) GetAllCustomers(c *gin.Context) {
 	var err error
 	_ = err
 
+	c.Set(string(PasetoBearerScopes), []string{})
+
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetAllCustomersParams
 
@@ -204,6 +212,8 @@ func (siw *ServerInterfaceWrapper) GetAllCustomers(c *gin.Context) {
 // CreateCustomer operation middleware
 func (siw *ServerInterfaceWrapper) CreateCustomer(c *gin.Context) {
 
+	c.Set(string(PasetoBearerScopes), []string{})
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -228,6 +238,8 @@ func (siw *ServerInterfaceWrapper) GetCustomerByPage(c *gin.Context) {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter direction: %w", err), http.StatusBadRequest)
 		return
 	}
+
+	c.Set(string(PasetoBearerScopes), []string{})
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params GetCustomerByPageParams
@@ -281,6 +293,8 @@ func (siw *ServerInterfaceWrapper) DeleteCustomer(c *gin.Context) {
 		return
 	}
 
+	c.Set(string(PasetoBearerScopes), []string{})
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -305,6 +319,8 @@ func (siw *ServerInterfaceWrapper) GetCustomerById(c *gin.Context) {
 		siw.ErrorHandler(c, fmt.Errorf("Invalid format for parameter customerId: %w", err), http.StatusBadRequest)
 		return
 	}
+
+	c.Set(string(PasetoBearerScopes), []string{})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
@@ -331,6 +347,8 @@ func (siw *ServerInterfaceWrapper) UpdateCustomerById(c *gin.Context) {
 		return
 	}
 
+	c.Set(string(PasetoBearerScopes), []string{})
+
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)
 		if c.IsAborted() {
@@ -346,6 +364,8 @@ func (siw *ServerInterfaceWrapper) SearchCustomer(c *gin.Context) {
 
 	var err error
 	_ = err
+
+	c.Set(string(PasetoBearerScopes), []string{})
 
 	// Parameter object where we will unmarshal all parameters from the context
 	var params SearchCustomerParams
@@ -378,6 +398,8 @@ func (siw *ServerInterfaceWrapper) SearchCustomer(c *gin.Context) {
 
 // SearchCustomerByPhone operation middleware
 func (siw *ServerInterfaceWrapper) SearchCustomerByPhone(c *gin.Context) {
+
+	c.Set(string(PasetoBearerScopes), []string{})
 
 	for _, middleware := range siw.HandlerMiddlewares {
 		middleware(c)

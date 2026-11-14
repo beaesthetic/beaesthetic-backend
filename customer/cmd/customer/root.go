@@ -39,8 +39,11 @@ func appCommand(envFile *string) *cobra.Command {
 		if err != nil {
 			return err
 		}
+		httpServer, err := c.GetHttpServer()
+		if err != nil {
+			return err
+		}
 		defer func() { c.GetPostgresDatabase().Close(); _ = c.Log.Sync() }()
-		httpServer := c.GetHttpServer()
 		serverErr := make(chan error, 1)
 		go func() {
 			c.Log.Info("starting http server", zap.String("addr", c.Config.HTTP.Addr))

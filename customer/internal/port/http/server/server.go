@@ -3,11 +3,13 @@ package server
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 	"github.com/petretiandrea/beaesthetic-backend/customer/internal/application"
 	cacheinfra "github.com/petretiandrea/beaesthetic-backend/customer/internal/infra/cache"
 	customerapi "github.com/petretiandrea/beaesthetic-backend/customer/internal/port/http/server/customer"
@@ -23,12 +25,24 @@ type HttpHandlers struct {
 	DB       *sql.DB
 }
 
-func New(handlers *HttpHandlers, log *zap.Logger) *gin.Engine {
+func New(handlers *HttpHandlers, log *zap.Logger, verifier *auth.Verifier) (*gin.Engine, error) {
+	if verifier == nil {
+		return nil, fmt.Errorf("customer authentication requires a verifier")
+	}
+	return newRouter(handlers, log, func(permissions ...string) gin.HandlerFunc {
+		return authorize(verifier, permissions...)
+	}), nil
+}
+
+func newRouter(handlers *HttpHandlers, log *zap.Logger, security func(...string) gin.HandlerFunc) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
 	if log == nil {
 		log = zap.NewNop()
 	}
 	r := gin.New()
+	// Generated strict handlers pass gin.Context as context.Context.
+	// Forward verified request claims to application handlers as well.
+	r.ContextWithFallback = true
 	r.RedirectTrailingSlash = false
 	r.Use(gin.Recovery())
 	r.Use(ginErrorLogger(log))
@@ -49,21 +63,49 @@ func New(handlers *HttpHandlers, log *zap.Logger) *gin.Engine {
 		ResponseErrorHandlerFunc: responseErrorHandler(log),
 	})
 
-	customerapi.RegisterHandlers(r, customerHandler)
-	fidelityapi.RegisterHandlers(r, fidelityHandler)
-	walletapi.RegisterHandlers(r, walletHandler)
-	registerTrailingSlashAliases(r, fidelityHandler, walletHandler)
-	r.GET("/health", healthCheck(handlers.DB))
-	return r
-}
+	// Permissions are declared alongside each route, including read-only POSTs.
+	if security == nil {
+		security = func(...string) gin.HandlerFunc { return func(*gin.Context) {} }
+	}
+	bindingError := func(ctx *gin.Context, err error, status int) {
+		ctx.JSON(status, gin.H{"msg": err.Error()})
+	}
+	customers := customerapi.ServerInterfaceWrapper{Handler: customerHandler, ErrorHandler: bindingError}
+	fidelity := fidelityapi.ServerInterfaceWrapper{Handler: fidelityHandler, ErrorHandler: bindingError}
+	wallets := walletapi.ServerInterfaceWrapper{Handler: walletHandler, ErrorHandler: bindingError}
 
-func registerTrailingSlashAliases(r gin.IRouter, fidelityHandler fidelityapi.ServerInterface, walletHandler walletapi.ServerInterface) {
-	r.GET("/admin/fidelity-cards/", fidelityHandler.GetFidelityCards)
-	r.POST("/admin/fidelity-cards/", fidelityHandler.CreateFidelityCard)
-	r.GET("/admin/wallets/", func(ctx *gin.Context) {
+	r.GET("/admin/customers", security("customer.read"), customers.GetAllCustomers)
+	r.POST("/admin/customers", security("customer.write"), customers.CreateCustomer)
+	r.GET("/admin/customers/page/:direction", security("customer.read"), customers.GetCustomerByPage)
+	r.DELETE("/admin/customers/:customerId", security("customer.write"), customers.DeleteCustomer)
+	r.GET("/admin/customers/:customerId", security("customer.read"), customers.GetCustomerById)
+	r.PUT("/admin/customers/:customerId", security("customer.write"), customers.UpdateCustomerById)
+	r.GET("/customers/search", security("customer.read"), customers.SearchCustomer)
+	r.POST("/customers/search:byPhone", security("customer.read"), customers.SearchCustomerByPhone)
+	// This route is intentionally outside the public PASETO-protected API. Its
+	// deployment must be restricted to the private service network.
+	r.GET("/internal/customers/:customerId", customers.GetInternalCustomerById)
+
+	r.GET("/admin/fidelity-cards", security("customer.read"), fidelity.GetFidelityCards)
+	r.POST("/admin/fidelity-cards", security("customer.write"), fidelity.CreateFidelityCard)
+	r.GET("/admin/fidelity-cards/customers/:customerId", security("customer.read"), fidelity.GetFidelityCardsByCustomerId)
+	r.DELETE("/admin/fidelity-cards/vouchers/:voucherId", security("customer.write"), fidelity.UseVoucher)
+	r.GET("/admin/fidelity-cards/:cardId", security("customer.read"), fidelity.GetFidelityCardById)
+	r.PUT("/admin/fidelity-cards/:cardId/purchase", security("customer.write"), fidelity.NotifyPurchase)
+
+	r.GET("/admin/wallets", security("customer.read"), wallets.GetWallets)
+	r.POST("/admin/wallets/giftCard", security("customer.write"), wallets.AddGiftCard)
+	r.GET("/admin/wallets/:walletId", security("customer.read"), wallets.GetWalletById)
+	r.PUT("/admin/wallets/:walletId/charge", security("customer.write"), wallets.ChargeWallet)
+
+	r.GET("/admin/fidelity-cards/", security("customer.read"), fidelity.GetFidelityCards)
+	r.POST("/admin/fidelity-cards/", security("customer.write"), fidelity.CreateFidelityCard)
+	r.GET("/admin/wallets/", security("customer.read"), func(ctx *gin.Context) {
 		walletHandler.GetWallets(ctx, walletapi.GetWalletsParams{Filter: stringPtrIfNotEmpty(ctx.Query("filter"))})
 	})
-	r.POST("/admin/wallets/giftCard/", walletHandler.AddGiftCard)
+	r.POST("/admin/wallets/giftCard/", security("customer.write"), wallets.AddGiftCard)
+	r.GET("/health", healthCheck(handlers.DB))
+	return r
 }
 
 func healthCheck(db *sql.DB) gin.HandlerFunc {

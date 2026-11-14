@@ -68,7 +68,7 @@ jobs:
             dockerfile: ./appointment/Dockerfile
           - key: customer
             image: petretiandrea/customer-service-v2
-            context: ./customer
+            context: .
             dockerfile: ./customer/Dockerfile
           - key: notification
             image: petretiandrea/notification-service-v2

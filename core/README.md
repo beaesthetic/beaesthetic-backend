@@ -5,14 +5,14 @@ Reusable backend behavior belongs here; generated API contracts remain in `core-
 
 ## Identity authentication and authorization
 
-`auth` consumes the `v4.public` PASETO access tokens issued by `identity-service/internal/domain/token`. It needs only public keys, never Identity's signing key. Configure the exact expected issuer and a trusted `kid -> public_key_b64` map using Identity's published keys (raw URL-base64 Ed25519 keys). Fetch/configure keys through a trusted channel at startup. Recreate the verifier when rotating keys; retain old keys until their tokens expire. Unknown keys fail closed. Key discovery and refresh are intentionally owned by each service's configuration layer.
+`auth` consumes the `v4.public` PASETO access tokens issued by `identity-service/internal/domain/token`. It needs only public keys, never Identity's signing key. Every service uses `auth.Config`: `issuer` and `public_keys`, where `public_keys` is a JSON `kid -> public_key_b64` map of raw URL-base64 Ed25519 keys. Fetch/configure keys through a trusted channel at startup. Recreate the verifier when rotating keys; retain old keys until their tokens expire. Unknown keys fail closed. Key discovery and refresh are intentionally owned by each service's configuration layer.
 
 The verifier checks the signature before returning any data, verifies issuer and matching signed `kid`, requires subject, token ID, authentication method, supported identity type and scope, and validates `iat`/`exp` against one clock reading. Expiration is exclusive; future issuance is rejected without clock tolerance. Identity does not emit `nbf`; if supplied, it is also enforced. User scope cannot carry organization, membership or roles; membership scope requires both organization and membership IDs.
 
 ```go
 verifier, err := auth.NewVerifier(auth.Config{
-    Issuer: "identity", // must match Identity configuration
-    PublicKeys: map[string]string{"key-1": publicKeyB64},
+    Issuer:         "identity", // must match Identity configuration
+    PublicKeysJSON: `{"key-1":"` + publicKeyB64 + `"}`,
 })
 if err != nil {
     return err // fail service startup on invalid configuration

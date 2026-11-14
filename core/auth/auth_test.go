@@ -110,6 +110,19 @@ func TestRotationAndConfig(t *testing.T) {
 	}
 }
 
+func TestServiceConfig(t *testing.T) {
+	_, key := fixture(t)
+	encoded := base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes())
+	if _, err := NewVerifier(Config{Issuer: "identity", PublicKeysJSON: `{"active":"` + encoded + `"}`}); err != nil {
+		t.Fatal(err)
+	}
+	for _, cfg := range []Config{{}, {Issuer: "identity", PublicKeysJSON: "{}"}, {Issuer: "identity", PublicKeysJSON: "bad"}, {Issuer: "identity", PublicKeysJSON: `{"key":"bad"}`}} {
+		if _, err := NewVerifier(cfg); err == nil {
+			t.Errorf("accepted invalid service config: %+v", cfg)
+		}
+	}
+}
+
 func TestHTTPAuthorization(t *testing.T) {
 	v, key := fixture(t)
 	token := signedToken(key, nil)

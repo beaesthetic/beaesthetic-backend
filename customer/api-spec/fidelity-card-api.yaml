@@ -27,6 +27,8 @@ info:
   version: 1.0.0
 servers:
   - url: https://agenda.beaesthetic.it/customer-service/
+security:
+  - pasetoBearer: []
 paths:
   /admin/fidelity-cards:
     post:
@@ -161,6 +163,12 @@ paths:
                 $ref: "#/components/schemas/FidelityCardResponse"
 
 components:
+  securitySchemes:
+    pasetoBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: PASETO v4.public
+      description: Membership token required. Organization is carried in the verified PASETO claims; no organization header or tenant constraint is applied by this single-organization service. Read operations (including phone search POST) require customer.read; mutations require customer.write.
   schemas:
     Customer:
       type: object
