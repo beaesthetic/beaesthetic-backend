@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.3](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.15.2...customer-service-v1.15.3) (2026-11-14)
+
+
+### Bug Fixes
+
+* **customer:** register internal customer lookup ([#175](https://github.com/beaesthetic/beaesthetic-backend/issues/175)) ([6f3b54d](https://github.com/beaesthetic/beaesthetic-backend/commit/6f3b54d91e8c14069b218e2cb983cee6b501739c))
+
 ## [1.15.2](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.15.1...customer-service-v1.15.2) (2026-11-12)
 
 
