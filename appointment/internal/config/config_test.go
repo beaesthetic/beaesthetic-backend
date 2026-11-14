@@ -1,10 +1,14 @@
 package config
 
 import (
+	"encoding/base64"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"aidanwoods.dev/go-paseto"
+	"github.com/petretiandrea/beaesthetic-backend/core/auth"
 )
 
 func TestLoadEnvironment(t *testing.T) {
@@ -19,6 +23,19 @@ func TestLoadEnvironment(t *testing.T) {
 	}
 	if cfg.Reminder.TriggerBefore != 2*time.Hour {
 		t.Fatalf("trigger=%s", cfg.Reminder.TriggerBefore)
+	}
+}
+
+func TestAuthConfiguration(t *testing.T) {
+	key := paseto.NewV4AsymmetricSecretKey()
+	t.Setenv("ENV_AUTH_ISSUER", "identity")
+	t.Setenv("ENV_AUTH_PUBLIC__KEYS", `{"key-1":"`+base64.RawURLEncoding.EncodeToString(key.Public().ExportBytes())+`"}`)
+	cfg, err := Load("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := auth.NewVerifier(cfg.Auth); err != nil {
+		t.Fatalf("valid auth configuration rejected: %v", err)
 	}
 }
 

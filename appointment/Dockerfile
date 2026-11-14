@@ -2,19 +2,20 @@
 
 FROM golang:1.27.4-bookworm AS build
 
-WORKDIR /src
-COPY go.mod go.sum* ./
-COPY --from=core-contracts / /core-contracts
+WORKDIR /src/appointment
+COPY core /src/core
+COPY core-contracts /src/core-contracts
+COPY appointment/go.mod appointment/go.sum ./
 RUN go mod download
 
-COPY . .
+COPY appointment .
 RUN go run github.com/magefile/mage@v1.15.0 -v build
 
 FROM gcr.io/distroless/base-debian12:nonroot
 
 WORKDIR /app
-COPY --from=build /src/build/appointment /app/appointment
-COPY --from=build /src/migrations /app/migrations
+COPY --from=build /src/appointment/build/appointment /app/appointment
+COPY --from=build /src/appointment/migrations /app/migrations
 
 EXPOSE 8080
 ENTRYPOINT ["/app/appointment"]

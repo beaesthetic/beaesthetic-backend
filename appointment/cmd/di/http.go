@@ -7,11 +7,16 @@ import (
 	"github.com/petretiandrea/beaesthetic-backend/appointment/internal/port/http/server"
 )
 
-func (d *DiContainer) GetHttpServer() *nethttp.Server {
-	return singleton(d, "httpServer", func() *nethttp.Server {
-		ginEngine := server.New(d.GetHttpHandlers(), d.Log)
-		return &nethttp.Server{Addr: d.Config.HTTP.Addr, Handler: ginEngine}
-	})
+func (d *DiContainer) GetHttpServer() (*nethttp.Server, error) {
+	verifier, err := d.GetAuthVerifier()
+	if err != nil {
+		return nil, err
+	}
+	router, err := server.New(d.GetHttpHandlers(), d.Log, verifier)
+	if err != nil {
+		return nil, err
+	}
+	return &nethttp.Server{Addr: d.Config.HTTP.Addr, Handler: router}, nil
 }
 
 func (d *DiContainer) GetHttpHandlers() *server.HttpHandlers {

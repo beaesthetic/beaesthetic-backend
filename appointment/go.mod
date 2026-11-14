@@ -3,6 +3,7 @@ module github.com/petretiandrea/beaesthetic-backend/appointment
 go 1.27.4
 
 require (
+	aidanwoods.dev/go-paseto v1.6.0
 	github.com/gin-gonic/gin v1.12.0
 	github.com/golang-migrate/migrate/v4 v4.20.1
 	github.com/google/uuid v1.6.0
@@ -12,6 +13,7 @@ require (
 	github.com/knadh/koanf/providers/file v1.2.1
 	github.com/knadh/koanf/v2 v2.4.1
 	github.com/oapi-codegen/runtime v1.8.0
+	github.com/petretiandrea/beaesthetic-backend/core v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/appointment v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/notification v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime v0.0.0
@@ -33,6 +35,7 @@ require (
 )
 
 require (
+	aidanwoods.dev/go-result v0.3.1 // indirect
 	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/bytedance/sonic v1.15.0 // indirect
@@ -104,3 +107,5 @@ replace github.com/petretiandrea/beaesthetic-backend/core-contracts/notification
 replace github.com/petretiandrea/beaesthetic-backend/core-contracts/appointment => ../core-contracts/appointment
 
 replace github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime => ../core-contracts/runtime
+
+replace github.com/petretiandrea/beaesthetic-backend/core => ../core

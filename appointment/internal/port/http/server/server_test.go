@@ -10,12 +10,12 @@ import (
 )
 
 func TestNewRegistersOnlyCalendarV1Routes(t *testing.T) {
-	engine := New(&HttpHandlers{
+	engine := newRouter(&HttpHandlers{
 		Calendar: &Server{},
 		HealthChecker: func(ctx *gin.Context) {
 			ctx.Status(http.StatusOK)
 		},
-	}, zap.NewNop())
+	}, zap.NewNop(), nil)
 
 	for _, path := range []string{
 		"/v1/calendar-events",
