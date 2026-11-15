@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.3](https://github.com/beaesthetic/beaesthetic-backend/compare/identity-service-v0.4.2...identity-service-v0.4.3) (2026-11-15)
+
+
+### Bug Fixes
+
+* **identity-service:** update module github.com/jackc/pgx/v5 to v5.13.0 ([#190](https://github.com/beaesthetic/beaesthetic-backend/issues/190)) ([2f34f2a](https://github.com/beaesthetic/beaesthetic-backend/commit/2f34f2ab75ecb46c1f3e63ded5e0d96ce1735693))
+
 ## [0.4.2](https://github.com/beaesthetic/beaesthetic-backend/compare/identity-service-v0.4.1...identity-service-v0.4.2) (2026-11-14)
 
 

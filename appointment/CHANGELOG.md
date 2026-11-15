@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.19.3](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.19.2...appointment-service-v1.19.3) (2026-11-15)
+
+
+### Bug Fixes
+
+* align service token issuers ([0fdfd09](https://github.com/beaesthetic/beaesthetic-backend/commit/0fdfd096f7688cadba03ced6e054e65c5e5794b5))
+* **appointment:** update appointment dependencies ([#186](https://github.com/beaesthetic/beaesthetic-backend/issues/186)) ([1adfbc1](https://github.com/beaesthetic/beaesthetic-backend/commit/1adfbc1a13abed73c9f4b72de07fb5226db04076))
+* **appointment:** update petretiandrea/outbox-forwarder docker tag to v1.7.1 ([#187](https://github.com/beaesthetic/beaesthetic-backend/issues/187)) ([cb93f19](https://github.com/beaesthetic/beaesthetic-backend/commit/cb93f19590fca87d67d553363ba1709ab9b41ca4))
+* remove obsolete identity secret references ([165893a](https://github.com/beaesthetic/beaesthetic-backend/commit/165893aff52502f519c0aff643e1dd32de0aa6ce))
+* use complete identity public key ([043600e](https://github.com/beaesthetic/beaesthetic-backend/commit/043600eca913e46315edab94ea3c8fa0653de583))
+
 ## [1.19.2](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.19.1...appointment-service-v1.19.2) (2026-11-14)
 
 

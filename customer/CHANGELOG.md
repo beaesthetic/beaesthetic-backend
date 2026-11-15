@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.15.6](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.15.5...customer-service-v1.15.6) (2026-11-15)
+
+
+### Bug Fixes
+
+* align service token issuers ([0fdfd09](https://github.com/beaesthetic/beaesthetic-backend/commit/0fdfd096f7688cadba03ced6e054e65c5e5794b5))
+* **customer:** update module github.com/knadh/koanf/providers/env to v2 ([#195](https://github.com/beaesthetic/beaesthetic-backend/issues/195)) ([2a33d85](https://github.com/beaesthetic/beaesthetic-backend/commit/2a33d85ff6b7f4d09e4ea8bd6611266865d1ad4f))
+* **customer:** update module github.com/oapi-codegen/runtime to v1.9.0 ([#189](https://github.com/beaesthetic/beaesthetic-backend/issues/189)) ([12e2258](https://github.com/beaesthetic/beaesthetic-backend/commit/12e2258fc9f8113a19a1a990b1e6f3d12348868f))
+* read direct redis secret value ([359ccca](https://github.com/beaesthetic/beaesthetic-backend/commit/359cccacd37542e2dce3643a5a03840997c39929))
+* remove obsolete identity secret references ([165893a](https://github.com/beaesthetic/beaesthetic-backend/commit/165893aff52502f519c0aff643e1dd32de0aa6ce))
+* use complete identity public key ([043600e](https://github.com/beaesthetic/beaesthetic-backend/commit/043600eca913e46315edab94ea3c8fa0653de583))
+
 ## [1.15.5](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.15.4...customer-service-v1.15.5) (2026-11-14)
 
 

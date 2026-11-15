@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.10.2](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.10.1...notification-service-v2.10.2) (2026-11-15)
+
+
+### Bug Fixes
+
+* **notification:** update module github.com/knadh/koanf/providers/env to v2 ([#197](https://github.com/beaesthetic/beaesthetic-backend/issues/197)) ([cb358de](https://github.com/beaesthetic/beaesthetic-backend/commit/cb358dea1f22952cfb22d80318b4b3a501182e28))
+* **notification:** update notification dependencies ([#191](https://github.com/beaesthetic/beaesthetic-backend/issues/191)) ([55d5316](https://github.com/beaesthetic/beaesthetic-backend/commit/55d531655d9433ed569ebbef32ac89d373ffd84b))
+* **notification:** update petretiandrea/outbox-forwarder docker tag to v1.7.1 ([#192](https://github.com/beaesthetic/beaesthetic-backend/issues/192)) ([41be267](https://github.com/beaesthetic/beaesthetic-backend/commit/41be267212ddb346faf98843c3fa767e05c4dede))
+
 ## [2.10.1](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.10.0...notification-service-v2.10.1) (2026-11-14)
 
 
