@@ -1,9 +1,9 @@
 {
-  "appointment": "1.19.2",
-  "customer": "1.15.5",
+  "appointment": "1.19.3",
+  "customer": "1.15.6",
   "gateway": "1.4.0",
-  "notification": "2.10.1",
-  "identity-service": "0.4.2",
+  "notification": "2.10.2",
+  "identity-service": "0.4.3",
   "scheduler": "1.5.0",
   "insights": "1.2.0",
   "consent-service": "0.5.3"
