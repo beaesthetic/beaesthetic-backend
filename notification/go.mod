@@ -7,12 +7,12 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/golang-migrate/migrate/v4 v4.20.1
 	github.com/google/uuid v1.6.0
-	github.com/jackc/pgx/v5 v5.12.0
+	github.com/jackc/pgx/v5 v5.13.0
 	github.com/knadh/koanf/parsers/dotenv v1.1.3
 	github.com/knadh/koanf/providers/env v1.1.0
 	github.com/knadh/koanf/providers/file v1.2.1
 	github.com/knadh/koanf/v2 v2.4.1
-	github.com/oapi-codegen/runtime v1.8.0
+	github.com/oapi-codegen/runtime v1.9.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime v0.0.0
 	github.com/petretiandrea/outbox-go/pkg/outbox v1.7.1
 	github.com/rabbitmq/amqp091-go v1.16.0
