@@ -22,6 +22,10 @@
       "enabled": false
     },
     {
+      "matchManagers": ["gomod"],
+      "postUpdateOptions": ["gomodTidy"]
+    },
+    {
       "description": "Local modules are resolved by go.mod replace directives, not a package registry.",
       "matchManagers": ["gomod"],
       "matchPackageNames": ["github.com/petretiandrea/beaesthetic-backend/{/,}**"],
