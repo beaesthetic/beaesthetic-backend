@@ -65,7 +65,7 @@ sidecar:
   outbox:
     image:
       repository: petretiandrea/outbox-forwarder
-      tag: v1.6.0
+      tag: 1.7.1
       pullPolicy: IfNotPresent
     configMapRefs:
       - notification-service-v2-config

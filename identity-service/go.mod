@@ -7,7 +7,7 @@ require (
 	github.com/coreos/go-oidc/v3 v3.21.0
 	github.com/gin-gonic/gin v1.12.0
 	github.com/golang-migrate/migrate/v4 v4.20.1
-	github.com/jackc/pgx/v5 v5.12.0
+	github.com/jackc/pgx/v5 v5.13.0
 	github.com/petretiandrea/beaesthetic-backend/core v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/identity v0.0.0
 	github.com/spf13/cobra v1.10.2
