@@ -1,0 +1,197 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended"],
+  "enabledManagers": [
+    "docker-compose",
+    "dockerfile",
+    "github-actions",
+    "gomod",
+    "helm-values"
+  ],
+  "timezone": "Europe/Rome",
+  "schedule": ["before 6am on monday"],
+  "dependencyDashboard": true,
+  "dependencyDashboardTitle": "Dependency Dashboard",
+  "dependencyDashboardAutoclose": false,
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "packageRules": [
+    {
+      "matchManagers": ["gomod"],
+      "matchDepTypes": ["indirect"],
+      "enabled": false
+    },
+    {
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["appointment/go.mod"],
+      "groupName": "appointment dependencies",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "appointment"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["consent-service/go.mod"],
+      "groupName": "consent-service dependencies",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "consent-service"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["customer/go.mod"],
+      "groupName": "customer dependencies",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "customer"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["identity-service/go.mod"],
+      "groupName": "identity-service dependencies",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "identity-service"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["notification/go.mod"],
+      "groupName": "notification dependencies",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "notification"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["core/go.mod"],
+      "groupName": "core dependencies",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "core"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["core-contracts/appointment/go.mod"],
+      "groupName": "core-contracts-appointment dependencies",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "core-contracts-appointment"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["core-contracts/identity/go.mod"],
+      "groupName": "core-contracts-identity dependencies",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "core-contracts-identity"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["core-contracts/notification/go.mod"],
+      "groupName": "core-contracts-notification dependencies",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "core-contracts-notification"
+    },
+    {
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["core-contracts/runtime/go.mod"],
+      "groupName": "core-contracts-runtime dependencies",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "core-contracts-runtime"
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "matchFileNames": ["appointment/Dockerfile"],
+      "groupName": "appointment base images",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "appointment"
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "matchFileNames": ["consent-service/Dockerfile"],
+      "groupName": "consent-service base images",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "consent-service"
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "matchFileNames": ["customer/Dockerfile"],
+      "groupName": "customer base images",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "customer"
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "matchFileNames": ["identity-service/Dockerfile"],
+      "groupName": "identity-service base images",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "identity-service"
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "matchFileNames": ["notification/Dockerfile"],
+      "groupName": "notification base images",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "notification"
+    },
+    {
+      "matchManagers": ["helm-values"],
+      "matchFileNames": ["appointment/helm/values.yaml"],
+      "groupName": "appointment deployed images",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "appointment"
+    },
+    {
+      "matchManagers": ["helm-values"],
+      "matchFileNames": ["customer/helm/values.yaml"],
+      "groupName": "customer deployed images",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "customer"
+    },
+    {
+      "matchManagers": ["helm-values"],
+      "matchFileNames": ["identity-service/helm/values.yaml"],
+      "groupName": "identity-service deployed images",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "identity-service"
+    },
+    {
+      "matchManagers": ["helm-values"],
+      "matchFileNames": ["notification/helm/values.yaml"],
+      "groupName": "notification deployed images",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "notification"
+    },
+    {
+      "matchManagers": ["docker-compose"],
+      "matchFileNames": ["docker-compose.yml"],
+      "groupName": "local compose images",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "local"
+    },
+    {
+      "matchManagers": ["github-actions"],
+      "matchFileNames": [".github/workflows/*.yml", ".github/workflows/*.yaml"],
+      "groupName": "GitHub Actions",
+      "separateMajorMinor": true,
+      "semanticCommitType": "fix",
+      "semanticCommitScope": "ci"
+    }
+  ]
+}
