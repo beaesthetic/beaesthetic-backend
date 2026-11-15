@@ -7,21 +7,21 @@ require (
 	github.com/gin-gonic/gin v1.12.0
 	github.com/golang-migrate/migrate/v4 v4.20.1
 	github.com/google/uuid v1.6.0
-	github.com/jackc/pgx/v5 v5.12.0
+	github.com/jackc/pgx/v5 v5.13.0
 	github.com/knadh/koanf/parsers/dotenv v1.1.3
 	github.com/knadh/koanf/providers/env/v2 v2.0.2
 	github.com/knadh/koanf/providers/file v1.2.1
 	github.com/knadh/koanf/v2 v2.4.1
-	github.com/oapi-codegen/runtime v1.8.0
+	github.com/oapi-codegen/runtime v1.9.0
 	github.com/petretiandrea/beaesthetic-backend/core v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/appointment v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/notification v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime v0.0.0
 	github.com/petretiandrea/outbox-go/pkg/outbox v1.7.1
 	github.com/rabbitmq/amqp091-go v1.16.0
-	github.com/riverqueue/river v0.51.1
-	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.51.1
-	github.com/riverqueue/river/rivertype v0.51.1
+	github.com/riverqueue/river v0.51.2
+	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.51.2
+	github.com/riverqueue/river/rivertype v0.51.2
 	github.com/riverqueue/rivercontrib/otelriver v0.12.0
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.12.1
@@ -73,8 +73,8 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.4 // indirect
 	github.com/quic-go/qpack v0.6.0 // indirect
 	github.com/quic-go/quic-go v0.59.1 // indirect
-	github.com/riverqueue/river/riverdriver v0.51.1 // indirect
-	github.com/riverqueue/river/rivershared v0.51.1 // indirect
+	github.com/riverqueue/river/riverdriver v0.51.2 // indirect
+	github.com/riverqueue/river/rivershared v0.51.2 // indirect
 	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/tidwall/gjson v1.20.0 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
