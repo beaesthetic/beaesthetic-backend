@@ -24,7 +24,7 @@ env:
 
 jobs:
   changes:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     outputs:
       appointment: ${{ steps.filter.outputs.appointment }}
       customer: ${{ steps.filter.outputs.customer }}
@@ -59,7 +59,7 @@ jobs:
 
   build:
     needs: changes
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     name: Build ${{ matrix.key }} dev image
     strategy:
       fail-fast: false

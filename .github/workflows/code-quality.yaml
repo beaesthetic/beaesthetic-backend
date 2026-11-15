@@ -8,7 +8,7 @@ on:
 
 jobs:
   go-quality:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     name: Go quality
     steps:
       - uses: actions/checkout@v7
@@ -47,7 +47,7 @@ jobs:
           fi
 
   helm-quality:
-    runs-on: ubuntu-24.04-arm
+    runs-on: ubuntu-26.04-arm
     name: Helm quality
     steps:
       - uses: actions/checkout@v7
