@@ -1,0 +1,39 @@
+name: Renovate
+
+on:
+  schedule:
+    # Monday 03:00 UTC, inside the "before 6am on monday" (Europe/Rome) window.
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+  # Dependency Dashboard / Renovate PR checkboxes (rebase, retry, approve) edit the body.
+  issues:
+    types: [edited]
+  pull_request:
+    types: [edited]
+
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  renovate:
+    if: >-
+      github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issues' && github.event.issue.title == 'Dependency Dashboard' && github.actor != 'renovate[bot]') ||
+      (github.event_name == 'pull_request' && startsWith(github.head_ref, 'renovate/') && github.actor != 'renovate[bot]')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: renovatebot/github-action@v48.0.0
+        with:
+          token: ${{ secrets.RENOVATE_TOKEN }}
+        env:
+          RENOVATE_REPOSITORIES: ${{ github.repository }}
+          # Self-hosted only: commands that postUpgradeTasks may run.
+          RENOVATE_ALLOWED_POST_UPGRADE_COMMANDS: '["^\\./scripts/go-tidy-all\\.sh$"]'
+          LOG_LEVEL: info

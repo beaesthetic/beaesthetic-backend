@@ -1,0 +1,32 @@
+name: CI gate
+
+# Single required check for branch protection and Renovate automerge: it passes
+# only when every other check on the PR head commit has passed. Checks that do
+# not run (path-filtered jobs) do not exist, so they never block the gate.
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+concurrency:
+  group: ci-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  checks: read
+  statuses: read
+
+jobs:
+  ci-gate:
+    name: ci-gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: wechuli/allcheckspassed@v2.6.0
+        with:
+          commit_sha: ${{ github.event.pull_request.head.sha }}
+          # Give the other workflows time to register their checks before the first look.
+          delay: "3"
+          polling_interval: "1"
+          treat_skipped_as_passed: "true"
+          ignore_superseded_runs: "true"
