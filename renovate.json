@@ -11,9 +11,11 @@
   "rebaseWhen": "automerging",
   "timezone": "Europe/Rome",
   "schedule": ["before 6am"],
-  "dependencyDashboard": true,
-  "dependencyDashboardTitle": "Dependency Dashboard",
-  "dependencyDashboardAutoclose": false,
+  "dependencyDashboard": {
+    "enabled": true,
+    "title": "Dependency Dashboard",
+    "autoclose": false
+  },
   "prConcurrentLimit": 0,
   "prHourlyLimit": 0,
   "packageRules": [
