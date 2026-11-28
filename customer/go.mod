@@ -9,7 +9,6 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/knadh/koanf/parsers/dotenv v1.1.3
 	github.com/knadh/koanf/providers/env v1.1.0
-	github.com/knadh/koanf/providers/env/v2 v2.0.2
 	github.com/knadh/koanf/providers/file v1.2.1
 	github.com/knadh/koanf/v2 v2.4.1
 	github.com/lib/pq v1.12.3
