@@ -2,8 +2,8 @@ name: Renovate
 
 on:
   schedule:
-    # Monday 03:00 UTC, inside the "before 6am on monday" (Europe/Rome) window.
-    - cron: "0 3 * * 1"
+    # Every day 03:00 UTC, inside the "before 6am" (Europe/Rome) window.
+    - cron: "0 3 * * *"
   workflow_dispatch:
   # Dependency Dashboard / Renovate PR checkboxes (rebase, retry, approve) edit the body.
   issues:
