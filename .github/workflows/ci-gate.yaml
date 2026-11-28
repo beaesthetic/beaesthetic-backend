@@ -26,7 +26,7 @@ jobs:
         with:
           commit_sha: ${{ github.event.pull_request.head.sha }}
           # Give the other workflows time to register their checks before the first look.
-          delay: "3"
+          delay: "1"
           polling_interval: "1"
           treat_skipped_as_passed: "true"
           ignore_superseded_runs: "true"
