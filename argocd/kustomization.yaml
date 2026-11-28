@@ -1,4 +1,5 @@
 resources:
   - projects/beaesthetic.yaml
   - applicationsets/beaesthetic-services.yaml
+  - applicationsets/beaesthetic-services-dev.yaml
   - river-ui
