@@ -30,7 +30,7 @@ spec:
           - list:
               elements:
                 - environment: dev
-                  enabled: "true"
+                  enabled: "false"
                   namespace: beaesthetic-dev
                   valuesFile: values-dev.yaml
                   targetRevision: HEAD
