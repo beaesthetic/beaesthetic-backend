@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.15.7](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.15.6...customer-service-v1.15.7) (2026-11-28)
+
+
+### Bug Fixes
+
+* **core-contracts-appointment:** update google.golang.org/genproto/googleapis/api digest to 1e707ab ([#205](https://github.com/beaesthetic/beaesthetic-backend/issues/205)) ([875c43f](https://github.com/beaesthetic/beaesthetic-backend/commit/875c43f70b2b28b5e1c0cedb7765b69ad0baa61e))
+* **customer:** update customer dependencies ([#207](https://github.com/beaesthetic/beaesthetic-backend/issues/207)) ([a86828c](https://github.com/beaesthetic/beaesthetic-backend/commit/a86828c2a3b38165de66e8ce21108b205f7cbd5b))
+
 ## [1.15.6](https://github.com/beaesthetic/beaesthetic-backend/compare/customer-service-v1.15.5...customer-service-v1.15.6) (2026-11-15)
 
 

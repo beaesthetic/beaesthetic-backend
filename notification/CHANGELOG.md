@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.10.3](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.10.2...notification-service-v2.10.3) (2026-11-28)
+
+
+### Bug Fixes
+
+* **core-contracts-appointment:** update google.golang.org/genproto/googleapis/api digest to 1e707ab ([#205](https://github.com/beaesthetic/beaesthetic-backend/issues/205)) ([875c43f](https://github.com/beaesthetic/beaesthetic-backend/commit/875c43f70b2b28b5e1c0cedb7765b69ad0baa61e))
+* **notification:** update notification dependencies ([#208](https://github.com/beaesthetic/beaesthetic-backend/issues/208)) ([fe8947f](https://github.com/beaesthetic/beaesthetic-backend/commit/fe8947f9254ac801af9b62539522ce588c329f5d))
+* **notification:** update petretiandrea/outbox-forwarder docker tag to v1.9.0 ([#211](https://github.com/beaesthetic/beaesthetic-backend/issues/211)) ([6f17981](https://github.com/beaesthetic/beaesthetic-backend/commit/6f1798105fc17a4069878b87b519061812ae01f1))
+
 ## [2.10.2](https://github.com/beaesthetic/beaesthetic-backend/compare/notification-service-v2.10.1...notification-service-v2.10.2) (2026-11-15)
 
 

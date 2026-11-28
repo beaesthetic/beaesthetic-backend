@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.4](https://github.com/beaesthetic/beaesthetic-backend/compare/identity-service-v0.4.3...identity-service-v0.4.4) (2026-11-28)
+
+
+### Bug Fixes
+
+* **core-contracts-appointment:** update google.golang.org/genproto/googleapis/api digest to 1e707ab ([#205](https://github.com/beaesthetic/beaesthetic-backend/issues/205)) ([875c43f](https://github.com/beaesthetic/beaesthetic-backend/commit/875c43f70b2b28b5e1c0cedb7765b69ad0baa61e))
+
 ## [0.4.3](https://github.com/beaesthetic/beaesthetic-backend/compare/identity-service-v0.4.2...identity-service-v0.4.3) (2026-11-15)
 
 
