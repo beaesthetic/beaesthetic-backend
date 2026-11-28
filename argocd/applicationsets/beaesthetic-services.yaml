@@ -4,88 +4,51 @@ metadata:
   name: beaesthetic-services
   namespace: argocd
 spec:
-  ignoreApplicationDifferences:
-    - name: appointment-dev
-      jsonPointers:
-        - /spec/source/targetRevision
-    - name: notification-dev
-      jsonPointers:
-        - /spec/source/targetRevision
   goTemplate: true
   goTemplateOptions:
     - missingkey=error
+  syncPolicy:
+    # Never delete prod Applications (and their resources) if an element is removed from the generator.
+    applicationsSync: create-update
   generators:
-    - matrix:
-        generators:
-          - list:
-              elements:
-                - service: appointment
-                  path: appointment/helm
-                - service: customer
-                  path: customer/helm
-                - service: notification
-                  path: notification/helm
-                - service: identity
-                  path: identity-service/helm
-          - list:
-              elements:
-                - environment: dev
-                  enabled: "false"
-                  namespace: beaesthetic-dev
-                  valuesFile: values-dev.yaml
-                  targetRevision: HEAD
-                - environment: prod
-                  enabled: "true"
-                  namespace: beaesthetic
-                  valuesFile: values.yaml
-                  targetRevision: HEAD
-        selector:
-          matchLabels:
-            enabled: "true"
+    - list:
+        elements:
+          - service: appointment
+            path: appointment/helm
+          - service: customer
+            path: customer/helm
+          - service: notification
+            path: notification/helm
+          - service: identity
+            path: identity-service/helm
   template:
     metadata:
-      name: "{{.service}}-{{.environment}}"
+      name: "{{.service}}-prod"
       finalizers:
         - resources-finalizer.argocd.argoproj.io
       labels:
         app.kubernetes.io/part-of: beaesthetic
-        beaesthetic.io/environment: "{{.environment}}"
+        beaesthetic.io/environment: prod
         beaesthetic.io/service: "{{.service}}"
-    spec:
-      project: beaesthetic
-      source:
-        repoURL: https://github.com/beaesthetic/beaesthetic-backend.git
-        targetRevision: "{{.targetRevision}}"
-        path: "{{.path}}"
-        helm:
-          valueFiles:
-            - values.yaml
-            - "{{.valuesFile}}"
-      destination:
-        server: https://kubernetes.default.svc
-        namespace: "{{.namespace}}"
-      syncPolicy:
-        syncOptions:
-          - CreateNamespace=true
-  templatePatch: |
-    {{- if eq .environment "prod" }}
-    metadata:
       annotations:
         notifications.argoproj.io/subscribe.on-health-degraded.telegram: "-1004385477490" # beaesthetic monitoring channel
         notifications.argoproj.io/subscribe.on-sync-succeeded.telegram: "-1004385477490"
         notifications.argoproj.io/subscribe.on-sync-failed.telegram: "-1004385477490"
         notifications.argoproj.io/subscribe.on-deployed.telegram: "-1004385477490"
     spec:
+      project: beaesthetic
+      source:
+        repoURL: https://github.com/beaesthetic/beaesthetic-backend.git
+        targetRevision: HEAD
+        path: "{{.path}}"
+        helm:
+          valueFiles:
+            - values.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: beaesthetic
       syncPolicy:
+        # Sync on git changes only: no prune, no selfHeal.
         automated: {}
         syncOptions:
           - CreateNamespace=true
-    {{- end }}
-    {{- if and (or (eq .service "appointment") (eq .service "notification")) (eq .environment "dev") }}
-    spec:
-      source:
-        helm:
-          parameters:
-            - name: image.tag
-              value: $ARGOCD_APP_REVISION
-    {{- end }}
