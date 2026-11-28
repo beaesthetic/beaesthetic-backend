@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.19.4](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.19.3...appointment-service-v1.19.4) (2026-11-28)
+
+
+### Bug Fixes
+
+* **appointment:** update appointment dependencies ([#206](https://github.com/beaesthetic/beaesthetic-backend/issues/206)) ([3349e8f](https://github.com/beaesthetic/beaesthetic-backend/commit/3349e8f8d471feffa56c38fe0606eb5540fd0ff5))
+* **appointment:** update petretiandrea/outbox-forwarder docker tag to v1.9.0 ([#209](https://github.com/beaesthetic/beaesthetic-backend/issues/209)) ([54a2392](https://github.com/beaesthetic/beaesthetic-backend/commit/54a2392d16c33232a123c2aa0820a9d79ed111ea))
+* **core-contracts-appointment:** update google.golang.org/genproto/googleapis/api digest to 1e707ab ([#205](https://github.com/beaesthetic/beaesthetic-backend/issues/205)) ([875c43f](https://github.com/beaesthetic/beaesthetic-backend/commit/875c43f70b2b28b5e1c0cedb7765b69ad0baa61e))
+
 ## [1.19.3](https://github.com/beaesthetic/beaesthetic-backend/compare/appointment-service-v1.19.2...appointment-service-v1.19.3) (2026-11-15)
 
 
