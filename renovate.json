@@ -26,6 +26,16 @@
       "postUpdateOptions": ["gomodTidy"]
     },
     {
+      "description": "core and core-contracts are consumed through replace directives: tidy every module so dependants get the new requirements.",
+      "matchManagers": ["gomod"],
+      "matchFileNames": ["core/go.mod", "core-contracts/*/go.mod"],
+      "postUpgradeTasks": {
+        "commands": ["./scripts/go-tidy-all.sh"],
+        "fileFilters": ["**/go.mod", "**/go.sum"],
+        "executionMode": "branch"
+      }
+    },
+    {
       "description": "Local modules are resolved by go.mod replace directives, not a package registry.",
       "matchManagers": ["gomod"],
       "matchPackageNames": ["github.com/petretiandrea/beaesthetic-backend/{/,}**"],
@@ -34,6 +44,12 @@
     {
       "matchUpdateTypes": ["major"],
       "dependencyDashboardApproval": true
+    },
+    {
+      "description": "Automerge minor and patch once required checks pass. 0.x versions are excluded because minors can break.",
+      "matchUpdateTypes": ["minor", "patch"],
+      "matchCurrentVersion": "!/^0\\./",
+      "automerge": true
     },
     {
       "matchManagers": ["gomod"],
