@@ -1,0 +1,71 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: beaesthetic-services-dev
+  namespace: argocd
+spec:
+  ignoreApplicationDifferences:
+    - name: appointment-dev
+      jsonPointers:
+        - /spec/source/targetRevision
+    - name: notification-dev
+      jsonPointers:
+        - /spec/source/targetRevision
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - list:
+        elements:
+          # Set enabled to "true" to generate the dev Applications again.
+          - service: appointment
+            path: appointment/helm
+            enabled: "false"
+          - service: customer
+            path: customer/helm
+            enabled: "false"
+          - service: notification
+            path: notification/helm
+            enabled: "false"
+          - service: identity
+            path: identity-service/helm
+            enabled: "false"
+      selector:
+        matchLabels:
+          enabled: "true"
+  template:
+    metadata:
+      name: "{{.service}}-dev"
+      finalizers:
+        - resources-finalizer.argocd.argoproj.io
+      labels:
+        app.kubernetes.io/part-of: beaesthetic
+        beaesthetic.io/environment: dev
+        beaesthetic.io/service: "{{.service}}"
+    spec:
+      project: beaesthetic
+      source:
+        repoURL: https://github.com/beaesthetic/beaesthetic-backend.git
+        targetRevision: HEAD
+        path: "{{.path}}"
+        helm:
+          valueFiles:
+            - values.yaml
+            - values-dev.yaml
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: beaesthetic-dev
+      syncPolicy:
+        automated:
+          prune: true
+        syncOptions:
+          - CreateNamespace=true
+  templatePatch: |
+    {{- if or (eq .service "appointment") (eq .service "notification") }}
+    spec:
+      source:
+        helm:
+          parameters:
+            - name: image.tag
+              value: $ARGOCD_APP_REVISION
+    {{- end }}
