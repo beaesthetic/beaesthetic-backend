@@ -9,7 +9,7 @@
     "helm-values"
   ],
   "timezone": "Europe/Rome",
-  "schedule": ["before 6am on monday"],
+  "schedule": ["before 6am"],
   "dependencyDashboard": true,
   "dependencyDashboardTitle": "Dependency Dashboard",
   "dependencyDashboardAutoclose": false,
