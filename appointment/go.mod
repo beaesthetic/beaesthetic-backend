@@ -12,13 +12,13 @@ require (
 	github.com/knadh/koanf/providers/env/v2 v2.0.2
 	github.com/knadh/koanf/providers/file v1.2.1
 	github.com/knadh/koanf/v2 v2.4.1
-	github.com/oapi-codegen/runtime v1.9.0
+	github.com/oapi-codegen/runtime v1.9.1
 	github.com/petretiandrea/beaesthetic-backend/core v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/appointment v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/notification v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime v0.0.0
-	github.com/petretiandrea/outbox-go/pkg/outbox v1.7.1
-	github.com/rabbitmq/amqp091-go v1.16.0
+	github.com/petretiandrea/outbox-go/pkg/outbox v1.9.0
+	github.com/rabbitmq/amqp091-go v1.17.0
 	github.com/riverqueue/river v0.51.2
 	github.com/riverqueue/river/riverdriver/riverpgxv5 v0.51.2
 	github.com/riverqueue/river/rivertype v0.51.2
