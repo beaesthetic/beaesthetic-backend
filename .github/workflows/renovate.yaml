@@ -10,6 +10,9 @@ on:
     types: [edited]
   pull_request:
     types: [edited]
+  # After every merge, rebase automerge PRs that fell behind main (rebaseWhen: automerging).
+  push:
+    branches: [main]
 
 concurrency:
   group: renovate
@@ -21,7 +24,7 @@ permissions:
 jobs:
   renovate:
     if: >-
-      github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' || github.event_name == 'push' ||
       (github.event_name == 'issues' && github.event.issue.title == 'Dependency Dashboard' && github.actor != 'renovate[bot]') ||
       (github.event_name == 'pull_request' && startsWith(github.head_ref, 'renovate/') && github.actor != 'renovate[bot]')
     runs-on: ubuntu-24.04

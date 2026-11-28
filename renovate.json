@@ -8,6 +8,7 @@
     "gomod",
     "helm-values"
   ],
+  "rebaseWhen": "automerging",
   "timezone": "Europe/Rome",
   "schedule": ["before 6am"],
   "dependencyDashboard": true,
