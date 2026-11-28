@@ -30,7 +30,7 @@ spec:
           - list:
               elements:
                 - environment: dev
-                  enabled: "true"
+                  enabled: "false"
                   namespace: beaesthetic-dev
                   valuesFile: values-dev.yaml
                   targetRevision: HEAD
@@ -75,10 +75,9 @@ spec:
         notifications.argoproj.io/subscribe.on-sync-succeeded.telegram: "-1004385477490"
         notifications.argoproj.io/subscribe.on-sync-failed.telegram: "-1004385477490"
         notifications.argoproj.io/subscribe.on-deployed.telegram: "-1004385477490"
-    {{- end }}
-    {{- if and (or (eq .service "appointment") (eq .service "notification")) (eq .environment "prod") }}
     spec:
       syncPolicy:
+        automated: {}
         syncOptions:
           - CreateNamespace=true
     {{- end }}
