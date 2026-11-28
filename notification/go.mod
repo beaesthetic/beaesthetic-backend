@@ -13,11 +13,11 @@ require (
 	github.com/knadh/koanf/providers/env v1.1.0
 	github.com/knadh/koanf/providers/file v1.2.1
 	github.com/knadh/koanf/v2 v2.4.1
-	github.com/oapi-codegen/runtime v1.9.0
+	github.com/oapi-codegen/runtime v1.9.1
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/notification v0.0.0
 	github.com/petretiandrea/beaesthetic-backend/core-contracts/runtime v0.0.0
-	github.com/petretiandrea/outbox-go/pkg/outbox v1.7.1
-	github.com/rabbitmq/amqp091-go v1.16.0
+	github.com/petretiandrea/outbox-go/pkg/outbox v1.9.0
+	github.com/rabbitmq/amqp091-go v1.17.0
 	github.com/spf13/cobra v1.10.2
 	go.uber.org/zap v1.28.0
 	google.golang.org/protobuf v1.36.12
